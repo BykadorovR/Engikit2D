@@ -6,10 +6,10 @@
 Global counter used for component enumeration
 */
 struct ComponentCounter {
-	static int counter;
+	static unsigned int counter;
 };
 
-int ComponentCounter::counter = 0;
+unsigned int ComponentCounter::counter = 0;
 
 /*
 Each user created component should be inheritanced from this class.
@@ -19,8 +19,8 @@ every Component.
 template<typename ConcreteComponent>
 struct Component {
 	// Get the family for the component
-	static inline int family() {
-		static int family = ComponentCounter::counter++;
+	static inline unsigned int family() {
+		static unsigned int family = ComponentCounter::counter++;
 		return family;
 	}
 };
@@ -29,7 +29,7 @@ struct Component {
 Special method which simplify access to Component family ID
 */
 template <typename ConcreteComponent>
-static int getComponentFamily() {
+static unsigned int getComponentFamily() {
 	return Component<typename std::remove_const<ConcreteComponent>::type>::family();
 }
 
