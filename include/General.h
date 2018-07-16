@@ -7,5 +7,3 @@
 #include <memory>
 
 using namespace std;
-
-#define MAX_COMPONENT_MANAGERS 30

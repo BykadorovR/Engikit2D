@@ -1,68 +1,35 @@
 #pragma once
 #include "General.h"
-#include "World.h"
+#include "Component.h"
 
-class World;
+typedef unsigned int EntityID;
 
-/*
-Just ID of entity
-*/
-class EntityID {
+class Entity {
 public:
-	EntityID(unsigned int _id) : id(_id) {
-
-	}
-	EntityID() {
-
-	}
-	unsigned int getID() {
-		return id;
+	template <class ConcreteComponent>
+	void addComponent(ConcreteComponent* component) {
+		components.push_back(component);
 	}
 
-	operator int() {
-		return id;
+	template <class ConcreteComponent>
+	ConcreteComponent* getComponent() {
+		//TODO: add code with dynamic cast from components (find right component by class)
+		for (auto c : components) {
+			ConcreteComponent* foundComponent = dynamic_cast<ConcreteComponent*>(c);
+			if (foundComponent)
+				return foundComponent;
+		}
+		return nullptr;
 	}
 
-	bool operator<(const EntityID& right) const {
-		return id < right.id;
-	}
-private:
-	unsigned int id;
-};
-
-//TODO: Some kind of Proxy?
-/*
-Class needed to simplify access to entities and work with them
-So instead of using world with add(e,c), component and entity can be linked
-with each other through entity, e.g. e.add(c)
-*/
-struct EntityHandle {
-	EntityHandle(EntityID _entity, World* _world) : entity(_entity), world(_world) {
-	}
-
-	template<typename ConcreteComponent>
-	void addComponent(ConcreteComponent _component) {
-		world->addComponent(entity, _component);
-	}
-
-	template<typename ConcreteComponent>
-	ConcreteComponent getComponent() {
-		return world->getComponent<ConcreteComponent>(entity);
-	}
-
-	template<typename ConcreteComponent>
-	void removeComponent() {
-		world->removeComponent(entity);
-	}
-
-	EntityID getEntity() {
-		return entity;
+	void removeComponent(Component* component) {
+		components.erase(std::remove(components.begin(), components.end(), component), components.end());
 	}
 
 private:
-	EntityID entity;
-	World* world;
+	vector<Component*> components;
 };
+
 
 //TODO: rewrite as singleton
 /*
@@ -72,23 +39,21 @@ and assign right index for new entity
 */
 class EntityManager {
 public:
-	EntityID create() {
-		if (free_list.size() != 0) {
-			EntityID last_element = free_list.back();
-			entities.push_back(last_element);
-			free_list.pop_back();
-		}
-		else {
-			entities.push_back(entities.size());
-		}
+	Entity* create() {
+		//TODO: change to smart pointer
+		Entity* entity = new Entity();
+		entities.push_back(entity);
 		return entities.back();
 	}
 
-	void remove(EntityID e) {
-		entities.erase(std::remove(entities.begin(), entities.end(), e.getID()), entities.end());
-		free_list.push_back(e.getID());
+	void remove(Entity* entity) {
+		entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
 	}
 
-	vector<EntityID> entities;
-	vector<EntityID> free_list;
+	vector<Entity*> getEntities() {
+		return entities;
+	}
+
+private:
+	vector<Entity*> entities;
 };

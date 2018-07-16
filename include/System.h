@@ -1,8 +1,6 @@
 #pragma once
 #include "General.h"
 #include "Entity.h"
-#include "Component.h"
-#include "World.h"
 
 /*
 System implements the logic of game. In update method some user defined manipulations
@@ -21,36 +19,11 @@ public:
 	// Called every game render
 	virtual void render() {};
 
-	// Add a reference to the parent world
-	void registerWorld(World* world) {
-		parentWorld = world;
-	}
-
-	// This entity fits our current requirements
-	//should be called by world during add component call if bitmasks are equal
-	void registerEntity(EntityID entity) {
-		registeredEntities.push_back(entity);
-	}
-
-	// This entity has stopped fitting our current requirements
-	void deRegisterEntity(EntityID entity) {
-		for (auto it = registeredEntities.begin(); it != registeredEntities.end(); ++it) {
-			EntityID e = *it;
-			if (e == entity) {
-				registeredEntities.erase(it);
-				return;
-			}
-		}
-	}
-
-	ComponentMask getMask() {
-		return systemSignature;
+	void setEntityManager(EntityManager* manager) {
+		entityManager = manager;
 	}
 protected:
-	// Specifies which components our system cares about — its size should = the number of different components
-	ComponentMask systemSignature;
-	// These entities fit the systemSignature and should be iterated upon for any functionality
-	std::vector<EntityID> registeredEntities;
-	// Reference to our parent world
-	World* parentWorld;
+	//Reference to EntityManager to be able obtain all related Entities
+	//TODO: change to smart pointer
+	EntityManager* entityManager;
 };
