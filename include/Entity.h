@@ -22,8 +22,15 @@ public:
 		return nullptr;
 	}
 
-	void removeComponent(Component* component) {
-		components.erase(std::remove(components.begin(), components.end(), component), components.end());
+	template <class ConcreteComponent>
+	void removeComponent() {
+		int componentIndex = -1;
+		for (int i = 0; i < components.size(); i++) {
+			if (dynamic_cast<ConcreteComponent*>(components[i]))
+				componentIndex = i;
+		}
+		if (componentIndex > 0)
+			components.erase(components.begin() + componentIndex);
 	}
 
 private:
