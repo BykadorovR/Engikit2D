@@ -11,34 +11,33 @@ It is used for creating entities, registration systems and some internal communi
 class World {
 public:
 	World() {
-		entityManager = new EntityManager();
+		entityManager = make_shared<EntityManager>();
 	}
 
-	Entity* createEntity() {
-		Entity* entity = entityManager->create();
+	shared_ptr<Entity> createEntity() {
+		shared_ptr<Entity> entity = entityManager->create();
 		return entity;
 	}
 
-	void registerSystem(System* system) {
+	void registerSystem(shared_ptr<System> system) {
 		systems.push_back(system);
 		system->setEntityManager(entityManager);
 	}
 
 	//get existing system or create new one
 	template <class ConcreteSystem>
-	ConcreteSystem getSystem() {
+	shared_ptr<ConcreteSystem> getSystem() {
 		for (auto system : systems) {
-			ConcreteSystem* concrete = dynamic_cast<ConcreteSystem*>(system);
+			auto concrete = dynamic_pointer_cast<ConcreteSystem>(system);
 			if (concrete)
-				return *concrete;
+				return concrete;
 		}
-		//TODO: change to smart pointer
-		ConcreteSystem* system = new ConcreteSystem();
+
+		shared_ptr<ConcreteSystem> system = make_shared<ConcreteSystem>();
 		systems.push_back(system);
-		return *system;
+		return system;
 	}
 
-	//TODO: UPDATE
 	void update(int dt) {
 		for (auto system : systems) {
 			system->update(dt);
@@ -47,7 +46,6 @@ public:
 
 
 private:
-	//change to smart pointer
-	EntityManager* entityManager; //Reference to entityManager (to be able delete entity ID)
-	vector<System*> systems;	  //References to all systems to notify about changes
+	shared_ptr<EntityManager> entityManager; //Reference to entityManager (to be able delete entity ID)
+	vector<shared_ptr<System> > systems;	  //References to all systems to notify about changes
 };

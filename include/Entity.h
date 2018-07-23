@@ -7,15 +7,14 @@ typedef unsigned int EntityID;
 class Entity {
 public:
 	template <class ConcreteComponent>
-	void addComponent(ConcreteComponent* component) {
+	void addComponent(shared_ptr<ConcreteComponent> component) {
 		components.push_back(component);
 	}
 
 	template <class ConcreteComponent>
-	ConcreteComponent* getComponent() {
-		//TODO: add code with dynamic cast from components (find right component by class)
+	shared_ptr<ConcreteComponent> getComponent() {
 		for (auto c : components) {
-			ConcreteComponent* foundComponent = dynamic_cast<ConcreteComponent*>(c);
+			shared_ptr<ConcreteComponent> foundComponent = dynamic_pointer_cast<ConcreteComponent>(c);
 			if (foundComponent)
 				return foundComponent;
 		}
@@ -26,7 +25,7 @@ public:
 	void removeComponent() {
 		int componentIndex = -1;
 		for (int i = 0; i < components.size(); i++) {
-			if (dynamic_cast<ConcreteComponent*>(components[i]))
+			if (dynamic_pointer_cast<ConcreteComponent>(components[i]))
 				componentIndex = i;
 		}
 		if (componentIndex > 0)
@@ -34,7 +33,7 @@ public:
 	}
 
 private:
-	vector<Component*> components;
+	vector<shared_ptr<Component> > components;
 };
 
 
@@ -46,21 +45,20 @@ and assign right index for new entity
 */
 class EntityManager {
 public:
-	Entity* create() {
-		//TODO: change to smart pointer
-		Entity* entity = new Entity();
+	shared_ptr<Entity> create() {
+		shared_ptr<Entity> entity = make_shared<Entity>();
 		entities.push_back(entity);
 		return entities.back();
 	}
 
-	void remove(Entity* entity) {
+	void remove(shared_ptr<Entity> entity) {
 		entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
 	}
 
-	vector<Entity*> getEntities() {
+	vector<shared_ptr<Entity> > getEntities() {
 		return entities;
 	}
 
 private:
-	vector<Entity*> entities;
+	vector<shared_ptr<Entity> > entities;
 };

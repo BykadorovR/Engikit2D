@@ -14,6 +14,6 @@ int main(int argc, char *argv[])
 
 TEST(Entity, Create) {
 	World world;
-	Entity* player = world.createEntity();
+	auto player = world.createEntity();
 	EXPECT_NE(player, nullptr);
 }

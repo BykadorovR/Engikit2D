@@ -19,11 +19,10 @@ public:
 	// Called every game render
 	virtual void render() {};
 
-	void setEntityManager(EntityManager* manager) {
+	void setEntityManager(shared_ptr<EntityManager> manager) {
 		entityManager = manager;
 	}
 protected:
 	//Reference to EntityManager to be able obtain all related Entities
-	//TODO: change to smart pointer
-	EntityManager* entityManager;
+	shared_ptr<EntityManager> entityManager;
 };

@@ -42,8 +42,8 @@ class MovementSystem : public System {
 public:
 	void update(int dt) {
 		for (auto entity : entityManager->getEntities()) {
-			PositionComponent* position = entity->getComponent<PositionComponent>();
-			MovementComponent* movement = entity->getComponent<MovementComponent>();
+			auto position = entity->getComponent<PositionComponent>();
+			auto  movement = entity->getComponent<MovementComponent>();
 			if (!position || !movement)
 				continue;
 			position->x += movement->dx;
@@ -56,36 +56,36 @@ public:
 int main() {
 	cout << "ECS" << endl;
 	World world;
-	Entity* player = world.createEntity();
-	Entity* object = world.createEntity();
+	auto player = world.createEntity();
+	auto object = world.createEntity();
 
-	PositionComponent* position = new PositionComponent();
+	shared_ptr<PositionComponent> position = make_shared<PositionComponent>();
 	position->x = 30;
 	position->y = 40;
 	player->addComponent<PositionComponent>(position);
 
-	MovementComponent* movement = new MovementComponent();
+	shared_ptr<MovementComponent> movement = make_shared<MovementComponent>();
 	movement->dx = 1;
 	movement->dy = 1;
 	player->addComponent<MovementComponent>(movement);
 
-	CollisionComponent* collision = new CollisionComponent();
+	shared_ptr<CollisionComponent> collision = make_shared<CollisionComponent>();
 	collision->wx = 10;
 	collision->wx = 1;
 	player->addComponent(collision);
 	object->addComponent(collision);
 
-	PositionComponent* c = player->getComponent<PositionComponent>();
+	shared_ptr<PositionComponent> c = player->getComponent<PositionComponent>();
 	printf("Position %f, %f\n", c->x, c->y);
 	
-	MovementSystem mvSystem;
+	shared_ptr<MovementSystem> mvSystem = make_shared<MovementSystem>();
 	//TODO: check what all entities were correctly added
-	world.registerSystem(&mvSystem);
+	world.registerSystem(mvSystem);
 
 	//TODO: create more entity and check that addComponent correctly register in system entity 
 
 	//TODO: check what all systems now update all entities with the same component masks
-	world.getSystem<MovementSystem>().update(1);
+	world.getSystem<MovementSystem>()->update(1);
 	c = player->getComponent<PositionComponent>();
 	printf("Player Position %f, %f\n", c->x, c->y);
 
@@ -93,7 +93,7 @@ int main() {
 	object->addComponent(movement);
 	c = object->getComponent<PositionComponent>();
 	printf("Object Position %f, %f\n", c->x, c->y);
-	world.getSystem<MovementSystem>().update(1);
+	world.getSystem<MovementSystem>()->update(1);
 	//TODO: FIX THE ISSUE WITH POINTERS (PLAYER UPDATED OBJECT(!))
 	c = object->getComponent<PositionComponent>();
 	printf("Object Position %f, %f\n", c->x, c->y);
