@@ -54,48 +54,4 @@ public:
 
 //need to separate to cpp and h due to a lot of dependencies between classes
 int main() {
-	cout << "ECS" << endl;
-	World world;
-	auto player = world.createEntity();
-	auto object = world.createEntity();
-
-	shared_ptr<PositionComponent> position = make_shared<PositionComponent>();
-	position->x = 30;
-	position->y = 40;
-	player->addComponent<PositionComponent>(position);
-
-	shared_ptr<MovementComponent> movement = make_shared<MovementComponent>();
-	movement->dx = 1;
-	movement->dy = 1;
-	player->addComponent<MovementComponent>(movement);
-
-	shared_ptr<CollisionComponent> collision = make_shared<CollisionComponent>();
-	collision->wx = 10;
-	collision->wx = 1;
-	player->addComponent(collision);
-	object->addComponent(collision);
-
-	shared_ptr<PositionComponent> c = player->getComponent<PositionComponent>();
-	printf("Position %f, %f\n", c->x, c->y);
-	
-	shared_ptr<MovementSystem> mvSystem = make_shared<MovementSystem>();
-	//TODO: check what all entities were correctly added
-	world.registerSystem(mvSystem);
-
-	//TODO: create more entity and check that addComponent correctly register in system entity 
-
-	//TODO: check what all systems now update all entities with the same component masks
-	world.getSystem<MovementSystem>()->update(1);
-	c = player->getComponent<PositionComponent>();
-	printf("Player Position %f, %f\n", c->x, c->y);
-
-	object->addComponent(position);
-	object->addComponent(movement);
-	c = object->getComponent<PositionComponent>();
-	printf("Object Position %f, %f\n", c->x, c->y);
-	world.getSystem<MovementSystem>()->update(1);
-	//TODO: FIX THE ISSUE WITH POINTERS (PLAYER UPDATED OBJECT(!))
-	c = object->getComponent<PositionComponent>();
-	printf("Object Position %f, %f\n", c->x, c->y);
-	return 0;
 }

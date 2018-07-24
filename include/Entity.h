@@ -6,9 +6,18 @@ typedef unsigned int EntityID;
 
 class Entity {
 public:
+	/*
+	Create component if doesn't exist.
+	*/
 	template <class ConcreteComponent>
-	void addComponent(shared_ptr<ConcreteComponent> component) {
-		components.push_back(component);
+	bool createComponent() {
+		shared_ptr<ConcreteComponent> component = getComponent<ConcreteComponent>();
+		if (component.get() == nullptr) {
+			component = make_shared<ConcreteComponent>();
+			components.push_back(component);
+			return true;
+		}
+		return false;
 	}
 
 	template <class ConcreteComponent>
@@ -22,14 +31,17 @@ public:
 	}
 
 	template <class ConcreteComponent>
-	void removeComponent() {
+	bool removeComponent() {
 		int componentIndex = -1;
-		for (int i = 0; i < components.size(); i++) {
+		for (unsigned int i = 0; i < components.size(); i++) {
 			if (dynamic_pointer_cast<ConcreteComponent>(components[i]))
 				componentIndex = i;
 		}
-		if (componentIndex > 0)
+		if (componentIndex >= 0) {
 			components.erase(components.begin() + componentIndex);
+			return true;
+		}
+		return false;
 	}
 
 private:
