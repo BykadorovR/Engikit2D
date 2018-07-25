@@ -43,7 +43,6 @@ public:
 		}
 		return false;
 	}
-
 private:
 	vector<shared_ptr<Component> > components;
 };
@@ -63,8 +62,14 @@ public:
 		return entities.back();
 	}
 
-	void remove(shared_ptr<Entity> entity) {
-		entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
+	bool unregister(const shared_ptr<Entity>& entity) {
+		for (auto local : entities) {
+			if (local == entity) {
+				entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	vector<shared_ptr<Entity> > getEntities() {

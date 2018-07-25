@@ -19,6 +19,10 @@ public:
 		return entity;
 	}
 
+	bool unregisterEntity(const shared_ptr<Entity>& entity) {
+		return entityManager->unregister(entity);
+	}
+
 	void registerSystem(shared_ptr<System> system) {
 		systems.push_back(system);
 		system->setEntityManager(entityManager);
