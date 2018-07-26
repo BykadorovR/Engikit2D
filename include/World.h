@@ -12,6 +12,7 @@ class World {
 public:
 	World() {
 		entityManager = make_shared<EntityManager>();
+		systemManager = make_shared<SystemManager>();
 	}
 
 	shared_ptr<Entity> createEntity() {
@@ -23,27 +24,24 @@ public:
 		return entityManager->unregister(entity);
 	}
 
-	void registerSystem(shared_ptr<System> system) {
-		systems.push_back(system);
-		system->setEntityManager(entityManager);
+	template <class ConcreteSystem>
+	shared_ptr<ConcreteSystem> registerSystem() {
+		return systemManager->create<ConcreteSystem>(entityManager);
 	}
 
 	//get existing system or create new one
 	template <class ConcreteSystem>
 	shared_ptr<ConcreteSystem> getSystem() {
-		for (auto system : systems) {
-			auto concrete = dynamic_pointer_cast<ConcreteSystem>(system);
-			if (concrete)
-				return concrete;
-		}
+		return systemManager->get<ConcreteSystem>();
+	}
 
-		shared_ptr<ConcreteSystem> system = make_shared<ConcreteSystem>();
-		systems.push_back(system);
-		return system;
+	template <class ConcreteSystem>
+	bool unregisterSystem() {
+		return systemManager->unregisterSystem<ConcreteSystem>();
 	}
 
 	void update(int dt) {
-		for (auto system : systems) {
+		for (auto system : systemManager->getSystems()) {
 			system->update(dt);
 		}
 	}
@@ -51,5 +49,5 @@ public:
 
 private:
 	shared_ptr<EntityManager> entityManager; //Reference to entityManager (to be able delete entity ID)
-	vector<shared_ptr<System> > systems;	  //References to all systems to notify about changes
+	shared_ptr<SystemManager> systemManager;
 };

@@ -41,7 +41,7 @@ public:
 class MovementSystem : public System {
 public:
 	void update(int dt) {
-		for (auto entity : entityManager->getEntities()) {
+		for (auto entity : getEntities()) {
 			auto position = entity->getComponent<PositionComponent>();
 			auto  movement = entity->getComponent<MovementComponent>();
 			if (!position || !movement)

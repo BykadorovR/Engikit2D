@@ -10,14 +10,14 @@ public:
 	Create component if doesn't exist.
 	*/
 	template <class ConcreteComponent>
-	bool createComponent() {
+	shared_ptr<ConcreteComponent> registerComponent() {
 		shared_ptr<ConcreteComponent> component = getComponent<ConcreteComponent>();
-		if (component.get() == nullptr) {
+		if (component == nullptr) {
 			component = make_shared<ConcreteComponent>();
 			components.push_back(component);
-			return true;
+			return component;
 		}
-		return false;
+		return nullptr;
 	}
 
 	template <class ConcreteComponent>
