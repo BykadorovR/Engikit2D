@@ -34,10 +34,6 @@ private:
 
 class SystemManager {
 public:
-	vector<shared_ptr<System> > getSystems() {
-		return systems;
-	}
-
 	template <class ConcreteSystem>
 	shared_ptr<ConcreteSystem> create(shared_ptr<EntityManager> entityManager) {
 		shared_ptr<ConcreteSystem> system = get<ConcreteSystem>();
@@ -59,16 +55,6 @@ public:
 				return foundSystem;
 		}
 		return nullptr;
-	}
-	template <class ConcreteSystem>
-	bool unregister(const shared_ptr<ConcreteSystem>& system) {
-		for (auto local : systems) {
-			if (local == system) {
-				systems.erase(std::remove(systems.begin(), systems.end(), system), systems.end());
-				return true;
-			}
-		}
-		return false;
 	}
 
 private:

@@ -24,8 +24,12 @@ public:
 		return entityManager->unregister(entity);
 	}
 
+	bool registerEntity(shared_ptr<Entity> entity) {
+		return entityManager->registerEntity(entity);
+	}
+
 	template <class ConcreteSystem>
-	shared_ptr<ConcreteSystem> registerSystem() {
+	shared_ptr<ConcreteSystem> createSystem() {
 		return systemManager->create<ConcreteSystem>(entityManager);
 	}
 
@@ -34,18 +38,6 @@ public:
 	shared_ptr<ConcreteSystem> getSystem() {
 		return systemManager->get<ConcreteSystem>();
 	}
-
-	template <class ConcreteSystem>
-	bool unregisterSystem() {
-		return systemManager->unregisterSystem<ConcreteSystem>();
-	}
-
-	void update(int dt) {
-		for (auto system : systemManager->getSystems()) {
-			system->update(dt);
-		}
-	}
-
 
 private:
 	shared_ptr<EntityManager> entityManager; //Reference to entityManager (to be able delete entity ID)

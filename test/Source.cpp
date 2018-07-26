@@ -58,21 +58,33 @@ TEST(Unregister, Entity) {
 	EXPECT_EQ(world.unregisterEntity(object1), false);
 }
 
+TEST(Register, Entity) {
+	World world;
+	shared_ptr<Entity> object1 = world.createEntity();
+	shared_ptr<MovementComponent> movement = object1->createComponent<MovementComponent>();
+	movement->dx = 5;
+	movement->dy = 5;
+	EXPECT_EQ(world.unregisterEntity(object1), true);
+	EXPECT_EQ(world.registerEntity(object1), true);
+	EXPECT_EQ(object1->getComponent<MovementComponent>()->dx, 5);
+	EXPECT_EQ(world.registerEntity(object1), false);
+}
+
 TEST(Create, Component) {
 	World world;
 	shared_ptr<Entity> object1 = world.createEntity();
-	EXPECT_NE(object1->registerComponent<PositionComponent>(), nullptr);
-	EXPECT_EQ(object1->registerComponent<PositionComponent>(), nullptr);
+	EXPECT_NE(object1->createComponent<PositionComponent>(), nullptr);
+	EXPECT_EQ(object1->createComponent<PositionComponent>(), nullptr);
 }
 
 TEST(Get, Component) {
 	World world;
 	shared_ptr<Entity> object1 = world.createEntity();
 	shared_ptr<Entity> object2 = world.createEntity();
-	object1->registerComponent<PositionComponent>();
+	object1->createComponent<PositionComponent>();
 	EXPECT_NE(object1->getComponent<PositionComponent>().get(), nullptr);
 
-	object2->registerComponent<PositionComponent>();
+	object2->createComponent<PositionComponent>();
 	EXPECT_NE(object1->getComponent<PositionComponent>().get(), object2->getComponent<PositionComponent>().get());
 
 	object2->removeComponent<PositionComponent>();
@@ -82,7 +94,7 @@ TEST(Get, Component) {
 TEST(Remove, Component) {
 	World world;
 	shared_ptr<Entity> object1 = world.createEntity();
-	object1->registerComponent<MovementComponent>();
+	object1->createComponent<MovementComponent>();
 
 	EXPECT_EQ(object1->removeComponent<MovementComponent>(), true);
 	EXPECT_EQ(object1->removeComponent<MovementComponent>(), false);
@@ -91,7 +103,7 @@ TEST(Remove, Component) {
 TEST(Change, Component) {
 	World world;
 	shared_ptr<Entity> object1 = world.createEntity();
-	shared_ptr<MovementComponent> movement = object1->registerComponent<MovementComponent>();
+	shared_ptr<MovementComponent> movement = object1->createComponent<MovementComponent>();
 	movement->dx = 5;
 	movement->dy = 5;
 	shared_ptr<MovementComponent> movementFromEntity = object1->getComponent<MovementComponent>();
@@ -101,13 +113,13 @@ TEST(Change, Component) {
 
 TEST(Init, System) {
 	World world;
-	EXPECT_NE(world.registerSystem<MovementSystem>(), nullptr);
-	EXPECT_EQ(world.registerSystem<MovementSystem>(), nullptr);
+	EXPECT_NE(world.createSystem<MovementSystem>(), nullptr);
+	EXPECT_EQ(world.createSystem<MovementSystem>(), nullptr);
 }
 
 TEST(Get, System) {
 	World world;
-	EXPECT_NE(world.registerSystem<MovementSystem>(), nullptr);
+	EXPECT_NE(world.createSystem<MovementSystem>(), nullptr);
 	shared_ptr<MovementSystem> movementSystem = world.getSystem<MovementSystem>();
 	EXPECT_NE(movementSystem, nullptr);
 	shared_ptr<InteractionSystem> interactionSystem = world.getSystem<InteractionSystem>();
@@ -116,18 +128,40 @@ TEST(Get, System) {
 
 TEST(Update, System) {
 	World world;
-	shared_ptr<MovementSystem> movementSystem = world.registerSystem<MovementSystem>();
+	shared_ptr<MovementSystem> movementSystem = world.createSystem<MovementSystem>();
 	shared_ptr<Entity> object1 = world.createEntity();
-	shared_ptr<PositionComponent> position = object1->registerComponent<PositionComponent>();
+	shared_ptr<PositionComponent> position = object1->createComponent<PositionComponent>();
 	position->x = 5;
 	position->y = 5;
 	movementSystem->update(1);
 	EXPECT_EQ(object1->getComponent<PositionComponent>()->x, 5);
 	EXPECT_EQ(object1->getComponent<PositionComponent>()->y, 5);
-	shared_ptr<MovementComponent> movement = object1->registerComponent<MovementComponent>();
+	shared_ptr<MovementComponent> movement = object1->createComponent<MovementComponent>();
 	movement->dx = 5;
 	movement->dy = 5;
 	movementSystem->update(1);
 	EXPECT_EQ(object1->getComponent<PositionComponent>()->x, 10);
 	EXPECT_EQ(object1->getComponent<PositionComponent>()->y, 10);
+	object1->removeComponent<MovementComponent>();
+	movementSystem->update(1);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->x, 10);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->y, 10);
+	
+	movement = object1->createComponent<MovementComponent>();
+	movement->dx = 5;
+	movement->dy = 5;
+	movementSystem->update(1);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->x, 15);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->y, 15);
+	world.unregisterEntity(object1);
+	movementSystem->update(1);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->x, 15);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->y, 15);
+	world.registerEntity(object1);
+	movementSystem->update(1);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->x, 20);
+	EXPECT_EQ(object1->getComponent<PositionComponent>()->y, 20);
+}
+
+TEST(Disable, System) {
 }

@@ -10,7 +10,7 @@ public:
 	Create component if doesn't exist.
 	*/
 	template <class ConcreteComponent>
-	shared_ptr<ConcreteComponent> registerComponent() {
+	shared_ptr<ConcreteComponent> createComponent() {
 		shared_ptr<ConcreteComponent> component = getComponent<ConcreteComponent>();
 		if (component == nullptr) {
 			component = make_shared<ConcreteComponent>();
@@ -56,7 +56,7 @@ and assign right index for new entity
 */
 class EntityManager {
 public:
-	shared_ptr<Entity> create() {
+	shared_ptr<Entity> create(shared_ptr<Entity> _entity = nullptr) {
 		shared_ptr<Entity> entity = make_shared<Entity>();
 		entities.push_back(entity);
 		return entities.back();
@@ -70,6 +70,16 @@ public:
 			}
 		}
 		return false;
+	}
+
+	bool registerEntity(shared_ptr<Entity> entity) {
+		for (auto local : entities) {
+			if (local == entity) {
+				return false;
+			}
+		}
+		entities.push_back(entity);
+		return true;
 	}
 
 	vector<shared_ptr<Entity> > getEntities() {
