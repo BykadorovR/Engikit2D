@@ -162,6 +162,3 @@ TEST(Update, System) {
 	EXPECT_EQ(object1->getComponent<PositionComponent>()->x, 20);
 	EXPECT_EQ(object1->getComponent<PositionComponent>()->y, 20);
 }
-
-TEST(Disable, System) {
-}

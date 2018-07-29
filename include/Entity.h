@@ -2,8 +2,6 @@
 #include "General.h"
 #include "Component.h"
 
-typedef unsigned int EntityID;
-
 class Entity {
 public:
 	/*

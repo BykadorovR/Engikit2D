@@ -39,6 +39,7 @@ public:
 		return systemManager->get<ConcreteSystem>();
 	}
 
+
 private:
 	shared_ptr<EntityManager> entityManager; //Reference to entityManager (to be able delete entity ID)
 	shared_ptr<SystemManager> systemManager;
