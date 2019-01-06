@@ -3,6 +3,9 @@
 #include "System.h"
 #include "Component.h"
 #include "Entity.h"
+#include <png.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 class PositionComponent : public Component {
 public:
@@ -52,5 +55,17 @@ public:
 };
 
 //need to separate to cpp and h due to a lot of dependencies between classes
-int main() {
+int main(int argc, char **argv) {
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB);
+	glutCreateWindow("GLEW Test");
+	if (int status = glewInit() != GLEW_OK)
+	{
+		printf("Error in glewInit %d\n", status);
+
+		return 1;
+	}
+	fprintf(stderr, "   Compiled with libpng %s; using libpng %s.\n",
+		PNG_LIBPNG_VER_STRING, png_libpng_ver);
+	return 0;
 }

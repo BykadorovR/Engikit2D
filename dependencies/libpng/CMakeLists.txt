@@ -41,11 +41,21 @@ option(PNG_BUILD_ZLIB "Custom zlib Location, else find_package is used" ON)
 if(NOT PNG_BUILD_ZLIB)
   find_package(ZLIB REQUIRED)
   include_directories(${ZLIB_INCLUDE_DIR})
+else()
+  include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
+  ExternalProject_Add(
+    zlib
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/zlib
+    DOWNLOAD_COMMAND "" # Disable download step
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${CMAKE_CURRENT_SOURCE_DIR}/zlib -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG} -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
+    INSTALL_COMMAND ""
+  )
+  set(ZLIB_BUILD_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../build/libpng-prefix/src/libpng-build/zlib-prefix/src/zlib-build)
+  set(ZLIB_SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/zlib)
+
+  set(ZLIB_INCLUDE_DIR ${ZLIB_SOURCE_PATH} ${ZLIB_BUILD_PATH})
+  include_directories(${ZLIB_INCLUDE_DIR})
 endif()
-
-set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/zlib")
-include_directories(${ZLIB_INCLUDE_DIR})
-
 
 if(UNIX AND NOT APPLE AND NOT BEOS AND NOT HAIKU)
   find_library(M_LIBRARY m)
@@ -55,8 +65,8 @@ else()
 endif()
 
 # COMMAND LINE OPTIONS
-option(PNG_SHARED "Build shared lib" OFF)
-option(PNG_STATIC "Build static lib" ON)
+option(PNG_SHARED "Build shared lib" ON)
+option(PNG_STATIC "Build static lib" OFF)
 option(PNG_TESTS  "Build libpng tests" OFF)
 
 # Many more configuration options could be added here
@@ -420,10 +430,20 @@ else()
                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/checksym.awk"
                        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/symbols.def")
 
+  add_custom_target(symbol-check DEPENDS
+                    "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.chk")
   generate_copy("${CMAKE_CURRENT_BINARY_DIR}/scripts/sym.out"
                 "${CMAKE_CURRENT_BINARY_DIR}/libpng.sym")
   generate_copy("${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out"
                 "${CMAKE_CURRENT_BINARY_DIR}/libpng.vers")
+  add_custom_target(genvers DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/libpng.vers")
+  add_custom_target(gensym DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/libpng.sym")
+
+  add_custom_target("genprebuilt"
+                    COMMAND "${CMAKE_COMMAND}"
+                            "-DOUTPUT=scripts/pnglibconf.h.prebuilt"
+                            -P "${CMAKE_CURRENT_BINARY_DIR}/scripts/gensrc.cmake"
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
   # A single target handles generation of all generated files.  If
   # they are depended upon separately by multiple targets, this
@@ -443,6 +463,7 @@ else()
     "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.chk"
     "${CMAKE_CURRENT_BINARY_DIR}/scripts/symbols.out"
     "${CMAKE_CURRENT_BINARY_DIR}/scripts/vers.out")
+  add_dependencies(genfiles zlib)
 endif(NOT AWK OR ANDROID)
 
 # OUR SOURCES
@@ -522,14 +543,15 @@ if(PNG_SHARED)
   add_library(png SHARED ${libpng_sources})
   set(PNG_LIB_TARGETS png)
   set_target_properties(png PROPERTIES OUTPUT_NAME ${PNG_LIB_NAME})
-  add_dependencies(png genfiles)
+  add_dependencies(png zlib genfiles)
   if(MSVC)
     # msvc does not append 'lib' - do it here to have consistent name
     set_target_properties(png PROPERTIES PREFIX "lib")
     set_target_properties(png PROPERTIES IMPORT_PREFIX "lib")
   endif()
-  target_link_libraries(png ${ZLIB_LIBRARY} ${M_LIBRARY})
-
+  target_link_libraries(png ${M_LIBRARY})
+  target_link_libraries(png debug ${ZLIB_BUILD_PATH}/Debug/zlibd.lib)
+  target_link_libraries(png optimized ${ZLIB_BUILD_PATH}/Release/zlib.lib)
   if(UNIX AND AWK)
     if(HAVE_LD_VERSION_SCRIPT)
       set_target_properties(png PROPERTIES LINK_FLAGS
@@ -545,7 +567,7 @@ if(PNG_STATIC)
   # does not work without changing name
   set(PNG_LIB_NAME_STATIC png_static)
   add_library(png_static STATIC ${libpng_sources})
-  add_dependencies(png_static genfiles)
+  add_dependencies(png_static zlib genfiles)
   # MSVC doesn't use a different file extension for shared vs. static
   # libs.  We are able to change OUTPUT_NAME to remove the _static
   # for all other platforms.
@@ -563,7 +585,9 @@ if(PNG_STATIC)
     # msvc does not append 'lib' - do it here to have consistent name
     set_target_properties(png_static PROPERTIES PREFIX "lib")
   endif()
-  target_link_libraries(png_static ${ZLIB_LIBRARY} ${M_LIBRARY})
+  target_link_libraries(png_static ${M_LIBRARY})
+  target_link_libraries(png_static debug ${ZLIB_BUILD_PATH}/Debug/zlibstaticd.lib)
+  target_link_libraries(png_static optimized ${ZLIB_BUILD_PATH}/Release/zlibstatic.lib)
 endif()
 
 if(PNG_FRAMEWORK)
@@ -745,7 +769,10 @@ if(PNG_SHARED)
   set(PNG_BIN_TARGETS pngfix)
 
   add_executable(png-fix-itxt ${png_fix_itxt_sources})
-  target_link_libraries(png-fix-itxt ${ZLIB_LIBRARY} ${M_LIBRARY})
+  add_dependencies(png-fix-itxt zlib)
+  target_link_libraries(png-fix-itxt ${M_LIBRARY})
+  target_link_libraries(png-fix-itxt debug ${ZLIB_BUILD_PATH}/Debug/zlibd.lib)
+  target_link_libraries(png-fix-itxt optimized ${ZLIB_BUILD_PATH}/Release/zlib.lib)
   list(APPEND PNG_BIN_TARGETS png-fix-itxt)
 endif()
 
