@@ -4,8 +4,6 @@
 #include "Component.h"
 #include "Entity.h"
 
-#include "GL/glut.h"
-
 class PositionComponent : public Component {
 public:
 	double x;
