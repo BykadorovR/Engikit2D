@@ -42,18 +42,24 @@ ExternalProject_Add(
   INSTALL_COMMAND ""
   )
 
-
 #affects all projects, add folder "include" to include section in VS
-include_directories("include")
+include_directories("include/ECS")
+include_directories("include/Graphic")
 
-file(GLOB_RECURSE APP_SOURCE "src/*.c*")
-source_group("src" FILES ${APP_SOURCE})
+file(GLOB_RECURSE app_graphic_source "src/Graphic/*.c*")
+file(GLOB app_other_source "src/*.c*")
+source_group("src/Graphic" FILES ${app_graphic_source})
+source_group("src" FILES ${app_other_source})
 
-file(GLOB_RECURSE APP_HEADERS "include/*.h*")
-source_group("include" FILES ${APP_HEADERS})
+file(GLOB_RECURSE app_ecs_headers "include/ECS/*.h*")
+file(GLOB_RECURSE app_graphic_headers "include/Graphic/*.h*")
+file(GLOB app_other_headers "include/*.h*")
+source_group("include/ECS" FILES ${app_ecs_headers})
+source_group("include/Graphic" FILES ${app_graphic_headers})
+source_group("include" FILES ${app_other_headers})
 
 #include headers to project (so they will be shown in include folder)
-add_executable(game ${APP_HEADERS} ${APP_SOURCE})
+add_executable(game ${app_ecs_headers} ${app_graphic_headers} ${app_other_headers} ${app_graphic_source} ${app_other_source})
 
 add_dependencies(game glew freeglut libpng)
 

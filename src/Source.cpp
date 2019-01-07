@@ -3,10 +3,9 @@
 #include "System.h"
 #include "Component.h"
 #include "Entity.h"
-#include <png.h>
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 
+#include "PlatformGL.h"
+#include "Loop.h"
 class PositionComponent : public Component {
 public:
 	double x;
@@ -58,14 +57,17 @@ public:
 int main(int argc, char **argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB);
-	glutCreateWindow("GLEW Test");
+	glutInitWindowSize(720, 480);
+	glutCreateWindow("2D Image Texture");
 	if (int status = glewInit() != GLEW_OK)
 	{
 		printf("Error in glewInit %d\n", status);
 
 		return 1;
 	}
-	fprintf(stderr, "   Compiled with libpng %s; using libpng %s.\n",
-		PNG_LIBPNG_VER_STRING, png_libpng_ver);
+	glutDisplayFunc(&on_draw_frame);
+	on_surface_created();
+	on_surface_changed();
+	glutMainLoop();
 	return 0;
 }
