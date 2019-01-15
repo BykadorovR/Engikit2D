@@ -7,32 +7,28 @@
 using namespace std;
 
 class Texture {
-	int width, height;
-	vector<unsigned char> data;
-	const int depth = 4;
+	ImageLoader loader;
 public:
-	Texture(int _width, int _height) : width(_width), height(_height) {
-		data.resize(width * height * depth);
-	}
 
 	Texture(string path);
 
-	~Texture() {
-		data.clear();
-	}
+	void joinTextures(Texture image, int start_x, int start_y, Texture& result_image);
+	GLuint loadTexture(const GLsizei width, const GLsizei height, const GLenum type, const GLvoid* pixels);
+	GLuint loadRawImageToTexture(Texture& rawImageData);
+
 	int getWidth() {
-		return width;
+		return loader.getWidth();
 	}
 
 	int getHeight() {
-		return height;
+		return loader.getHeight();
 	}
 
 	unsigned char* getData() {
-		return &data[0];
+		return &loader.getData()[0];
 	}
 
 	unsigned char& operator[](int index) {
-		return data[index];
+		return loader.getData()[index];
 	}
 };

@@ -1,11 +1,19 @@
 #pragma once
 #include "PlatformGL.h"
+#include <vector>
 
-GLuint compileShader(const GLenum type, const GLchar* source, const GLint length);
-GLuint linkProgram(const GLuint vertex_shader, const GLuint fragment_shader);
-GLuint buildProgram(
-	const GLchar * vertex_shader_source, const GLint vertex_shader_source_length,
-	const GLchar * fragment_shader_source, const GLint fragment_shader_source_length);
+class Shader {
+public:
+	GLuint compileShader(std::string source, GLenum type);
+	GLuint linkProgram(const GLuint vertex_shader, const GLuint fragment_shader);
+	GLuint buildProgram(
+		std::string vertex_shader_source,
+		std::string fragment_shader_source);
 
-/* Should be called just before using a program to draw, if validation is needed. */
-GLint validateProgram(const GLuint program);
+	GLuint buildProgramFromAsset(const char* vertex_shader_path, const char* fragment_shader_path);
+	/* Should be called just before using a program to draw, if validation is needed. */
+	GLint validateProgram(const GLuint program);
+private:
+	GLenum type;
+	GLuint shaderID;
+};

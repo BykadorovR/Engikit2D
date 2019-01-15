@@ -1,15 +1,15 @@
 #include "Shader.h"
-
+#include "Common.h"
 #include <assert.h>
 
-GLuint compileShader(const GLenum type, const GLchar* source, const GLint length) {
-	assert(source != NULL);
+GLuint Shader::compileShader(std::string source, GLenum type) {
 	GLuint shader_object_id = glCreateShader(type);
 	GLint compile_status;
 
 	assert(shader_object_id != 0);
 
-	glShaderSource(shader_object_id, 1, (const GLchar **)&source, &length);
+	int size = source.size();
+	glShaderSource(shader_object_id, 1, (const GLchar **)&source, &size);
 	glCompileShader(shader_object_id);
 	glGetShaderiv(shader_object_id, GL_COMPILE_STATUS, &compile_status);
 	assert(compile_status != 0);
@@ -17,7 +17,7 @@ GLuint compileShader(const GLenum type, const GLchar* source, const GLint length
 	return shader_object_id;
 }
 
-GLuint linkProgram(const GLuint vertex_shader, const GLuint fragment_shader) {
+GLuint Shader::linkProgram(const GLuint vertex_shader, const GLuint fragment_shader) {
 	GLuint program_object_id = glCreateProgram();
 	GLint link_status;
 
@@ -31,15 +31,23 @@ GLuint linkProgram(const GLuint vertex_shader, const GLuint fragment_shader) {
 	return program_object_id;
 }
 
-GLuint buildProgram(
-	const GLchar * vertex_shader_source, const GLint vertex_shader_source_length,
-	const GLchar * fragment_shader_source, const GLint fragment_shader_source_length) {
-	assert(vertex_shader_source != NULL);
-	assert(fragment_shader_source != NULL);
-
+GLuint Shader::buildProgram(
+	std::string vertex_shader_source,
+	std::string fragment_shader_source) {
 	GLuint vertex_shader = compileShader(
-		GL_VERTEX_SHADER, vertex_shader_source, vertex_shader_source_length);
+		vertex_shader_source, GL_VERTEX_SHADER);
 	GLuint fragment_shader = compileShader(
-		GL_FRAGMENT_SHADER, fragment_shader_source, fragment_shader_source_length);
+		fragment_shader_source, GL_FRAGMENT_SHADER);
 	return linkProgram(vertex_shader, fragment_shader);
+}
+
+GLuint Shader::buildProgramFromAsset(const char* vertex_shader_path, const char* fragment_shader_path) {
+	assert(vertex_shader_path != NULL);
+	assert(fragment_shader_path != NULL);
+
+	std::string vertex_shader_source = rawFileContent(vertex_shader_path);
+	std::string fragment_shader_source = rawFileContent(fragment_shader_path);
+	const GLuint program_object_id = buildProgram(vertex_shader_source, fragment_shader_source);
+	
+	return program_object_id;
 }
