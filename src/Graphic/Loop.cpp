@@ -4,6 +4,7 @@
 #include "platformGL.h"
 #include "shader.h"
 #include "texture.h"
+#include "TextureAtlas.h"
 
 static GLuint texture;
 static GLuint buffer;
@@ -26,13 +27,14 @@ void on_surface_created() {
 void on_surface_changed() {
 	Texture atlas(2048, 2048);
 	Texture texture_raw("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/air_hockey_surface.png");
-	join_image_to_result_image(texture_raw, 512, 512, atlas);
-	join_image_to_result_image(texture_raw, 1024, 512, atlas);
-	texture = load_raw_image_data_into_texture(atlas);
+	atlas.addTexture(texture_raw, 512, 512);
+	atlas.addTexture(texture_raw, 1024, 512);
+	texture = atlas.loadTexture();
 	//We need to delete added to atlas texture (!) and replace code related to creating VBO to separate class and calculate coordinates for
 	//displaying as textureSize/atlasSize else we will see not requested texture but atlas
 	buffer = createVBO(sizeof(rect), rect, GL_STATIC_DRAW);
-	program = build_program_from_assets("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/shaders/shader.vsh", 
+	Shader shader;
+	program = shader.buildProgramFromAsset("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/shaders/shader.vsh", 
 		                                "C:/Users/Home/Desktop/Engine/TimeOfWitch/data/shaders/shader.fsh");
 
 	a_position_location = glGetAttribLocation(program, "a_Position");

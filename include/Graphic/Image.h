@@ -14,13 +14,7 @@ struct DataHandle {
 };
 
 //needed for internal libPNG function
-void PNGCallback(png_structp PNGPtr, png_byte* rawData, png_size_t readLength) {
-	DataHandle* handle = (DataHandle*)png_get_io_ptr(PNGPtr);
-	const png_byte* PNGSrc = handle->data + handle->offset;
-
-	memcpy(rawData, PNGSrc, readLength);
-	handle->offset += readLength;
-}
+void PNGCallback(png_structp PNGPtr, png_byte* rawData, png_size_t readLength);
 
 class ImageLoader {
 public:

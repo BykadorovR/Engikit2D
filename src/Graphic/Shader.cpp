@@ -1,17 +1,24 @@
 #include "Shader.h"
 #include "Common.h"
 #include <assert.h>
+#include <iostream>
 
 GLuint Shader::compileShader(std::string source, GLenum type) {
 	GLuint shader_object_id = glCreateShader(type);
-	GLint compile_status;
+	GLint compile_status = GL_FALSE;
 
 	assert(shader_object_id != 0);
 
 	int size = source.size();
-	glShaderSource(shader_object_id, 1, (const GLchar **)&source, &size);
+	auto shaderText = source.c_str();
+	glShaderSource(shader_object_id, 1, &shaderText, &size);
 	glCompileShader(shader_object_id);
 	glGetShaderiv(shader_object_id, GL_COMPILE_STATUS, &compile_status);
+	/*std::vector<char> v(1000);
+	glGetShaderInfoLog(shader_object_id, 1000, NULL, v.data());
+	std::string s(begin(v), end(v));
+	std::cout << s << std::endl;
+	*/
 	assert(compile_status != 0);
 
 	return shader_object_id;

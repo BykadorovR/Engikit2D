@@ -1,5 +1,6 @@
 #include "Common.h"
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include "assert.h"
 
@@ -12,11 +13,9 @@ std::string rawFileContent(const char* relativePath) {
 		assert(false);
 	}
 
-	std::string line = "";
-	while (!fileStream.eof()) {
-		std::getline(fileStream, line);
-		content.append(line + "\n");
-	}
+	std::stringstream sstr;
+	while (fileStream >> sstr.rdbuf());
+	content = sstr.str();
 	fileStream.close();
 	return content;
 }

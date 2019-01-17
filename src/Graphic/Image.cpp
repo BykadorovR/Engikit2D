@@ -6,17 +6,24 @@
 #include <fstream>
 #include <iostream>
 
+void PNGCallback(png_structp PNGPtr, png_byte* rawData, png_size_t readLength) {
+	DataHandle* handle = (DataHandle*)png_get_io_ptr(PNGPtr);
+	const png_byte* PNGSrc = handle->data + handle->offset;
+
+	memcpy(rawData, PNGSrc, readLength);
+	handle->offset += readLength;
+}
+
 int ImageLoader::getImageFromPNG(std::string PNGData) {
 	unsigned char* _PNGData;
-	assert(_PNGData != NULL && PNGData.size() > 8);
-	assert(png_check_sig((png_const_bytep)_PNGData, 8));
+	assert(png_check_sig((png_const_bytep)PNGData.c_str(), 8));
 
 	png_structp PNGPtr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	assert(PNGPtr != NULL);
 	png_infop infoPtr = png_create_info_struct(PNGPtr);
 	assert(infoPtr != NULL);
 
-	DataHandle PNGDataHandle((png_byte*) _PNGData, (png_size_t) PNGData.size(), 0);
+	DataHandle PNGDataHandle((png_byte*)PNGData.c_str(), (png_size_t) PNGData.size(), 0);
 	png_set_read_fn(PNGPtr, &PNGDataHandle, PNGCallback);
 
 	if (setjmp(png_jmpbuf(PNGPtr))) {

@@ -7,28 +7,29 @@
 using namespace std;
 
 class Texture {
-	ImageLoader loader;
 public:
-
+	Texture(int width, int height);
 	Texture(string path);
 
-	void joinTextures(Texture image, int start_x, int start_y, Texture& result_image);
-	GLuint loadTexture(const GLsizei width, const GLsizei height, const GLenum type, const GLvoid* pixels);
-	GLuint loadRawImageToTexture(Texture& rawImageData);
+	GLuint loadTexture();
+	void addTexture(Texture image, int start_x, int start_y);
 
 	int getWidth() {
-		return loader.getWidth();
+		return width;
 	}
 
 	int getHeight() {
-		return loader.getHeight();
+		return height;
 	}
 
 	unsigned char* getData() {
-		return &loader.getData()[0];
+		return &data[0];
 	}
 
 	unsigned char& operator[](int index) {
-		return loader.getData()[index];
+		return data[index];
 	}
+protected:
+	int width, height;
+	std::vector<unsigned char> data;
 };
