@@ -1,16 +1,19 @@
 #include "Buffer.h"
+#include "Common.h"
 #include <assert.h>
 #include <stdlib.h>
+#include "iostream"
 
-GLuint createVBO(const GLsizeiptr size, const GLvoid* data, const GLenum usage) {
-	assert(data != NULL);
-	GLuint vboObject;
+int Buffer::bindVBO(GLvoid* data, GLsizeiptr size, GLenum usage) {
 	glGenBuffers(1, &vboObject);
-	assert(vboObject != 0);
-
+	CHECK_STATUS(vboObject == 0);
+	CHECK_STATUS(data == NULL);
 	glBindBuffer(GL_ARRAY_BUFFER, vboObject);
 	glBufferData(GL_ARRAY_BUFFER, size, data, usage);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	return TW_OK;
+}
 
+GLuint Buffer::getVBOObject() {
 	return vboObject;
 }
