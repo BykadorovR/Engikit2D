@@ -3,8 +3,10 @@
 
 class Buffer {
 public:
-	int bindVBO(GLvoid* data, GLsizeiptr size, GLenum usage);
+	int bindVBO(float* data, GLsizeiptr size, GLenum usage);
 	GLuint getVBOObject();
+	float* getBuffer();
 private:
 	GLuint vboObject;
+	float* _buffer;
 };

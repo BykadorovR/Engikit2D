@@ -4,29 +4,28 @@
 #include "Texture.h"
 #include "Sprite.h"
 
-// position X, Y, texture S, T
-static const float rect[] = { -1.0f, -1.0f, 0.0f, 0.0f,
-							 -1.0f,  1.0f, 0.0f, 1.0f,
-							  1.0f, -1.0f, 1.0f, 0.0f,
-							  1.0f,  1.0f, 1.0f, 1.0f };
-
 void on_surface_created() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 Sprite* hockey;
+Sprite* hockey2;
 void on_surface_changed() {
-	Texture atlas(2048, 2048);
-	Texture textureRaw("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/air_hockey_surface.png");
-	atlas.addTexture(textureRaw, 512, 512);
-	atlas.addTexture(textureRaw, 1024, 512);
-	hockey = new Sprite(0, 0, 512, 512, textureRaw);
+	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(2048, 2048);
+	Texture textureRaw("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/air_hockey_surface.png", 0, 0, atlas);
+	atlas->loadAtlas();
+	hockey = new Sprite(0, 0, 100, 100, textureRaw);
+	hockey2 = new Sprite(0, 0, 100, 100, textureRaw);
+	hockey->translate(100, 0);
+	hockey2->translate(-100, 0);
 	hockey->attach();
-
+	hockey2->attach();
 }
 
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	hockey->draw();
+	hockey2->draw();
+
 	glutSwapBuffers(); // Flush drawing commands
 }

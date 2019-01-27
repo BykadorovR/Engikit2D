@@ -6,6 +6,8 @@
 
 #include "PlatformGL.h"
 #include "Loop.h"
+#include "Common.h"
+
 class PositionComponent : public Component {
 public:
 	double x;
@@ -57,7 +59,7 @@ public:
 int main(int argc, char **argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB);
-	glutInitWindowSize(720, 480);
+	glutInitWindowSize(resolution.first, resolution.second);
 	glutCreateWindow("2D Image Texture");
 	if (int status = glewInit() != GLEW_OK)
 	{

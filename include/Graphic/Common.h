@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <utility>
+const std::pair<int, int> resolution(200, 200);
 
 enum ErrorCodes {
 	TW_OK = 0,
@@ -14,3 +16,8 @@ enum ErrorCodes {
 	} \
 
 std::string rawFileContent(const char* relativePath);
+
+const int POSITION_COMPONENT_COUNT = 2;
+const int BYTES_PER_FLOAT = 4;
+const int TEXTURE_COORDINATES_COMPONENT_COUNT = 2;
+const int STRIDE = (POSITION_COMPONENT_COUNT + TEXTURE_COORDINATES_COMPONENT_COUNT) * BYTES_PER_FLOAT;
