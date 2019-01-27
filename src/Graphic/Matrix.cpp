@@ -24,11 +24,11 @@ void Matrix2D::identity() {
 }
 void Matrix2D::translate(int dx, int dy) {
 	if (dx) {
-		float dxN = (float)dx / (float)resolution.first;
+		float dxN = (float)(2 * dx) / (float)resolution.first;
 		_matrix[3 + _size * 0] = dxN;
 	}
 	if (dy) {
-		float dyN = (float)dy / (float)resolution.second;
+		float dyN = (float)(2 * dy) / (float)resolution.second;
 		_matrix[3 + _size * 1] = dyN;
 	}
 }

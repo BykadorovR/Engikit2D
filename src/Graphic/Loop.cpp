@@ -16,8 +16,8 @@ void on_surface_changed() {
 	atlas->loadAtlas();
 	hockey = new Sprite(0, 0, 100, 100, textureRaw);
 	hockey2 = new Sprite(0, 0, 100, 100, textureRaw);
-	hockey->translate(100, 0);
-	hockey2->translate(-100, 0);
+	hockey->translate(-100, 100);
+//	hockey2->translate(0, 0);
 	hockey->attach();
 	hockey2->attach();
 }

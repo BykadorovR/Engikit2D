@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <utility>
-const std::pair<int, int> resolution(200, 200);
+const std::pair<int, int> resolution(720, 480);
 
 enum ErrorCodes {
 	TW_OK = 0,
