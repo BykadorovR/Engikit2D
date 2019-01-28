@@ -14,10 +14,9 @@ void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(2048, 2048);
 	Texture textureRaw("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/air_hockey_surface.png", 0, 0, atlas);
 	atlas->loadAtlas();
-	hockey = new Sprite(0, 0, 100, 100, textureRaw);
+	hockey = new Sprite(200, 100, 100, 100, textureRaw);
 	hockey2 = new Sprite(0, 0, 100, 100, textureRaw);
-	hockey->translate(-100, 100);
-//	hockey2->translate(0, 0);
+	hockey2->translate(-50, 50);
 	hockey->attach();
 	hockey2->attach();
 }
