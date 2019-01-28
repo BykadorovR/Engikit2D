@@ -14,11 +14,6 @@ GLuint Shader::compileShader(std::string source, GLenum type) {
 	glShaderSource(shader_object_id, 1, &shaderText, &size);
 	glCompileShader(shader_object_id);
 	glGetShaderiv(shader_object_id, GL_COMPILE_STATUS, &compile_status);
-	/*std::vector<char> v(1000);
-	glGetShaderInfoLog(shader_object_id, 1000, NULL, v.data());
-	std::string s(begin(v), end(v));
-	std::cout << s << std::endl;
-	*/
 	assert(compile_status != 0);
 
 	return shader_object_id;

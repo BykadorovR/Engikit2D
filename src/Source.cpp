@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 	glutDisplayFunc(&on_draw_frame);
+	glutTimerFunc(40, update, 0);
 	on_surface_created();
 	on_surface_changed();
 	glutMainLoop();

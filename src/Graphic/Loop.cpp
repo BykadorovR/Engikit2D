@@ -16,15 +16,19 @@ void on_surface_changed() {
 	atlas->loadAtlas();
 	hockey = new Sprite(200, 100, 100, 100, textureRaw);
 	hockey2 = new Sprite(0, 0, 100, 100, textureRaw);
-	hockey2->translate(-50, 50);
 	hockey->attach();
 	hockey2->attach();
+}
+
+void update(int value) {
+	hockey2->translate(1, 0);
+	glutPostRedisplay();  // Redraw windows
+	glutTimerFunc(40, update, 0);
 }
 
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	hockey->draw();
 	hockey2->draw();
-
 	glutSwapBuffers(); // Flush drawing commands
 }
