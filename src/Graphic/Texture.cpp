@@ -87,6 +87,12 @@ Texture::Texture(std::string path, int posXAtlas, int posYAtlas, std::shared_ptr
 	_atlas->addTexture(loader.getData(), _posXAtlas, _posYAtlas, _width, _height);
 }
 
+Texture::Texture(std::string path, int posXAtlas, int posYAtlas, int row, int column, std::shared_ptr<TextureAtlas> atlas) 
+	    : Texture(path, posXAtlas, posYAtlas, atlas) {
+	_row = row;
+	_column = column;
+}
+
 int Texture::getWidth() {
 	return _width;
 }
@@ -104,4 +110,11 @@ int Texture::getX() {
 }
 int Texture::getY() {
 	return _posYAtlas;
+}
+
+int Texture::getColumn() {
+	return _column;
+}
+int Texture::getRow() {
+	return _row;
 }

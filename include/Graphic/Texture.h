@@ -32,10 +32,13 @@ class Texture {
 public:
 	Texture();
 	Texture(std::string path, int posXAtlas, int posYAtlas, std::shared_ptr<TextureAtlas> atlas);
+	Texture(std::string path, int posXAtlas, int posYAtlas, int row, int column, std::shared_ptr<TextureAtlas> atlas);
 
 	std::shared_ptr<TextureAtlas> getAtlas();
 	int getWidth();
 	int getHeight();
+	int getColumn();
+	int getRow();
 	int getX();
 	int getY();
 
@@ -43,4 +46,5 @@ private:
 	std::shared_ptr<TextureAtlas> _atlas;
 	int _posXAtlas, _posYAtlas;
 	int _width, _height;
+	int _row, _column;
 };

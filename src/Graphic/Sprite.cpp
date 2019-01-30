@@ -2,65 +2,60 @@
 #include <assert.h>
 #include "Common.h"
 
-Sprite::Sprite(int _sceneX, int _sceneY, int _spriteWidth, int _spriteHeight, Texture _texture) {
-	sceneX = _sceneX;
-	sceneY = _sceneY;
-	spriteWidth = _spriteWidth;
-	spriteHeight = _spriteHeight;
-	texture = _texture;
-	textureID = _texture.getAtlas()->getAtlasID();
-	transform.identity();
+Sprite::Sprite(int sceneX, int sceneY, int spriteWidth, int spriteHeight, Texture texture) : Object(sceneX, sceneY, spriteWidth, spriteHeight, texture) {
 }
 
-void Sprite::initializeBuffer() {
-	//due to we shift position by one direction, so we should multiply to 2
-	//x = 100 , screenWidth = 200 - 1/2 but gl screen = [-1, 1] and we translate to 50, not 100
-	float spriteWidthN = (float) spriteWidth / (float)resolution.first;
-	float spriteHeightN = (float) spriteHeight / (float)resolution.second;
-	float startX = (float)(sceneX) / (float)resolution.first;
-	float startY = (float)(resolution.second - sceneY) / (float)resolution.second;
-	float posXInAtlasN = (float) texture.getX() / (float)texture.getAtlas()->getWidth();
-	float posYInAtlasN = (float) texture.getY() / (float)texture.getAtlas()->getHeight();
-	float textureWidthN = (float) texture.getWidth() / (float)texture.getAtlas()->getWidth();
-	float textureHeightN = (float)texture.getHeight() / (float)texture.getAtlas()->getHeight();
+AnimatedSprite::AnimatedSprite(int sceneX, int sceneY, int spriteWidth, int spriteHeight, Texture texture) : Object(sceneX, sceneY, spriteWidth, spriteHeight, texture) {
+}
+
+void AnimatedSprite::setBuffer() {
+	float spriteWidthN = (float)_objectWidth / (float)resolution.first;
+	float spriteHeightN = (float)_objectHeight / (float)resolution.second;
+	float startX = (float)(_sceneX) / (float)resolution.first;
+	float startY = (float)(resolution.second - _sceneY) / (float)resolution.second;
+	float posXInAtlasN = (float)_texture.getX() / (float)_texture.getAtlas()->getWidth();
+	float posYInAtlasN = (float)_texture.getY() / (float)_texture.getAtlas()->getHeight();
+	float widthTile = (float)_texture.getWidth() / (float) _texture.getColumn() / (float)_texture.getAtlas()->getWidth();
+	_widthTile = widthTile;
+	float heightTile = (float)_texture.getHeight() / (float) _texture.getRow() / (float)_texture.getAtlas()->getHeight();
+	_heightTile = heightTile;
 	// Order of coordinates: X, Y, S, T
-	float vertexData[] =   { startX, startY, posXInAtlasN, posYInAtlasN + textureHeightN,
-							 startX, startY - spriteHeightN, posXInAtlasN, posYInAtlasN,
-							 startX + spriteWidthN, startY, posXInAtlasN + textureWidthN, posYInAtlasN + textureHeightN,
-							 startX + spriteWidthN, startY - spriteHeightN, posXInAtlasN + textureWidthN, posYInAtlasN };
-	assert(spriteBuffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
-	
+	// 0   2
+	// | / |
+	// 1   3
+	float vertexData[] = {   startX,                startY,                 posXInAtlasN,             posYInAtlasN,
+							 startX,                startY - spriteHeightN, posXInAtlasN,             posYInAtlasN + heightTile,
+							 startX + spriteWidthN, startY,                 posXInAtlasN + widthTile, posYInAtlasN,
+							 startX + spriteWidthN, startY - spriteHeightN, posXInAtlasN + widthTile, posYInAtlasN + heightTile };
+	assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
 }
 
-void Sprite::translate(int posX, int posY) {
-	Matrix2D translate;
-	translate.translate(posX, posY);
-	transform = transform * translate;
+void AnimatedSprite::setAnimate(std::vector<int> tilesOrder, std::vector<int> tilesLatency) {
+	_tilesLatency = tilesLatency;
+	_tilesOrder = tilesOrder;
 }
 
-void Sprite::attach() {
-	initializeBuffer();
-	program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-	aPositionLocation = glGetAttribLocation(program, aPositionString.c_str());
-	aTextureCoordinatesLocation = glGetAttribLocation(program, aTextureCoordinatesString.c_str());
-	uTextureUnitLocation = glGetUniformLocation(program, uTextureUnitString.c_str());
-	uMatrixLocation = glGetUniformLocation(program, uMatrix.c_str());
+int AnimatedSprite::getCurrentAnimateTile() {
+	return _tilesOrder[_currentAnimateTile];
 }
 
-void Sprite::draw() {
-	glUseProgram(program);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glUniform1i(uTextureUnitLocation, 0);
+void AnimatedSprite::attach() {
+	Object::attach();
+	_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
+	_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
+}
 
-	glUniformMatrix4fv(uMatrixLocation, 1, false, transform.getData());
-	glBindBuffer(GL_ARRAY_BUFFER, spriteBuffer.getVBOObject());
-	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
-	glVertexAttribPointer(aPositionLocation, POSITION_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, STRIDE, 0);
-	glVertexAttribPointer(aTextureCoordinatesLocation, TEXTURE_COORDINATES_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, STRIDE, (void*)(TEXTURE_COORDINATES_COMPONENT_COUNT * sizeof(GL_FLOAT)));
-	glEnableVertexAttribArray(aPositionLocation);
-	glEnableVertexAttribArray(aTextureCoordinatesLocation);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+void AnimatedSprite::draw() {
+	Object::draw();
+	glUniform1f(_uAdjustXLocation, _widthTile * _tilesOrder[(_currentAnimateTile)] + 1);
+	if (_currentAnimateTile < _tilesOrder.size()) {
+		if (_currentLatency < _tilesLatency[_currentAnimateTile])
+			_currentLatency++;
+		else {
+			_currentLatency = 0;
+			_currentAnimateTile++;
+			if (_currentAnimateTile == _tilesOrder.size())
+				_currentAnimateTile = 0;
+		}
+	}
 }

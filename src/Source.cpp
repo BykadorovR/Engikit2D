@@ -67,8 +67,12 @@ int main(int argc, char **argv) {
 
 		return 1;
 	}
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	glutDisplayFunc(&on_draw_frame);
-	glutTimerFunc(40, update, 0);
+	glutTimerFunc(33, update, 0);
 	on_surface_created();
 	on_surface_changed();
 	glutMainLoop();
