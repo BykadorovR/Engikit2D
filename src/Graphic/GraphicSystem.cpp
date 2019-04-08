@@ -46,6 +46,7 @@ void TextureSystem::update() {
 }
 
 void TransformSystem::draw(std::shared_ptr<TransformComponent> object) {
+	glUseProgram(object->_program);
 	glUniformMatrix4fv(object->_uMatrixLocation, 1, false, object->_transform.getData());
 }
 

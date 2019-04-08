@@ -31,9 +31,9 @@ void on_surface_changed() {
 	textureSystem = world.createSystem<TextureSystem>();
 	transformSystem = world.createSystem<TransformSystem>();
 	sprite = world.createEntity();
+	sprite->createComponent<TransformComponent>()->initialize(_program);
 	sprite->createComponent<ObjectComponent>()->initialize(200, 100, 100, 100, _program);
 	sprite->createComponent<TextureComponent>()->initialize(textureRaw, _program);
-	sprite->createComponent<TransformComponent>()->initialize(_program);
 }
 
 void update(int value) {

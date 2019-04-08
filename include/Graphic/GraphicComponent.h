@@ -97,10 +97,10 @@ public:
 class TransformComponent : public Component {
 public:
 	void initialize(GLuint program) {
+		_program = program;
 		_transform.identity();
 		_transform.print();
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
-
 	}
 
 	Matrix2D _transform;
