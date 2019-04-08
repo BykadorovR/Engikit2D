@@ -16,3 +16,10 @@ public:
 	// Called every game update
 	void update();
 };
+
+class TransformSystem : public System {
+private:
+	void draw(std::shared_ptr<TransformComponent> object);
+public:
+	void update();
+};

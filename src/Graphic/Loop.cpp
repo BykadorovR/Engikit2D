@@ -16,6 +16,8 @@ AnimatedSprite* anim;
 
 shared_ptr<ObjectSystem> objectSystem;
 shared_ptr<TextureSystem> textureSystem;
+shared_ptr<TransformSystem> transformSystem;
+shared_ptr<Entity> sprite;
 void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
 	Texture textureRaw("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/air_hockey_surface.png", 0, 0, atlas);
@@ -27,19 +29,14 @@ void on_surface_changed() {
 	World world;
 	objectSystem = world.createSystem<ObjectSystem>();
 	textureSystem = world.createSystem<TextureSystem>();
-	shared_ptr<Entity> sprite = world.createEntity();
+	transformSystem = world.createSystem<TransformSystem>();
+	sprite = world.createEntity();
 	sprite->createComponent<ObjectComponent>()->initialize(200, 100, 100, 100, _program);
 	sprite->createComponent<TextureComponent>()->initialize(textureRaw, _program);
-	
-	//hockey = new Sprite(200, 100, 100, 100, textureRaw);
-	//anim = new AnimatedSprite(200, 200, 100, 200, textureAnim);
-	//anim->setAnimate({ 0, 1, 2, 1 }, { 17, 8, 17, 8 });
-	//anim->attach();
-	//hockey->attach();
+	sprite->createComponent<TransformComponent>()->initialize(_program);
 }
 
 void update(int value) {
-	//hockey->translate(1, 0);
 	glutPostRedisplay();  // Redraw windows
 	glutTimerFunc(40, update, 0);
 }
@@ -50,5 +47,11 @@ void on_draw_frame() {
 	//anim->draw();
 	objectSystem->update();
 	textureSystem->update();
+	Matrix2D transform;
+	transform.translate(1, 0);
+	transform.print();
+	sprite->getComponent<TransformComponent>()->_transform = sprite->getComponent<TransformComponent>()->_transform * transform;
+	transform.print();
+	transformSystem->update();
 	glutSwapBuffers(); // Flush drawing commands
 }
