@@ -25,11 +25,18 @@ void Object::setBuffer() {
 	// 0   2
 	// | / |
 	// 1   3
-	float vertexData[] = {   startX,                startY,                 posXInAtlasN,                 posYInAtlasN,
-							 startX,                startY - spriteHeightN, posXInAtlasN,                 posYInAtlasN + textureHeightN,
-							 startX + spriteWidthN, startY,                 posXInAtlasN + textureWidthN, posYInAtlasN,
-							 startX + spriteWidthN, startY - spriteHeightN, posXInAtlasN + textureWidthN, posYInAtlasN + textureHeightN };
-	assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
+	float vertexData[] = {   startX,                startY,
+							 startX,                startY - spriteHeightN,
+							 startX + spriteWidthN, startY,
+							 startX + spriteWidthN, startY - spriteHeightN };
+	float textureData[] = { posXInAtlasN,                 posYInAtlasN,
+							posXInAtlasN,                 posYInAtlasN + textureHeightN,
+							posXInAtlasN + textureWidthN, posYInAtlasN,
+							posXInAtlasN + textureWidthN, posYInAtlasN + textureHeightN };
+
+
+	assert(_bufferVertex.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
+	assert(_bufferTexture.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
 
 }
 
@@ -56,11 +63,14 @@ void Object::draw() {
 	glUseProgram(_program);
 	
 	//bind buffer and handle vertex shader
-	glBindBuffer(GL_ARRAY_BUFFER, _buffer.getVBOObject());
+	glBindBuffer(GL_ARRAY_BUFFER, _bufferVertex.getVBOObject());
 	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
-	glVertexAttribPointer(_aPositionLocation, POSITION_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, STRIDE, 0);
-	glVertexAttribPointer(_aTextureCoordinatesLocation, TEXTURE_COORDINATES_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, STRIDE, (void*)(TEXTURE_COORDINATES_COMPONENT_COUNT * sizeof(GL_FLOAT)));
+	glVertexAttribPointer(_aPositionLocation, POSITION_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(_aPositionLocation);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _bufferTexture.getVBOObject());
+	glVertexAttribPointer(_aTextureCoordinatesLocation, TEXTURE_COORDINATES_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
+
 	glEnableVertexAttribArray(_aTextureCoordinatesLocation);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

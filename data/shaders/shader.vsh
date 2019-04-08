@@ -1,4 +1,4 @@
-uniform mat4 u_Matrix;
+uniform mat4 u_Matrix = mat4(1.0);
 attribute vec4 a_Position;
 attribute vec2 a_TextureCoordinates;
 varying vec2 v_TextureCoordinates;

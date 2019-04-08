@@ -10,14 +10,8 @@ components through ComponentManager class.
 */
 class System {
 public:
-	// Initialize the System — This happens *before* the game starts but *after* the world has been registered.
-	virtual void init() {};
-
 	// Called every game update
-	virtual void update(int dt) {};
-
-	// Called every game render
-	virtual void render() {};
+	virtual void update() {};
 
 	vector<shared_ptr<Entity> > getEntities() {
 		return entityManager->getEntities();

@@ -5,6 +5,7 @@
 Sprite::Sprite(int sceneX, int sceneY, int spriteWidth, int spriteHeight, Texture texture) : Object(sceneX, sceneY, spriteWidth, spriteHeight, texture) {
 }
 
+/*
 AnimatedSprite::AnimatedSprite(int sceneX, int sceneY, int spriteWidth, int spriteHeight, Texture texture) : Object(sceneX, sceneY, spriteWidth, spriteHeight, texture) {
 }
 
@@ -58,4 +59,4 @@ void AnimatedSprite::draw() {
 				_currentAnimateTile = 0;
 		}
 	}
-}
+}*/

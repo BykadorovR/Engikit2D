@@ -22,7 +22,8 @@ protected:
 	int _objectWidth, _objectHeight;
 	Texture _texture;
 	//
-	Buffer _buffer;
+	Buffer _bufferVertex;
+	Buffer _bufferTexture;
 	Shader _shader;
 	Matrix2D _transform;
 	//
