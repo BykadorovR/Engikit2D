@@ -17,10 +17,12 @@ void Matrix2D::print() {
 }
 
 void Matrix2D::identity() {
-	_matrix[0 + _size * 0] = 1;
-	_matrix[1 + _size * 1] = 1;
-	_matrix[2 + _size * 2] = 1;
-	_matrix[3 + _size * 3] = 1;
+	for (int i = 0; i < _size; i++) 
+		for (int j = 0; j < _size; j++) {
+			_matrix[j + _size * i] = 0;
+			if (i == j)
+				_matrix[j + _size * i] = 1;
+		}
 }
 void Matrix2D::translate(int dx, int dy) {
 	if (dx) {

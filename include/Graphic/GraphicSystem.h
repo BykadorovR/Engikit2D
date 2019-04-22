@@ -17,6 +17,14 @@ public:
 	void update();
 };
 
+class AnimatedTextureSystem : public System {
+private:
+	void draw(std::shared_ptr<AnimatedTextureComponent> object);
+public:
+	// Called every game update
+	void update();
+};
+
 class TransformSystem : public System {
 private:
 	void draw(std::shared_ptr<TransformComponent> object);

@@ -80,6 +80,34 @@ public:
 
 class AnimatedTextureComponent : public Component {
 public:
+	void initialize(Texture texture, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
+		_texture = texture;
+		_program = program;
+		_tilesLatency = tilesLatency;
+		_tilesOrder = tilesOrder;
+		float posXInAtlasN = (float)_texture.getX() / (float)_texture.getAtlas()->getWidth();
+		float posYInAtlasN = (float)_texture.getY() / (float)_texture.getAtlas()->getHeight();
+		float widthTile = (float)_texture.getWidth() / (float)_texture.getColumn() / (float)_texture.getAtlas()->getWidth();
+		_widthTile = widthTile;
+		float heightTile = (float)_texture.getHeight() / (float)_texture.getRow() / (float)_texture.getAtlas()->getHeight();
+		_heightTile = heightTile;
+		// Order of coordinates: S, T
+		// 0   2
+		// | / |
+		// 1   3
+		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
+								posXInAtlasN,                 posYInAtlasN + heightTile,
+								posXInAtlasN + widthTile, posYInAtlasN,
+								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
+		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
+		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
+		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
+		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
+		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
+		_textureID = texture.getAtlas()->getAtlasID();
+
+	}
+
 	float _widthTile;
 	float _heightTile;
 	int _currentAnimateTile = 0;
@@ -87,9 +115,19 @@ public:
 	std::vector<int> _tilesOrder;
 	std::vector<int> _tilesLatency;
 	//
+	Buffer _buffer;
+	Texture _texture;
+	//
+	GLuint _program;
+	GLuint _textureID;
+	GLint _aTextureCoordinatesLocation;
+	GLint _uTextureUnitLocation;
 	GLint _uAdjustXLocation;
 	GLint _uAdjustYLocation;
+
 	//
+	std::string _aTextureCoordinatesString = "a_TextureCoordinates";
+	std::string _uTextureUnitString = "u_TextureUnit";
 	std::string _uAdjustX = "u_AdjustX";
 	std::string _uAdjustY = "u_AdjustY";
 };
@@ -98,11 +136,15 @@ class TransformComponent : public Component {
 public:
 	void initialize(GLuint program) {
 		_program = program;
-		_transform.identity();
-		_transform.print();
+		_result.identity();
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
 	}
 
+	void setTransform(Matrix2D transform) {
+		_transform = transform;
+	}
+	
+	Matrix2D _result;
 	Matrix2D _transform;
 	GLuint _program;
 	//

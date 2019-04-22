@@ -17,23 +17,34 @@ AnimatedSprite* anim;
 shared_ptr<ObjectSystem> objectSystem;
 shared_ptr<TextureSystem> textureSystem;
 shared_ptr<TransformSystem> transformSystem;
+shared_ptr<AnimatedTextureSystem> animatedTextureSystem;
 shared_ptr<Entity> sprite;
+shared_ptr<Entity> animatedSprite;
 void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
 	Texture textureRaw("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/air_hockey_surface.png", 0, 0, atlas);
 	Texture textureAnim("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/firstmain_idle.png", 1024, 1024, 1, 3, atlas);
 	atlas->loadAtlas();
 	Shader shader;
+	Shader shaderAnimated;
 	auto _program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-	
+	auto _programAnimated = shaderAnimated.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+
 	World world;
 	objectSystem = world.createSystem<ObjectSystem>();
 	textureSystem = world.createSystem<TextureSystem>();
+	animatedTextureSystem = world.createSystem<AnimatedTextureSystem>();
+
 	transformSystem = world.createSystem<TransformSystem>();
 	sprite = world.createEntity();
-	sprite->createComponent<TransformComponent>()->initialize(_program);
 	sprite->createComponent<ObjectComponent>()->initialize(200, 100, 100, 100, _program);
 	sprite->createComponent<TextureComponent>()->initialize(textureRaw, _program);
+	sprite->createComponent<TransformComponent>()->initialize(_program);
+
+	animatedSprite = world.createEntity();
+	animatedSprite->createComponent<ObjectComponent>()->initialize(200, 400, 100, 100, _programAnimated);
+	animatedSprite->createComponent<AnimatedTextureComponent>()->initialize(textureAnim, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, _programAnimated);
+	animatedSprite->createComponent<TransformComponent>()->initialize(_programAnimated);
 }
 
 void update(int value) {
@@ -43,15 +54,14 @@ void update(int value) {
 
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//hockey->draw();
-	//anim->draw();
-	objectSystem->update();
-	textureSystem->update();
 	Matrix2D transform;
 	transform.translate(1, 0);
-	transform.print();
-	sprite->getComponent<TransformComponent>()->_transform = sprite->getComponent<TransformComponent>()->_transform * transform;
-	transform.print();
+	sprite->getComponent<TransformComponent>()->setTransform(transform);
+	animatedSprite->getComponent<TransformComponent>()->setTransform(transform);
+
+	objectSystem->update();
+	textureSystem->update();
+	animatedTextureSystem->update();
 	transformSystem->update();
 	glutSwapBuffers(); // Flush drawing commands
 }
