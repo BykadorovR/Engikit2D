@@ -30,17 +30,19 @@ void TextureSystem::draw(std::shared_ptr<TextureComponent> object) {
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	//bind texture and handle fragment shader
+	//we can use multiple textures, but we use only one, do it active and send textureUnitLocation = 0 to shader
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, object->_textureID);
 	glUniform1i(object->_uTextureUnitLocation, 0);
-	
 }
 
 void TextureSystem::update() {
 	for (auto entity : getEntities()) {
 		auto object = entity->getComponent<TextureComponent>();
-		if (!object)
+		if (!object) {
 			continue;
+		}
+			
 		draw(object);
 	}
 }
@@ -59,7 +61,7 @@ void AnimatedTextureSystem::draw(std::shared_ptr<AnimatedTextureComponent> objec
 	glBindTexture(GL_TEXTURE_2D, object->_textureID);
 	glUniform1i(object->_uTextureUnitLocation, 0);
 
-	glUniform1f(object->_uAdjustXLocation, object->_widthTile * object->_tilesOrder[(object->_currentAnimateTile)] + 1);
+	glUniform1f(object->_uAdjustXLocation, object->_widthTile * object->_tilesOrder[(object->_currentAnimateTile)]);
 
 }
 
@@ -90,6 +92,8 @@ void TransformSystem::draw(std::shared_ptr<TransformComponent> object) {
 void TransformSystem::update() {
 	for (auto entity : getEntities()) {
 		auto transform = entity->getComponent<TransformComponent>();
+		if (!transform)
+			continue;
 		transform->_result = transform->_result * transform->_transform;
 		draw(transform);
 		transform->_transform.print();

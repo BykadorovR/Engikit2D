@@ -26,9 +26,7 @@ void on_surface_changed() {
 	Texture textureAnim("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/firstmain_idle.png", 1024, 1024, 1, 3, atlas);
 	atlas->loadAtlas();
 	Shader shader;
-	Shader shaderAnimated;
 	auto _program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-	auto _programAnimated = shaderAnimated.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 
 	World world;
 	objectSystem = world.createSystem<ObjectSystem>();
@@ -42,9 +40,9 @@ void on_surface_changed() {
 	sprite->createComponent<TransformComponent>()->initialize(_program);
 
 	animatedSprite = world.createEntity();
-	animatedSprite->createComponent<ObjectComponent>()->initialize(200, 400, 100, 100, _programAnimated);
-	animatedSprite->createComponent<AnimatedTextureComponent>()->initialize(textureAnim, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, _programAnimated);
-	animatedSprite->createComponent<TransformComponent>()->initialize(_programAnimated);
+	animatedSprite->createComponent<ObjectComponent>()->initialize(200, 400, 100, 100, _program);
+	//animatedSprite->createComponent<AnimatedTextureComponent>()->initialize(textureAnim, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, _programAnimated);
+	//animatedSprite->createComponent<TransformComponent>()->initialize(_programAnimated);
 }
 
 void update(int value) {
@@ -57,11 +55,11 @@ void on_draw_frame() {
 	Matrix2D transform;
 	transform.translate(1, 0);
 	sprite->getComponent<TransformComponent>()->setTransform(transform);
-	animatedSprite->getComponent<TransformComponent>()->setTransform(transform);
+	//animatedSprite->getComponent<TransformComponent>()->setTransform(transform);
 
 	objectSystem->update();
 	textureSystem->update();
-	animatedTextureSystem->update();
-	transformSystem->update();
+	//animatedTextureSystem->update();
+	//transformSystem->update();
 	glutSwapBuffers(); // Flush drawing commands
 }
