@@ -28,6 +28,8 @@ GLuint Shader::linkProgram(const GLuint vertex_shader, const GLuint fragment_sha
 	glAttachShader(program_object_id, vertex_shader);
 	glAttachShader(program_object_id, fragment_shader);
 	glLinkProgram(program_object_id);
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
 	glGetProgramiv(program_object_id, GL_LINK_STATUS, &link_status);
 	assert(link_status != 0);
 	return program_object_id;

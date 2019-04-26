@@ -15,7 +15,7 @@ public:
 			components.push_back(component);
 			return component;
 		}
-		return nullptr;
+		return component;
 	}
 
 	template <class ConcreteComponent>

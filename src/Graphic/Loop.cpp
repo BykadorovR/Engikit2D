@@ -14,33 +14,31 @@ void on_surface_created() {
 Object* hockey;
 AnimatedSprite* anim;
 
-shared_ptr<ObjectSystem> objectSystem;
-shared_ptr<TextureSystem> textureSystem;
-shared_ptr<TransformSystem> transformSystem;
-shared_ptr<AnimatedTextureSystem> animatedTextureSystem;
+shared_ptr<DrawSystem> drawSystem;
 shared_ptr<Entity> sprite;
 shared_ptr<Entity> animatedSprite;
 void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
-	Texture textureRaw("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/air_hockey_surface.png", 0, 0, atlas);
-	Texture textureAnim("C:/Users/Home/Desktop/Engine/TimeOfWitch/data/textures/firstmain_idle.png", 1024, 1024, 1, 3, atlas);
+	Texture textureRaw("../data/textures/air_hockey_surface.png", 0, 0, atlas);
+	Texture textureAnim("../data/textures/firstmain_idle.png", 0, 1024, 1, 3, atlas);
+	Texture textureRawTest("../data/textures/firstmain_idle.png", 0, 2048, atlas);
+
 	atlas->loadAtlas();
-	Shader shader;
-	auto _program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	Shader shader, shaderAnim;
+	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	auto programAnim = shaderAnim.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 
 	World world;
-	objectSystem = world.createSystem<ObjectSystem>();
-	textureSystem = world.createSystem<TextureSystem>();
-	animatedTextureSystem = world.createSystem<AnimatedTextureSystem>();
+	drawSystem = world.createSystem<DrawSystem>();
 
-	transformSystem = world.createSystem<TransformSystem>();
 	sprite = world.createEntity();
-	sprite->createComponent<ObjectComponent>()->initialize(200, 100, 100, 100, _program);
-	sprite->createComponent<TextureComponent>()->initialize(textureRaw, _program);
-	sprite->createComponent<TransformComponent>()->initialize(_program);
+	sprite->createComponent<ObjectComponent>()->initialize(200, 100, 100, 100, program);
+	sprite->createComponent<TextureComponent>()->initialize(textureRaw, program);
+//	sprite->createComponent<TransformComponent>()->initialize(program);
 
 	animatedSprite = world.createEntity();
-	animatedSprite->createComponent<ObjectComponent>()->initialize(200, 400, 100, 100, _program);
+	animatedSprite->createComponent<ObjectComponent>()->initialize(200, 400, 400, 100, program);
+	animatedSprite->createComponent<TextureComponent>()->initialize(textureRawTest, program);
 	//animatedSprite->createComponent<AnimatedTextureComponent>()->initialize(textureAnim, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, _programAnimated);
 	//animatedSprite->createComponent<TransformComponent>()->initialize(_programAnimated);
 }
@@ -52,14 +50,13 @@ void update(int value) {
 
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	Matrix2D transform;
-	transform.translate(1, 0);
-	sprite->getComponent<TransformComponent>()->setTransform(transform);
+	//Matrix2D transform;
+	//transform.translate(1, 0);
+	//sprite->getComponent<TransformComponent>()->setTransform(transform);
 	//animatedSprite->getComponent<TransformComponent>()->setTransform(transform);
 
-	objectSystem->update();
-	textureSystem->update();
 	//animatedTextureSystem->update();
 	//transformSystem->update();
+	drawSystem->update();
 	glutSwapBuffers(); // Flush drawing commands
 }

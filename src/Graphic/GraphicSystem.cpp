@@ -1,6 +1,6 @@
 #include "GraphicSystem.h"
 
-void ObjectSystem::draw(std::shared_ptr<ObjectComponent> object) {
+void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 	glUseProgram(object->_program);
 
 	//bind buffer and handle vertex shader
@@ -8,20 +8,10 @@ void ObjectSystem::draw(std::shared_ptr<ObjectComponent> object) {
 	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
 	glVertexAttribPointer(object->_aPositionLocation, POSITION_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(object->_aPositionLocation);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
-void ObjectSystem::update() {
-	for (auto entity : getEntities()) {
-		auto object = entity->getComponent<ObjectComponent>();
-		if (!object)
-			continue;
-		draw(object);
-	}
-}
-
-void TextureSystem::draw(std::shared_ptr<TextureComponent> object) {
-	glUseProgram(object->_program);
+void textureUpdate(std::shared_ptr<TextureComponent> object) {
 	//bind buffer and handle texture shader
 	glBindBuffer(GL_ARRAY_BUFFER, object->_buffer.getVBOObject());
 	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
@@ -36,19 +26,7 @@ void TextureSystem::draw(std::shared_ptr<TextureComponent> object) {
 	glUniform1i(object->_uTextureUnitLocation, 0);
 }
 
-void TextureSystem::update() {
-	for (auto entity : getEntities()) {
-		auto object = entity->getComponent<TextureComponent>();
-		if (!object) {
-			continue;
-		}
-			
-		draw(object);
-	}
-}
-
-void AnimatedTextureSystem::draw(std::shared_ptr<AnimatedTextureComponent> object) {
-	glUseProgram(object->_program);
+void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
 	//bind buffer and handle texture shader
 	glBindBuffer(GL_ARRAY_BUFFER, object->_buffer.getVBOObject());
 	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
@@ -62,42 +40,38 @@ void AnimatedTextureSystem::draw(std::shared_ptr<AnimatedTextureComponent> objec
 	glUniform1i(object->_uTextureUnitLocation, 0);
 
 	glUniform1f(object->_uAdjustXLocation, object->_widthTile * object->_tilesOrder[(object->_currentAnimateTile)]);
-
-}
-
-void AnimatedTextureSystem::update() {
-	for (auto entity : getEntities()) {
-		auto object = entity->getComponent<AnimatedTextureComponent>();
-		if (!object)
-			continue;
-		draw(object);
-		if (object->_currentAnimateTile < object->_tilesOrder.size()) {
-			if (object->_currentLatency < object->_tilesLatency[object->_currentAnimateTile])
-				object->_currentLatency++;
-			else {
-				object->_currentLatency = 0;
-				object->_currentAnimateTile++;
-				if (object->_currentAnimateTile == object->_tilesOrder.size())
-					object->_currentAnimateTile = 0;
-			}
+	if (object->_currentAnimateTile < object->_tilesOrder.size()) {
+		if (object->_currentLatency < object->_tilesLatency[object->_currentAnimateTile])
+			object->_currentLatency++;
+		else {
+			object->_currentLatency = 0;
+			object->_currentAnimateTile++;
+			if (object->_currentAnimateTile == object->_tilesOrder.size())
+				object->_currentAnimateTile = 0;
 		}
 	}
 }
 
-void TransformSystem::draw(std::shared_ptr<TransformComponent> object) {
-	glUseProgram(object->_program);
+void transformUpdate(std::shared_ptr<TransformComponent> object) {
 	glUniformMatrix4fv(object->_uMatrixLocation, 1, false, object->_result.getData());
 }
 
-void TransformSystem::update() {
+void DrawSystem::update() {
 	for (auto entity : getEntities()) {
-		auto transform = entity->getComponent<TransformComponent>();
-		if (!transform)
-			continue;
-		transform->_result = transform->_result * transform->_transform;
-		draw(transform);
-		transform->_transform.print();
-		transform->_transform.identity();
-		transform->_transform.print();
+		auto vertexObject = entity->getComponent<ObjectComponent>();
+		assert(vertexObject);
+		vertexUpdate(vertexObject);
+
+		auto textureObject = entity->getComponent<TextureComponent>();
+		if (textureObject)
+			textureUpdate(textureObject);
+
+		auto animatedTextureObject = entity->getComponent<AnimatedTextureComponent>();
+		if (animatedTextureObject)
+			animatedTextureUpdate(animatedTextureObject);
+		
+		auto transformTextureObject = entity->getComponent<TransformComponent>();
+		if (transformTextureObject)
+			transformUpdate(transformTextureObject);
 	}
-};
+}
