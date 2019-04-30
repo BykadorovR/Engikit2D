@@ -62,6 +62,9 @@ public:
 		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
 		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
+		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
+		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
+
 		_textureID = texture.getAtlas()->getAtlasID();
 
 	}
@@ -73,9 +76,15 @@ public:
 	GLuint _textureID;
 	GLint _aTextureCoordinatesLocation;
 	GLint _uTextureUnitLocation;
+	GLint _uAdjustXLocation;
+	GLint _uAdjustYLocation;
+
 	//
 	std::string _aTextureCoordinatesString = "a_TextureCoordinates";
 	std::string _uTextureUnitString = "u_TextureUnit";
+	std::string _uAdjustX = "u_AdjustX";
+	std::string _uAdjustY = "u_AdjustY";
+
 };
 
 class AnimatedTextureComponent : public Component {

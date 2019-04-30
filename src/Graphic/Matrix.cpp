@@ -24,7 +24,7 @@ void Matrix2D::identity() {
 				_matrix[j + _size * i] = 1;
 		}
 }
-void Matrix2D::translate(int dx, int dy) {
+void Matrix2D::translate(float dx, float dy) {
 	if (dx) {
 		float dxN = (float)(dx) / (float)resolution.first;
 		_matrix[3 + _size * 0] = dxN;

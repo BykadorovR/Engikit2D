@@ -6,7 +6,7 @@ public:
 	Matrix2D();
 
 	void identity();
-	void translate(int dx, int dy);
+	void translate(float dx, float dy);
 	void rotate(float angle);
 	void scale(int scaleX, int scaleY);
 	void print();

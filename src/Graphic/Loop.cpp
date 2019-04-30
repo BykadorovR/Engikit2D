@@ -2,45 +2,77 @@
 #include "Buffer.h"
 #include "PlatformGL.h"
 #include "Texture.h"
-#include "Sprite.h"
 #include "Entity.h"
 #include "World.h"
 #include "GraphicSystem.h"
+
+/*
+TODO: 
+collision component
+move GraphicComponent impl to cpp file
+add rotate and scale functions
+create windows with buttons
+*/
+
 
 void on_surface_created() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-Object* hockey;
-AnimatedSprite* anim;
+World world;
+
+shared_ptr<Entity> createSprite(int x, int y, int width, int height, Texture texture) {
+	shared_ptr<Entity> sprite;
+	Shader shader;
+	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	sprite = world.createEntity();
+	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
+	sprite->createComponent<TextureComponent>()->initialize(texture, program);
+	sprite->createComponent<TransformComponent>()->initialize(program);
+	return sprite;
+}
+
+shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height, 
+										std::vector<int> tiles, std::vector<int> latency, Texture texture) {
+	shared_ptr<Entity> sprite;
+	Shader shader;
+	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	sprite = world.createEntity();
+	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
+	sprite->createComponent<TransformComponent>()->initialize(program);
+	sprite->createComponent<AnimatedTextureComponent>()->initialize(texture, tiles, latency, program);
+	return sprite;
+}
+
+int transform(float shiftX, float shiftY, shared_ptr<Entity> object) {
+	Matrix2D transform;
+	transform.translate(shiftX, shiftY);
+	auto component = object->getComponent<TransformComponent>();
+	if (component) {
+		component->setTransform(transform);
+		return 0;
+	}
+	return -1;
+}
+
+
 
 shared_ptr<DrawSystem> drawSystem;
-shared_ptr<Entity> sprite;
-shared_ptr<Entity> animatedSprite;
+shared_ptr<Entity> animatedSprite, staticSprite;
+
+
 void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
 	Texture textureRaw("../data/textures/air_hockey_surface.png", 0, 0, atlas);
 	Texture textureAnim("../data/textures/firstmain_idle.png", 0, 1024, 1, 3, atlas);
-	Texture textureRawTest("../data/textures/firstmain_idle.png", 0, 2048, atlas);
 
 	atlas->loadAtlas();
-	Shader shader, shaderAnim;
-	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-	auto programAnim = shaderAnim.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 
-	World world;
+	staticSprite = createSprite(100, 0, 100, 100, textureRaw);
+	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
+
 	drawSystem = world.createSystem<DrawSystem>();
 
-	sprite = world.createEntity();
-	sprite->createComponent<ObjectComponent>()->initialize(200, 100, 100, 100, program);
-	sprite->createComponent<TextureComponent>()->initialize(textureRaw, program);
-//	sprite->createComponent<TransformComponent>()->initialize(program);
-
-	animatedSprite = world.createEntity();
-	animatedSprite->createComponent<ObjectComponent>()->initialize(200, 400, 400, 100, program);
-	animatedSprite->createComponent<TextureComponent>()->initialize(textureRawTest, program);
-	//animatedSprite->createComponent<AnimatedTextureComponent>()->initialize(textureAnim, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, _programAnimated);
-	//animatedSprite->createComponent<TransformComponent>()->initialize(_programAnimated);
 }
 
 void update(int value) {
@@ -50,13 +82,10 @@ void update(int value) {
 
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//Matrix2D transform;
-	//transform.translate(1, 0);
-	//sprite->getComponent<TransformComponent>()->setTransform(transform);
-	//animatedSprite->getComponent<TransformComponent>()->setTransform(transform);
+	
+	transform(1, 0, staticSprite);
+	transform(0.5, 0.1, animatedSprite);
 
-	//animatedTextureSystem->update();
-	//transformSystem->update();
-	drawSystem->update();
+	//drawSystem->update();
 	glutSwapBuffers(); // Flush drawing commands
 }
