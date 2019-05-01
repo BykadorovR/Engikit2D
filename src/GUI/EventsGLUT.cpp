@@ -1,6 +1,6 @@
 #include "Events.h"
 
-void MouseEvent::registerComponent(std::shared_ptr<IMouseEvent> listener) {
+void MouseEvent::registerComponent(IMouseEvent* listener) {
 	_listeners.push_back(listener);
 }
 

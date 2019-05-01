@@ -7,6 +7,18 @@
 //Move implementation to respective cpp (Bridge pattern) (defines or separate files?)
 //MouseEvent class should be singleton
 
+
+//These methods are needed cause we should send callback to glut but we can't use classes' methods
+void mouseCursorPassive(int x, int y) {
+	MouseEvent::instance().mouseCursorPassive(x, y);
+}
+
+void mousePress(int button, int state, int x, int y) {
+	MouseEvent::instance().mousePress(button, state, x, y);
+}
+
+
+//Interface that should be inherited by classes that want handle mouse events
 class IMouseEvent {
 public:
 	virtual void mouseClickDownLeft(int x, int y) = 0;
@@ -15,18 +27,19 @@ public:
 };
 
 
+//Singleton
 class MouseEvent {
 private:
 	MouseEvent();
 
-	std::vector<std::shared_ptr<IMouseEvent> > _listeners;
+	std::vector<IMouseEvent* > _listeners;
 public:
-	static MouseEvent& initialize() {
-		static MouseEvent instance;
-		return instance;
+	static MouseEvent& instance() {
+		static MouseEvent object;
+		return object;
 	}
 
-	void registerComponent(std::shared_ptr<IMouseEvent> listener);
+	void registerComponent(IMouseEvent* listener);
 
 	void mouseCursorPassive(int x, int y);
 

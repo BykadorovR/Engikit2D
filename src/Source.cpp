@@ -26,9 +26,8 @@ int main(int argc, char **argv) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glutDisplayFunc(&on_draw_frame);
-	auto mouseEvent = MouseEvent::initialize();
-	glutPassiveMotionFunc(&mouseEvent.mouseCursorPassive);
-	glutMouseFunc(&mouseEvent.mousePress);
+	glutPassiveMotionFunc(&mouseCursorPassive);
+	glutMouseFunc(&mousePress);
 	glutTimerFunc(33, update, 0);
 	on_surface_created();
 	on_surface_changed();
