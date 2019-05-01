@@ -1,5 +1,13 @@
 #include "Events.h"
 
+void mouseCursorPassive(int x, int y) {
+	MouseEvent::instance().mouseCursorPassive(x, y);
+}
+
+void mousePress(int button, int state, int x, int y) {
+	MouseEvent::instance().mousePress(button, state, x, y);
+}
+
 void MouseEvent::registerComponent(IMouseEvent* listener) {
 	_listeners.push_back(listener);
 }
