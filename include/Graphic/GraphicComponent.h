@@ -143,8 +143,9 @@ public:
 
 class TransformComponent : public Component {
 public:
-	void initialize(GLuint program) {
+	void initialize(float speed, GLuint program) {
 		_program = program;
+		_speed = speed;
 		_result.identity();
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
 	}
@@ -153,6 +154,8 @@ public:
 		_transform = transform;
 	}
 	
+	float _speed;
+
 	Matrix2D _result;
 	Matrix2D _transform;
 	GLuint _program;

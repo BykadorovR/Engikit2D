@@ -1,22 +1,11 @@
 #include "Events.h"
 
-void mouseCursorPassive(int x, int y) {
-	MouseEvent::instance().mouseCursorPassive(x, y);
-}
-
 void mousePress(int button, int state, int x, int y) {
 	MouseEvent::instance().mousePress(button, state, x, y);
 }
 
 void MouseEvent::registerComponent(IMouseEvent* listener) {
 	_listeners.push_back(listener);
-}
-
-void MouseEvent::mouseCursorPassive(int x, int y) {
-	std::cout << "Passive " << x << " " << y << std::endl;
-	for (auto listener : _listeners) {
-		listener->mouseMove(x, y);
-	}
 }
 
 void MouseEvent::mousePress(int button, int state, int x, int y) {
