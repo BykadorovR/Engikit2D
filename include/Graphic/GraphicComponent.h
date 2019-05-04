@@ -31,7 +31,7 @@ public:
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
 	//
-	int _sceneX, _sceneY;
+	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;
 	//
 	Buffer _buffer;
@@ -143,9 +143,8 @@ public:
 
 class TransformComponent : public Component {
 public:
-	void initialize(float speed, GLuint program) {
+	void initialize(GLuint program) {
 		_program = program;
-		_speed = speed;
 		_result.identity();
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
 	}
@@ -154,7 +153,7 @@ public:
 		_transform = transform;
 	}
 	
-	float _speed;
+	float _speed = 0;
 
 	Matrix2D _result;
 	Matrix2D _transform;

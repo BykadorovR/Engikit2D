@@ -30,18 +30,18 @@ shared_ptr<Entity> createSprite(int x, int y, int width, int height, Texture tex
 	sprite = world.createEntity();
 	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
 	sprite->createComponent<TextureComponent>()->initialize(texture, program);
-	sprite->createComponent<TransformComponent>()->initialize(0, program);
+	sprite->createComponent<TransformComponent>()->initialize(program);
 	return sprite;
 }
 
-shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height, float speed,
+shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height,
 										std::vector<int> tiles, std::vector<int> latency, Texture texture) {
 	shared_ptr<Entity> sprite;
 	Shader shader;
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	sprite = world.createEntity();
 	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
-	sprite->createComponent<TransformComponent>()->initialize(speed, program);
+	sprite->createComponent<TransformComponent>()->initialize(program);
 	sprite->createComponent<AnimatedTextureComponent>()->initialize(texture, tiles, latency, program);
 	return sprite;
 }
@@ -60,8 +60,8 @@ int transform(float shiftX, float shiftY, shared_ptr<Entity> object) {
 
 
 shared_ptr<DrawSystem> drawSystem;
-shared_ptr<UISystem> userInteractionSystem;
-shared_ptr<MoveSystem> moveSystem;
+shared_ptr<ClickInsideSystem> clickInsideSystem;
+shared_ptr<PointMoveSystem> pointMoveSystem;
 shared_ptr<Entity> animatedSprite, staticSprite;
 
 
@@ -73,12 +73,15 @@ void on_surface_changed() {
 	atlas->loadAtlas();
 
 	staticSprite = createSprite(100, 0, 100, 100, textureRaw);
-	animatedSprite = createAnimatedSprite(100, 200, 200, 200, 0.001, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
-	animatedSprite->createComponent<UserInteractionComponent>()->initialize();
+	staticSprite->createComponent<ClickInsideComponent>()->initialize();
+
+	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
+	animatedSprite->getComponent<TransformComponent>()->_speed = 1;
+	animatedSprite->createComponent<PointMoveComponent>()->initialize();
 
 	drawSystem = world.createSystem<DrawSystem>();
-	moveSystem = world.createSystem<MoveSystem>();
-	userInteractionSystem = world.createSystem<UISystem>();
+	pointMoveSystem = world.createSystem<PointMoveSystem>();
+	clickInsideSystem = world.createSystem<ClickInsideSystem>();
 
 }
 
@@ -90,11 +93,8 @@ void update(int value) {
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	transform(1, 0, staticSprite);
-	
-
-	//userInteractionSystem->update();
-	moveSystem->update();
+	clickInsideSystem->update();
+	pointMoveSystem->update();
 	drawSystem->update();
 	glutSwapBuffers(); // Flush drawing commands
 }
