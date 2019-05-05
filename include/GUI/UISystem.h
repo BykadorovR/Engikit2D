@@ -5,7 +5,8 @@
 
 
 class ClickInsideSystem : public System {
-	void process(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickComponent);
+	void process(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickComponent, 
+				 std::shared_ptr<GroupEntitiesComponent> groupComponent);
 public:
 	// Called every game update
 	void update();

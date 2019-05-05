@@ -8,9 +8,12 @@ class PointMoveComponent : public Component, IMouseEvent {
 public:
 	std::tuple<int, int> _leftClick;
 	std::tuple<int, int> _rightClick;
+	float _speed;
+	bool _move = false;
 
-	void initialize() {
+	void initialize(float speed) {
 		MouseEvent::instance().registerComponent(this);
+		_speed = speed;
 	}
 
 	void mouseClickDownLeft(int x, int y) {
@@ -44,5 +47,16 @@ public:
 		std::get<0>(_rightClick) = x;
 		std::get<1>(_rightClick) = y;
 		_rightClickFlag = true;
+	}
+};
+
+class GroupEntitiesComponent : public Component {
+public:
+	uint32_t _groupNumber;
+	std::string _groupName;
+
+	void initialize(uint32_t groupNumber, std::string groupName) {
+		_groupNumber = groupNumber;
+		_groupName = groupName;
 	}
 };

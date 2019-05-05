@@ -153,8 +153,6 @@ public:
 		_transform = transform;
 	}
 	
-	float _speed = 0;
-
 	Matrix2D _result;
 	Matrix2D _transform;
 	GLuint _program;

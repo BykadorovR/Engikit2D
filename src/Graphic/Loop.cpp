@@ -74,10 +74,12 @@ void on_surface_changed() {
 
 	staticSprite = createSprite(100, 0, 100, 100, textureRaw);
 	staticSprite->createComponent<ClickInsideComponent>()->initialize();
+	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
 
 	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
-	animatedSprite->getComponent<TransformComponent>()->_speed = 1;
-	animatedSprite->createComponent<PointMoveComponent>()->initialize();
+	animatedSprite->createComponent<PointMoveComponent>()->initialize(2);
+	animatedSprite->createComponent<ClickInsideComponent>()->initialize();
+	animatedSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "GG");
 
 	drawSystem = world.createSystem<DrawSystem>();
 	pointMoveSystem = world.createSystem<PointMoveSystem>();

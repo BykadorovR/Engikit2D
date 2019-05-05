@@ -1,6 +1,7 @@
 #include "UISystem.h"
 
-void ClickInsideSystem::process(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent) {
+void ClickInsideSystem::process(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
+	std::shared_ptr<GroupEntitiesComponent> groupComponent) {
 	int clickX = std::get<0>(clickInsideComponent->_leftClick);
 	int clickY = std::get<1>(clickInsideComponent->_leftClick);
 	if (!clickX || !clickY)
@@ -9,10 +10,13 @@ void ClickInsideSystem::process(std::shared_ptr<ObjectComponent> objectComponent
 		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight &&
 		clickInsideComponent->_leftClickFlag) {
 		//TODO: add group component
-		std::cout << "Clicked inside" << std::endl;
+		std::cout << "Clicked inside: group " << groupComponent->_groupNumber << " " << groupComponent->_groupName << std::endl;
 		clickInsideComponent->_leftClickFlag = false;
 	}
-		
+
+	//We should handle click inside action only once per click, so reset coords of click after first handle
+	clickInsideComponent->_leftClick = { 0, 0 };
+	clickInsideComponent->_rightClick = { 0, 0 };
 }
 
 // Called every game update
@@ -20,8 +24,9 @@ void ClickInsideSystem::update() {
 	for (auto entity : getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
 		auto clickInsideComponent = entity->getComponent<ClickInsideComponent>();
-		if (vertexObject && clickInsideComponent)
-			process(vertexObject, clickInsideComponent);
+		auto groupComponent = entity->getComponent<GroupEntitiesComponent>();
+		if (vertexObject && clickInsideComponent && groupComponent)
+			process(vertexObject, clickInsideComponent, groupComponent);
 	}
 }
 
@@ -29,12 +34,16 @@ void ClickInsideSystem::update() {
 
 void PointMoveSystem::process(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<PointMoveComponent> pointMoveComponent,
 						 std::shared_ptr<TransformComponent> transformComponent) {
-	float speed = transformComponent->_speed;
+	float speed = pointMoveComponent->_speed;
 	int clickX = std::get<0>(pointMoveComponent->_leftClick);
 	int clickY = std::get<1>(pointMoveComponent->_leftClick);
 	if (!clickX || !clickY)
 		return;
+	if (pointMoveComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
+		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight)
+		return;
 
+	pointMoveComponent->_move = true;
 	int objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
 	int objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
 	float angle = atan2(clickY - objectY, clickX - objectX);
@@ -47,6 +56,9 @@ void PointMoveSystem::process(std::shared_ptr<ObjectComponent> objectComponent, 
 
 		objectComponent->_sceneX += stepX;
 		objectComponent->_sceneY += stepY;
+	}
+	else {
+		pointMoveComponent->_move = false;
 	}
 }
 
