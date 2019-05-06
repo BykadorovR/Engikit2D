@@ -57,10 +57,16 @@ void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
 	}
 }
 
-void transformUpdate(std::shared_ptr<TransformComponent> object) {
-	object->_result = object->_result * object->_transform;
-	glUniformMatrix4fv(object->_uMatrixLocation, 1, false, object->_result.getData());
-	object->_transform.identity();
+void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TransformComponent> transform) {
+	float adjustX = std::get<0>(transform->_coords);
+	float adjustY = std::get<1>(transform->_coords);
+	Matrix2D matrix;
+	matrix.translate(adjustX, adjustY);
+	transform->_result = transform->_result * matrix;
+	glUniformMatrix4fv(transform->_uMatrixLocation, 1, false, transform->_result.getData());
+	object->_sceneX += adjustX;
+	object->_sceneY += adjustY;
+	transform->_coords = { 0, 0 };
 }
 
 void DrawSystem::update() {
@@ -71,7 +77,7 @@ void DrawSystem::update() {
 
 		auto transformTextureObject = entity->getComponent<TransformComponent>();
 		if (transformTextureObject)
-			transformUpdate(transformTextureObject);
+			transformUpdate(vertexObject, transformTextureObject);
 
 		auto textureObject = entity->getComponent<TextureComponent>();
 		if (textureObject)

@@ -17,13 +17,10 @@ public:
 	}
 
 	void mouseClickDownLeft(int x, int y) {
-		std::get<0>(_leftClick) = x;
-		std::get<1>(_leftClick) = y;
-
+		_leftClick = { x, y };
 	}
 	void mouseClickDownRight(int x, int y) {
-		std::get<0>(_rightClick) = x;
-		std::get<1>(_rightClick) = y;
+		_rightClick = { x, y };
 	}
 };
 
@@ -39,13 +36,11 @@ public:
 	}
 
 	void mouseClickDownLeft(int x, int y) {
-		std::get<0>(_leftClick) = x;
-		std::get<1>(_leftClick) = y;
+		_leftClick = { x, y };
 		_leftClickFlag = true;
 	}
 	void mouseClickDownRight(int x, int y) {
-		std::get<0>(_rightClick) = x;
-		std::get<1>(_rightClick) = y;
+		_rightClick = { x, y };
 		_rightClickFlag = true;
 	}
 };
@@ -58,5 +53,24 @@ public:
 	void initialize(uint32_t groupNumber, std::string groupName) {
 		_groupNumber = groupNumber;
 		_groupName = groupName;
+	}
+};
+
+class ClickToMoveComponent : public Component, IMouseEvent {
+public:
+	std::tuple<int, int> _currentClick;
+	std::tuple<int, int> _previousClick;
+	bool _clickFlag = false;
+
+	void initialize() {
+		MouseEvent::instance().registerComponent(this);
+	}
+
+	void mouseClickDownLeft(int x, int y) {
+		_currentClick = { x, y };
+		_clickFlag = true;
+	}
+
+	void mouseClickDownRight(int x, int y) {
 	}
 };

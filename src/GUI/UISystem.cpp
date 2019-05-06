@@ -50,12 +50,7 @@ void PointMoveSystem::process(std::shared_ptr<ObjectComponent> objectComponent, 
 	float stepX = cos(angle) * speed;
 	float stepY = sin(angle) * speed;
 	if (abs(objectX - clickX) > speed || abs(objectY - clickY) > speed) {
-		Matrix2D transform;
-		transform.translate(stepX, stepY);
-		transformComponent->setTransform(transform);
-
-		objectComponent->_sceneX += stepX;
-		objectComponent->_sceneY += stepY;
+		transformComponent->setTransform({stepX, stepY});
 	}
 	else {
 		pointMoveComponent->_move = false;
@@ -69,5 +64,43 @@ void PointMoveSystem::update() {
 		auto pointMoveComponent = entity->getComponent<PointMoveComponent>();
 		if (vertexObject && transformComponent && pointMoveComponent)
 			process(vertexObject, pointMoveComponent, transformComponent);
+	}
+}
+
+
+void ClickToMoveSystem::process(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickToMoveComponent> clickToMoveComponent,
+								std::shared_ptr<TransformComponent> transformComponent) {
+	int currentClickX = std::get<0>(clickToMoveComponent->_currentClick);
+	int currentClickY = std::get<1>(clickToMoveComponent->_currentClick);
+
+	if (clickToMoveComponent->_clickFlag && currentClickX > objectComponent->_sceneX  && currentClickY > objectComponent->_sceneY &&
+		currentClickX < objectComponent->_sceneX + objectComponent->_objectWidth && currentClickY < objectComponent->_sceneY + objectComponent->_objectHeight) {
+		
+		clickToMoveComponent->_previousClick = clickToMoveComponent->_currentClick;
+		clickToMoveComponent->_currentClick = { 0, 0 };
+		clickToMoveComponent->_clickFlag = false;
+		return;
+	}
+
+	int previousClickX = std::get<0>(clickToMoveComponent->_previousClick);
+	int previousClickY = std::get<1>(clickToMoveComponent->_previousClick);
+
+	if (clickToMoveComponent->_clickFlag && previousClickX && previousClickY) {
+		//We should point ADJUSTMENT not coords
+		transformComponent->setTransform({currentClickX - (objectComponent->_sceneX + objectComponent->_objectWidth / 2), 
+										  currentClickY - (objectComponent->_sceneY + objectComponent->_objectHeight / 2) });
+		clickToMoveComponent->_previousClick = { 0, 0 };
+	}
+
+	clickToMoveComponent->_currentClick = { 0, 0 };
+	clickToMoveComponent->_clickFlag = false;
+}
+void ClickToMoveSystem::update() {
+	for (auto entity : getEntities()) {
+		auto vertexObject = entity->getComponent<ObjectComponent>();
+		auto transformComponent = entity->getComponent<TransformComponent>();
+		auto clickToMoveComponent = entity->getComponent<ClickToMoveComponent>();
+		if (vertexObject && transformComponent && clickToMoveComponent)
+			process(vertexObject, clickToMoveComponent, transformComponent);
 	}
 }

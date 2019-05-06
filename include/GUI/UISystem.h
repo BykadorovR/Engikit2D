@@ -19,3 +19,10 @@ class PointMoveSystem : public System {
 public:
 	void update();
 };
+
+class ClickToMoveSystem : public System {
+	void process(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickToMoveComponent> clickToMoveComponent,
+				 std::shared_ptr<TransformComponent> transformComponent);
+public:
+	void update();
+};

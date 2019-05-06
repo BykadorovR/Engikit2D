@@ -149,12 +149,12 @@ public:
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
 	}
 
-	void setTransform(Matrix2D transform) {
-		_transform = transform;
+	void setTransform(std::tuple<float, float> coords) {
+		_coords = coords;
 	}
 	
 	Matrix2D _result;
-	Matrix2D _transform;
+	std::tuple<float, float> _coords;
 	GLuint _program;
 	//
 	GLint _uMatrixLocation;
