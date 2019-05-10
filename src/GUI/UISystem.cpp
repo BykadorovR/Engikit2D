@@ -1,10 +1,10 @@
 #include "UISystem.h"
 
-int MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
+ClickCount MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
 	std::shared_ptr<TransformComponent> transformComponent) {
 	int currentClickX = std::get<0>(clickClickMoveComponent->_currentClick);
 	int currentClickY = std::get<1>(clickClickMoveComponent->_currentClick);
-	int clickedInside = 0;
+	ClickCount clickedInside = ClickCount::NO;
 
 	//first click
 	if (clickClickMoveComponent->_clickFlag && currentClickX > objectComponent->_sceneX  && currentClickY > objectComponent->_sceneY &&
@@ -13,7 +13,7 @@ int MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectCo
 		clickClickMoveComponent->_previousClick = clickClickMoveComponent->_currentClick;
 		clickClickMoveComponent->_currentClick = { 0, 0 };
 		clickClickMoveComponent->_clickFlag = false;
-		clickedInside = 1;
+		clickedInside = ClickCount::FIRST;
 		return clickedInside;
 	}
 
@@ -27,7 +27,7 @@ int MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectCo
 		*/
 		clickClickMoveComponent->_previousClick = { 0, 0 };
 		if (clickClickMoveComponent->_moveToByClickSecond == false)
-			clickedInside = 2;
+			clickedInside = ClickCount::SECOND;
 	}
 
 	clickClickMoveComponent->_currentClick = { 0, 0 };
@@ -61,11 +61,11 @@ void MouseSystem::processClickMove(std::shared_ptr<ObjectComponent> objectCompon
 	}
 }
 
-int MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
+ClickCount MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
 	std::shared_ptr<GroupEntitiesComponent> groupComponent) {
 	int clickX = std::get<0>(clickInsideComponent->_leftClick);
 	int clickY = std::get<1>(clickInsideComponent->_leftClick);
-	int clickedInside = 0;
+	ClickCount clickedInside = ClickCount::NO;
 
 	if (!clickX || !clickY)
 		return clickedInside;
@@ -76,7 +76,7 @@ int MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> objectCompo
 		//TODO: add group component
 		std::cout << "Clicked inside: group " << groupComponent->_groupNumber << " " << groupComponent->_groupName << std::endl;
 		clickInsideComponent->_leftClickFlag = false;
-		clickedInside = 1;
+		clickedInside = ClickCount::FIRST;
 	}
 
 	//We should handle click inside action only once per click, so reset coords of click after first handle
@@ -90,76 +90,63 @@ int MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> objectCompo
 //THINK ABOUT SEVERAL CLICKTOMOVE ENTITIES
 //DO MORE APROPRIATE LOGIC FOR HANDLING mainHeroDisableMoving (NOW ONLY 1 is disallowed but it's not correct so GG moves to second click)
 void MouseSystem::update() {
-	std::shared_ptr<Entity> mainHero = nullptr;
-	int mainHeroDisableMoving = 0;
+	std::vector<std::shared_ptr<Entity> > playerControlledEntities;
+	int playerControlledEntitiesDisableMoving = 0;
 
 	//first of all we should find GG
 	for (auto entity : getEntities()) {
-		auto groupComponent = entity->getComponent<ClickMoveComponent>();
+		auto clickMoveComponent = entity->getComponent<ClickMoveComponent>();
 		//Can use existence of ClickMoveComponent also
-		if (groupComponent)
-			mainHero = entity;
+		if (clickMoveComponent)
+			playerControlledEntities.push_back(entity);
 	}
 
+	//handle all components except ClickMoveComponent
 	for (auto entity : getEntities()) {
-		if (mainHero && entity == mainHero)
-			continue;
-
 		auto objectComponent = entity->getComponent<ObjectComponent>();
-		auto transformComponent = entity->getComponent<TransformComponent>();
 		auto clickInsideComponent = entity->getComponent<ClickInsideComponent>();
-		auto clickClickMoveComponent = entity->getComponent<ClickClickMoveComponent>();
-		auto clickMoveComponent = entity->getComponent<ClickMoveComponent>();
 		auto groupComponent = entity->getComponent<GroupEntitiesComponent>();
 		auto interactionComponent = entity->getComponent<InteractionAddToEntityComponent>();
 
-		if (objectComponent && clickInsideComponent && groupComponent) {
-			
+
+		if (objectComponent && clickInsideComponent && groupComponent) {			
 			int clickedInside = processClickInside(objectComponent, clickInsideComponent, groupComponent);
 			if (clickInsideComponent->_moveToByClick == false)
-				mainHeroDisableMoving = clickedInside;
+				playerControlledEntitiesDisableMoving += clickedInside;
 			if (interactionComponent && clickedInside)
 				interactionComponent->_interactReady = true;
 		}
 
+		auto transformComponent = entity->getComponent<TransformComponent>();
+		auto clickClickMoveComponent = entity->getComponent<ClickClickMoveComponent>();
+
 		if (objectComponent && clickClickMoveComponent && transformComponent) {
 			int clickedInside = processClickClickMove(objectComponent, clickClickMoveComponent, transformComponent);
-			if (clickClickMoveComponent->_moveToByClickFirst == false && clickedInside == 1)
-				mainHeroDisableMoving = clickedInside;
-			if (clickClickMoveComponent->_moveToByClickSecond == false && clickedInside == 2)
-				mainHeroDisableMoving = clickedInside;
 
-			if (interactionComponent && clickedInside == 2)
+			if (clickClickMoveComponent->_moveToByClickFirst == false && clickedInside == ClickCount::FIRST)
+				playerControlledEntitiesDisableMoving += clickedInside;
+			if (clickClickMoveComponent->_moveToByClickSecond == false && clickedInside == ClickCount::SECOND)
+				playerControlledEntitiesDisableMoving += clickedInside;
+
+			if (interactionComponent && clickedInside == ClickCount::SECOND)
 				interactionComponent->_interactReady = true;
-			if (interactionComponent && clickedInside == 1)
+			if (interactionComponent && clickedInside == ClickCount::FIRST)
 				interactionComponent->_interactReady = false;
 		}
 	}
 
-	//after all entities processed we can understand either it's allowed to move main hero or not
-	if (mainHero && mainHeroDisableMoving != 1) {
-		auto objectComponent = mainHero->getComponent<ObjectComponent>();
-		auto transformComponent = mainHero->getComponent<TransformComponent>();
-		auto clickMoveComponent = mainHero->getComponent<ClickMoveComponent>();
-		auto groupComponent = mainHero->getComponent<GroupEntitiesComponent>();
-		auto clickInsideComponent = mainHero->getComponent<ClickInsideComponent>();
-		auto interactionComponent = mainHero->getComponent<InteractionAddToEntityComponent>();
+	for (auto entity : playerControlledEntities) {
+		auto objectComponent = entity->getComponent<ObjectComponent>();
+		auto clickMoveComponent = entity->getComponent<ClickMoveComponent>();
+		auto transformComponent = entity->getComponent<TransformComponent>();
 
-		if (objectComponent && clickMoveComponent && transformComponent)
+		if (objectComponent && clickMoveComponent && transformComponent && !playerControlledEntitiesDisableMoving)
 			processClickMove(objectComponent, clickMoveComponent, transformComponent);
-
-		if (objectComponent && clickInsideComponent && groupComponent) {
-			int clickedInside = processClickInside(objectComponent, clickInsideComponent, groupComponent);
-			if (interactionComponent && clickedInside)
-				interactionComponent->_interactReady = true;
-		}
-
-	}
-	else if (mainHero) {
-		auto clickMoveComponent = mainHero->getComponent<ClickMoveComponent>();
-		if (clickMoveComponent) {
-			clickMoveComponent->_leftClick = { 0, 0 };
-			clickMoveComponent->_rightClick = { 0, 0 };
+		else if (playerControlledEntitiesDisableMoving) {
+			if (clickMoveComponent) {
+				clickMoveComponent->_leftClick = { 0, 0 };
+				clickMoveComponent->_rightClick = { 0, 0 };
+			}
 		}
 	}
 }
@@ -185,12 +172,21 @@ void InteractionAddToEntitySystem::update() {
 	if (objectEntity && subjectEntity) {
 		auto interactionComponentSubject = subjectEntity->getComponent<InteractionAddToEntityComponent>();
 		auto interactionComponentObject = objectEntity->getComponent<InteractionAddToEntityComponent>();
-		objectEntity->addComponent(interactionComponentSubject->_componentToAdd);
+		std::shared_ptr<Component> addedComponent = interactionComponentSubject->_createFunctor();
+		objectEntity->addComponent(addedComponent);
 	}
 
+	//We should handle only if BOTH entities subject and object are ready for interaction
 	if (objectEntity) {
 		auto interactionComponentObject = objectEntity->getComponent<InteractionAddToEntityComponent>();
-		interactionComponentObject->_interactReady = false;
+		if (interactionComponentObject)
+			interactionComponentObject->_interactReady = false;
+	}
+
+	if (subjectEntity) {
+		auto interactionComponentSubject = subjectEntity->getComponent<InteractionAddToEntityComponent>();
+		if (interactionComponentSubject)
+			interactionComponentSubject->_interactReady = false;
 	}
 
 }

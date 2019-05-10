@@ -1,4 +1,5 @@
 #include "Events.h"
+#include <algorithm>
 
 void mousePress(int button, int state, int x, int y) {
 	MouseEvent::instance().mousePress(button, state, x, y);
@@ -6,6 +7,10 @@ void mousePress(int button, int state, int x, int y) {
 
 void MouseEvent::registerComponent(IMouseEvent* listener) {
 	_listeners.push_back(listener);
+}
+
+void MouseEvent::unregisterComponent(IMouseEvent* listener) {
+	_listeners.erase(std::remove(_listeners.begin(), _listeners.end(), listener), _listeners.end());
 }
 
 void MouseEvent::mousePress(int button, int state, int x, int y) {

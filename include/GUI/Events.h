@@ -30,6 +30,7 @@ public:
 	}
 
 	void registerComponent(IMouseEvent* listener);
+	void unregisterComponent(IMouseEvent* listener);
 
 	void mousePress(int button, int state, int x, int y);
 };

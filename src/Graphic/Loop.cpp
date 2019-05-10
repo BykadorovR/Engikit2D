@@ -74,15 +74,22 @@ void on_surface_changed() {
 	staticSprite = createSprite(100, 0, 100, 100, textureRaw);
 	staticSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
-	std::shared_ptr<ClickMoveComponent> addComp(new ClickMoveComponent);
-	addComp->initialize(2);
-	staticSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::SUBJECT, addComp);
+	
+	staticSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::SUBJECT);
+	staticSprite->getComponent<InteractionAddToEntityComponent>()->_createFunctor = []() -> std::shared_ptr<ClickMoveComponent> {
+		std::shared_ptr<ClickMoveComponent> clickComponent(new ClickMoveComponent());
+		int speed;
+		std::cout << "Enter the speed" << std::endl;
+		std::cin >> speed;
+		clickComponent->initialize(speed);
+		return clickComponent;
+	};
+
 
 	helpSprite = createSprite(300, 0, 100, 100, textureRaw);
-	helpSprite->createComponent<ClickInsideComponent>()->initialize(true);
+	helpSprite->createComponent<ClickInsideComponent>()->initialize(false);
 	helpSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
 	helpSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
-
 
 	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
 	//animatedSprite->createComponent<ClickMoveComponent>()->initialize(2);

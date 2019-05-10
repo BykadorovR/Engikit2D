@@ -1,6 +1,8 @@
 #pragma once
 #include "General.h"
 #include "Component.h"
+#include <typeinfo>
+#include <typeindex>
 
 class Entity {
 public:
@@ -19,6 +21,18 @@ public:
 	}
 
 	void addComponent(std::shared_ptr<Component> concreteComponent) {
+		const std::type_info& targetType = typeid(*concreteComponent.get());
+		int componentIndex = -1;
+		for (unsigned int i = 0; i < components.size(); i++) {
+			const std::type_info& existingType = typeid(*components[i].get());
+			if (std::type_index(targetType) == std::type_index(existingType)) {
+				componentIndex = i;
+			}
+		}
+		if (componentIndex >= 0) {
+			components.erase(components.begin() + componentIndex);
+		}
+
 		components.push_back(concreteComponent);
 	}
 
