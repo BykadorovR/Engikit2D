@@ -18,6 +18,11 @@ public:
 		return component;
 	}
 
+	void addComponent(std::shared_ptr<Component> concreteComponent) {
+		components.push_back(concreteComponent);
+	}
+
+
 	template <class ConcreteComponent>
 	shared_ptr<ConcreteComponent> getComponent() {
 		for (auto c : components) {

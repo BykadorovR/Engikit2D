@@ -4,7 +4,7 @@
 #include "Window.h"
 #include "Events.h"
 
-class PointMoveComponent : public Component, IMouseEvent {
+class ClickMoveComponent : public Component, IMouseEvent {
 public:
 	std::tuple<int, int> _leftClick;
 	std::tuple<int, int> _rightClick;
@@ -30,9 +30,11 @@ public:
 	std::tuple<int, int> _rightClick;
 	bool _rightClickFlag = false;
 	bool _leftClickFlag = false;
+	bool _moveToByClick = false;
 
-	void initialize() {
+	void initialize(bool moveToByClick = false) {
 		MouseEvent::instance().registerComponent(this);
+		_moveToByClick = moveToByClick;
 	}
 
 	void mouseClickDownLeft(int x, int y) {
@@ -56,14 +58,19 @@ public:
 	}
 };
 
-class ClickToMoveComponent : public Component, IMouseEvent {
+class ClickClickMoveComponent : public Component, IMouseEvent {
 public:
 	std::tuple<int, int> _currentClick;
 	std::tuple<int, int> _previousClick;
 	bool _clickFlag = false;
+	bool _moveToByClickFirst = false;
+	bool _moveToByClickSecond = false;
 
-	void initialize() {
+
+	void initialize(bool moveToByClickFirst = false, bool moveToByClickSecond = false) {
 		MouseEvent::instance().registerComponent(this);
+		_moveToByClickFirst = moveToByClickFirst;
+		_moveToByClickSecond = moveToByClickSecond;
 	}
 
 	void mouseClickDownLeft(int x, int y) {
@@ -73,4 +80,22 @@ public:
 
 	void mouseClickDownRight(int x, int y) {
 	}
+};
+
+enum InteractionMember {
+	OBJECT = 0,
+	SUBJECT = 1
+};
+
+class InteractionAddToEntityComponent : public Component {
+public:
+	InteractionMember _interactionMember;
+	bool _interactReady = false;
+	std::shared_ptr<Component> _componentToAdd = nullptr;
+
+	void initialize(InteractionMember interactionMember, std::shared_ptr<Component> componentToAdd = nullptr) {
+		_interactionMember = interactionMember;
+		_componentToAdd = componentToAdd;
+	}
+
 };

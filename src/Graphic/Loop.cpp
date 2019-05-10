@@ -58,10 +58,9 @@ int transform(float shiftX, float shiftY, shared_ptr<Entity> object) {
 
 
 shared_ptr<DrawSystem> drawSystem;
-shared_ptr<ClickInsideSystem> clickInsideSystem;
-shared_ptr<PointMoveSystem> pointMoveSystem;
-shared_ptr<ClickToMoveSystem> clickToMoveSystem;
-shared_ptr<Entity> animatedSprite, staticSprite;
+shared_ptr<MouseSystem> mouseSystem;
+shared_ptr<InteractionAddToEntitySystem> interactionAddToEntitySystem;
+shared_ptr<Entity> animatedSprite, staticSprite, helpSprite;;
 
 
 void on_surface_changed() {
@@ -71,20 +70,31 @@ void on_surface_changed() {
 
 	atlas->loadAtlas();
 
+	
 	staticSprite = createSprite(100, 0, 100, 100, textureRaw);
-	//staticSprite->createComponent<ClickInsideComponent>()->initialize();
-	staticSprite->createComponent<ClickToMoveComponent>()->initialize();
+	staticSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	std::shared_ptr<ClickMoveComponent> addComp(new ClickMoveComponent);
+	addComp->initialize(2);
+	staticSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::SUBJECT, addComp);
+
+	helpSprite = createSprite(300, 0, 100, 100, textureRaw);
+	helpSprite->createComponent<ClickInsideComponent>()->initialize(true);
+	helpSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	helpSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
+
 
 	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
-	animatedSprite->createComponent<PointMoveComponent>()->initialize(2);
+	//animatedSprite->createComponent<ClickMoveComponent>()->initialize(2);
+	animatedSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
 	animatedSprite->createComponent<ClickInsideComponent>()->initialize();
 	animatedSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "GG");
 
+
+
 	drawSystem = world.createSystem<DrawSystem>();
-	pointMoveSystem = world.createSystem<PointMoveSystem>();
-	clickInsideSystem = world.createSystem<ClickInsideSystem>();
-	clickToMoveSystem = world.createSystem<ClickToMoveSystem>();
+	mouseSystem = world.createSystem<MouseSystem>();
+	interactionAddToEntitySystem = world.createSystem<InteractionAddToEntitySystem>();
 
 }
 
@@ -96,10 +106,9 @@ void update(int value) {
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	clickInsideSystem->update();
-	clickToMoveSystem->update();
-	pointMoveSystem->update();
+	mouseSystem->update();
 	drawSystem->update();
+	interactionAddToEntitySystem->update();
 
 	glutSwapBuffers(); // Flush drawing commands
 }
