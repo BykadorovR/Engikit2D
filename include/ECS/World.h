@@ -20,8 +20,13 @@ public:
 		return entity;
 	}
 
+	bool unregisterEntity(int entityID) {
+		auto entity = entityManager->getEntities()[entityID];
+		return entityManager->unregisterEntity(entity);
+	}
+
 	bool unregisterEntity(const shared_ptr<Entity>& entity) {
-		return entityManager->unregister(entity);
+		return entityManager->unregisterEntity(entity);
 	}
 
 	bool registerEntity(shared_ptr<Entity> entity) {

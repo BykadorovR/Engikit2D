@@ -6,6 +6,7 @@
 
 class Entity {
 public:
+	int _index = -1;
 	/*
 	Create component if doesn't exist.
 	*/
@@ -76,13 +77,15 @@ public:
 	shared_ptr<Entity> create(shared_ptr<Entity> _entity = nullptr) {
 		shared_ptr<Entity> entity = make_shared<Entity>();
 		entities.push_back(entity);
+		entity->_index = entities.size() - 1;
 		return entities.back();
 	}
 
-	bool unregister(const shared_ptr<Entity>& entity) {
+	bool unregisterEntity(const shared_ptr<Entity>& entity) {
 		for (auto local : entities) {
 			if (local == entity) {
 				entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
+				entity->_index = -1;
 				return true;
 			}
 		}
@@ -96,6 +99,7 @@ public:
 			}
 		}
 		entities.push_back(entity);
+		entity->_index = entities.size() - 1;
 		return true;
 	}
 

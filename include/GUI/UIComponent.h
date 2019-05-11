@@ -49,6 +49,10 @@ public:
 		_rightClick = { x, y };
 		_rightClickFlag = true;
 	}
+
+	~ClickInsideComponent() {
+		MouseEvent::instance().unregisterComponent(this);
+	}
 };
 
 class GroupEntitiesComponent : public Component {
@@ -84,6 +88,10 @@ public:
 
 	void mouseClickDownRight(int x, int y) {
 	}
+
+	~ClickClickMoveComponent() {
+		MouseEvent::instance().unregisterComponent(this);
+	}
 };
 
 enum InteractionMember {
@@ -97,9 +105,23 @@ public:
 	InteractionMember _interactionMember;
 	bool _interactReady = false;
 	std::function<std::shared_ptr<Component>(void)> _createFunctor;
+	std::function<void(std::shared_ptr<Entity>)> _removeFunctor;
 
 	void initialize(InteractionMember interactionMember) {
 		_interactionMember = interactionMember;
+	}
+
+};
+
+class InteractionCreateEntityComponent : public Component {
+public:
+	bool _interactReady = false;
+	std::function<std::shared_ptr<Entity>(std::tuple<int, int>, std::tuple<int, int>)> _createFunctor;
+	std::function<void(int)> _removeFunctor;
+	std::tuple<int, int> creationCoords;
+	std::tuple<int, int> creationSize = {100, 100};
+
+	void initialize() {
 	}
 
 };

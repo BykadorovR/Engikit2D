@@ -59,8 +59,8 @@ int transform(float shiftX, float shiftY, shared_ptr<Entity> object) {
 
 shared_ptr<DrawSystem> drawSystem;
 shared_ptr<MouseSystem> mouseSystem;
-shared_ptr<InteractionAddToEntitySystem> interactionAddToEntitySystem;
-shared_ptr<Entity> animatedSprite, staticSprite, helpSprite;;
+shared_ptr<InteractionAddToSystem> interactionAddToSystem;
+shared_ptr<Entity> animatedSprite, staticSprite, helpSprite, newSprite;
 
 
 void on_surface_changed() {
@@ -70,8 +70,36 @@ void on_surface_changed() {
 
 	atlas->loadAtlas();
 
-	
-	staticSprite = createSprite(100, 0, 100, 100, textureRaw);
+	newSprite = createSprite(100, 0, 100, 100, textureRaw);
+	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
+	newSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	newSprite->createComponent<InteractionCreateEntityComponent>()->initialize();
+	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [textureRaw](std::tuple<int, int> coords, std::tuple<int, int> size) -> std::shared_ptr<Entity> {
+		shared_ptr<Entity> sprite;
+		Shader shader;
+		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+		sprite = world.createEntity();
+		sprite->createComponent<ObjectComponent>()->initialize(std::get<0>(coords), std::get<1>(coords), std::get<0>(size), std::get<1>(size), program);
+		//TODO: path to texture?
+		sprite->createComponent<TextureComponent>()->initialize(textureRaw, program);
+		sprite->createComponent<TransformComponent>()->initialize(program);
+		sprite->createComponent<ClickInsideComponent>()->initialize(false);
+		int groupID = 0;
+		std::cout << "Enter the group ID" << std::endl;
+		std::cin >> groupID;
+		std::string groupName;
+		std::cout << "Enter the group name" << std::endl;
+		std::cin >> groupName;
+		sprite->createComponent<GroupEntitiesComponent>()->initialize(groupID, groupName);
+		sprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
+		return sprite;
+	};
+	newSprite->getComponent<InteractionCreateEntityComponent>()->_removeFunctor = [](int entityID) -> void {
+		world.unregisterEntity(entityID);
+	};
+
+
+	staticSprite = createSprite(200, 0, 100, 100, textureRaw);
 	staticSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
 	
@@ -83,6 +111,9 @@ void on_surface_changed() {
 		std::cin >> speed;
 		clickComponent->initialize(speed);
 		return clickComponent;
+	};
+	staticSprite->getComponent<InteractionAddToEntityComponent>()->_removeFunctor = [](std::shared_ptr<Entity> targetEntity) -> void {
+		targetEntity->removeComponent<ClickMoveComponent>();
 	};
 
 
@@ -101,7 +132,7 @@ void on_surface_changed() {
 
 	drawSystem = world.createSystem<DrawSystem>();
 	mouseSystem = world.createSystem<MouseSystem>();
-	interactionAddToEntitySystem = world.createSystem<InteractionAddToEntitySystem>();
+	interactionAddToSystem = world.createSystem<InteractionAddToSystem>();
 
 }
 
@@ -115,7 +146,7 @@ void on_draw_frame() {
 	
 	mouseSystem->update();
 	drawSystem->update();
-	interactionAddToEntitySystem->update();
+	interactionAddToSystem->update();
 
 	glutSwapBuffers(); // Flush drawing commands
 }

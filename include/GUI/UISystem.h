@@ -10,20 +10,21 @@ enum ClickCount {
 };
 
 class MouseSystem : public System {
-	ClickCount processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
+	std::tuple<std::tuple<int, int>, ClickCount> processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
 		std::shared_ptr<TransformComponent> transformComponent);
 
 	void processClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickMoveComponent> clickMoveComponent,
 		std::shared_ptr<TransformComponent> transformComponent);
 
-	ClickCount processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
+	std::tuple<std::tuple<int, int>, ClickCount> processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
 		std::shared_ptr<GroupEntitiesComponent> groupComponent);
 public:
 	void update();
 };
 
-class InteractionAddToEntitySystem : public System {
-	void process();
+class InteractionAddToSystem : public System {
+	void processAddComponentToEntity();
+	void processCreateEntity();
 public:
 	void update();
 };

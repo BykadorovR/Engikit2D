@@ -1,10 +1,10 @@
 #include "UISystem.h"
 
-ClickCount MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
+std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
 	std::shared_ptr<TransformComponent> transformComponent) {
 	int currentClickX = std::get<0>(clickClickMoveComponent->_currentClick);
 	int currentClickY = std::get<1>(clickClickMoveComponent->_currentClick);
-	ClickCount clickedInside = ClickCount::NO;
+	std::tuple<std::tuple<int, int>, ClickCount> clickedInside = { {0, 0}, ClickCount::NO };
 
 	//first click
 	if (clickClickMoveComponent->_clickFlag && currentClickX > objectComponent->_sceneX  && currentClickY > objectComponent->_sceneY &&
@@ -13,7 +13,7 @@ ClickCount MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> o
 		clickClickMoveComponent->_previousClick = clickClickMoveComponent->_currentClick;
 		clickClickMoveComponent->_currentClick = { 0, 0 };
 		clickClickMoveComponent->_clickFlag = false;
-		clickedInside = ClickCount::FIRST;
+		clickedInside = { clickClickMoveComponent->_previousClick, ClickCount::FIRST };
 		return clickedInside;
 	}
 
@@ -21,13 +21,8 @@ ClickCount MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> o
 	int previousClickY = std::get<1>(clickClickMoveComponent->_previousClick);
 
 	if (clickClickMoveComponent->_clickFlag && previousClickX && previousClickY) {
-		//We should point ADJUSTMENT not coords
-		/*transformComponent->setTransform({ currentClickX - (objectComponent->_sceneX + objectComponent->_objectWidth / 2),
-										  currentClickY - (objectComponent->_sceneY + objectComponent->_objectHeight / 2) });
-		*/
 		clickClickMoveComponent->_previousClick = { 0, 0 };
-		if (clickClickMoveComponent->_moveToByClickSecond == false)
-			clickedInside = ClickCount::SECOND;
+		clickedInside = { clickClickMoveComponent->_currentClick , ClickCount::SECOND };
 	}
 
 	clickClickMoveComponent->_currentClick = { 0, 0 };
@@ -61,11 +56,11 @@ void MouseSystem::processClickMove(std::shared_ptr<ObjectComponent> objectCompon
 	}
 }
 
-ClickCount MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
+std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
 	std::shared_ptr<GroupEntitiesComponent> groupComponent) {
 	int clickX = std::get<0>(clickInsideComponent->_leftClick);
 	int clickY = std::get<1>(clickInsideComponent->_leftClick);
-	ClickCount clickedInside = ClickCount::NO;
+	std::tuple<std::tuple<int, int>, ClickCount> clickedInside = { {0, 0}, ClickCount::NO };
 
 	if (!clickX || !clickY)
 		return clickedInside;
@@ -73,10 +68,8 @@ ClickCount MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> obje
 	if (clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
 		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight &&
 		clickInsideComponent->_leftClickFlag) {
-		//TODO: add group component
-		std::cout << "Clicked inside: group " << groupComponent->_groupNumber << " " << groupComponent->_groupName << std::endl;
 		clickInsideComponent->_leftClickFlag = false;
-		clickedInside = ClickCount::FIRST;
+		clickedInside = {clickInsideComponent->_leftClick, ClickCount::FIRST};
 	}
 
 	//We should handle click inside action only once per click, so reset coords of click after first handle
@@ -110,7 +103,10 @@ void MouseSystem::update() {
 
 
 		if (objectComponent && clickInsideComponent && groupComponent) {			
-			int clickedInside = processClickInside(objectComponent, clickInsideComponent, groupComponent);
+			int clickedInside = std::get<1>(processClickInside(objectComponent, clickInsideComponent, groupComponent));
+			if (clickedInside) {
+				std::cout << "Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber << " " << groupComponent->_groupName << std::endl;
+			}
 			if (clickInsideComponent->_moveToByClick == false)
 				playerControlledEntitiesDisableMoving += clickedInside;
 			if (interactionComponent && clickedInside)
@@ -119,9 +115,11 @@ void MouseSystem::update() {
 
 		auto transformComponent = entity->getComponent<TransformComponent>();
 		auto clickClickMoveComponent = entity->getComponent<ClickClickMoveComponent>();
+		auto interactionCreateEntityComponent = entity->getComponent<InteractionCreateEntityComponent>();
 
 		if (objectComponent && clickClickMoveComponent && transformComponent) {
-			int clickedInside = processClickClickMove(objectComponent, clickClickMoveComponent, transformComponent);
+			auto clickedInsideTuple = processClickClickMove(objectComponent, clickClickMoveComponent, transformComponent);
+			int clickedInside = std::get<1>(clickedInsideTuple);
 
 			if (clickClickMoveComponent->_moveToByClickFirst == false && clickedInside == ClickCount::FIRST)
 				playerControlledEntitiesDisableMoving += clickedInside;
@@ -132,6 +130,15 @@ void MouseSystem::update() {
 				interactionComponent->_interactReady = true;
 			if (interactionComponent && clickedInside == ClickCount::FIRST)
 				interactionComponent->_interactReady = false;
+
+			if (interactionCreateEntityComponent && clickedInside == ClickCount::SECOND) {
+				interactionCreateEntityComponent->creationCoords = std::get<0>(clickedInsideTuple);
+				interactionCreateEntityComponent->_interactReady = true;
+			}
+			if (interactionCreateEntityComponent && clickedInside == ClickCount::FIRST) {
+				interactionCreateEntityComponent->creationCoords = { 0, 0 };
+				interactionCreateEntityComponent->_interactReady = false;
+			}
 		}
 	}
 
@@ -151,13 +158,39 @@ void MouseSystem::update() {
 	}
 }
 
-void InteractionAddToEntitySystem::process() {
+void InteractionAddToSystem::processCreateEntity() {
+	//
 
+	for (auto entity : getEntities()) {
+		auto interactionComponent = entity->getComponent<InteractionCreateEntityComponent>();
+		if (!interactionComponent)
+			continue;
+		if (interactionComponent->_interactReady) {
+			int action = 0;
+			std::cout << "Enter the 1 to delete or 2 to create Entity, 0 to do nothing" << std::endl;
+			std::cin >> action;
+			switch (action) {
+				case 0:
+				break;
+				case 1:
+					int entityID;
+					std::cout << "Enter ID of entity to delete" << std::endl;
+					std::cin >> entityID;
+					interactionComponent->_removeFunctor(entityID);
+				break;
+				case 2:
+					interactionComponent->_createFunctor(interactionComponent->creationCoords, interactionComponent->creationSize);
+				break;
+			}
+			interactionComponent->_interactReady = false;
+		}
+	}
 }
 
-void InteractionAddToEntitySystem::update() {
+void InteractionAddToSystem::processAddComponentToEntity() {
 	shared_ptr<Entity> subjectEntity = nullptr;
 	shared_ptr<Entity> objectEntity = nullptr;
+	//find interaction components with subject and object types
 	for (auto entity : getEntities()) {
 		auto interactionComponent = entity->getComponent<InteractionAddToEntityComponent>();
 		if (!interactionComponent)
@@ -170,10 +203,25 @@ void InteractionAddToEntitySystem::update() {
 		}
 	}
 	if (objectEntity && subjectEntity) {
+		int action = 0;
+		std::cout << "Enter the 1 to delete or 2 to add ClickMoveComponent, 0 to do nothing" << std::endl;
+		std::cin >> action;
+
 		auto interactionComponentSubject = subjectEntity->getComponent<InteractionAddToEntityComponent>();
-		auto interactionComponentObject = objectEntity->getComponent<InteractionAddToEntityComponent>();
-		std::shared_ptr<Component> addedComponent = interactionComponentSubject->_createFunctor();
-		objectEntity->addComponent(addedComponent);
+
+		switch (action) {
+		case 0:
+			break;
+		case 1:
+			interactionComponentSubject->_removeFunctor(objectEntity);
+			break;
+		case 2:
+			std::shared_ptr<Component> addedComponent = interactionComponentSubject->_createFunctor();
+			objectEntity->addComponent(addedComponent);
+			break;
+		}
+
+
 	}
 
 	//We should handle only if BOTH entities subject and object are ready for interaction
@@ -188,5 +236,9 @@ void InteractionAddToEntitySystem::update() {
 		if (interactionComponentSubject)
 			interactionComponentSubject->_interactReady = false;
 	}
+}
 
+void InteractionAddToSystem::update() {
+	processAddComponentToEntity();
+	processCreateEntity();
 }
