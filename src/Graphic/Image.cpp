@@ -125,7 +125,7 @@ unsigned int ImageLoader::getHeight() {
 int ImageLoader::getBitdepth() {
 	return bitDepth;
 }
-vector<unsigned char> ImageLoader::getData() {
+std::vector<unsigned char> ImageLoader::getData() {
 	return data;
 }
 

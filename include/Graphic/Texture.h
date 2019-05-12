@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <assert.h>
+#include "Image.h"
 
 using namespace std;
 
@@ -33,8 +34,11 @@ public:
 	Texture();
 	Texture(std::string path, int posXAtlas, int posYAtlas, std::shared_ptr<TextureAtlas> atlas);
 	Texture(std::string path, int posXAtlas, int posYAtlas, int row, int column, std::shared_ptr<TextureAtlas> atlas);
+	Texture(std::string path, int posXAtlas, int posYAtlas);
+	Texture(std::string path, int posXAtlas, int posYAtlas, int row, int column);
 
 	std::shared_ptr<TextureAtlas> getAtlas();
+	void setAtlas(std::shared_ptr<TextureAtlas> atlas);
 	int getWidth();
 	int getHeight();
 	int getColumn();
@@ -44,6 +48,7 @@ public:
 
 private:
 	std::shared_ptr<TextureAtlas> _atlas;
+	std::shared_ptr<ImageLoader> _imageLoader;
 	int _posXAtlas, _posYAtlas;
 	int _width, _height;
 	int _row, _column;

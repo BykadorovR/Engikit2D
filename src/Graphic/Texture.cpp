@@ -1,5 +1,4 @@
 #include "Texture.h"
-#include "Image.h"
 #include <assert.h>
 
 #pragma once
@@ -80,17 +79,37 @@ Texture::Texture(std::string path, int posXAtlas, int posYAtlas, std::shared_ptr
 	_posYAtlas = posYAtlas;
 	_atlas = atlas;
 	//
-	ImageLoader loader;
-	loader.loadPNG(&path[0]);
-	_width = loader.getWidth();
-	_height = loader.getHeight();
-	_atlas->addTexture(loader.getData(), _posXAtlas, _posYAtlas, _width, _height);
+	_imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
+	_imageLoader->loadPNG(&path[0]);
+	_width = _imageLoader->getWidth();
+	_height = _imageLoader->getHeight();
+	_atlas->addTexture(_imageLoader->getData(), _posXAtlas, _posYAtlas, _width, _height);
 }
 
 Texture::Texture(std::string path, int posXAtlas, int posYAtlas, int row, int column, std::shared_ptr<TextureAtlas> atlas) 
 	    : Texture(path, posXAtlas, posYAtlas, atlas) {
 	_row = row;
 	_column = column;
+}
+
+Texture::Texture(std::string path, int posXAtlas, int posYAtlas) {
+	_posXAtlas = posXAtlas;
+	_posYAtlas = posYAtlas;
+	//
+	_imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
+	_imageLoader->loadPNG(&path[0]);
+	_width = _imageLoader->getWidth();
+	_height = _imageLoader->getHeight();
+}
+
+Texture::Texture(std::string path, int posXAtlas, int posYAtlas, int row, int column) : Texture(path, posXAtlas, posYAtlas) {
+	_row = row;
+	_column = column;
+}
+
+void Texture::setAtlas(std::shared_ptr<TextureAtlas> atlas) {
+	_atlas = atlas;
+	_atlas->addTexture(_imageLoader->getData(), _posXAtlas, _posYAtlas, _width, _height);
 }
 
 int Texture::getWidth() {

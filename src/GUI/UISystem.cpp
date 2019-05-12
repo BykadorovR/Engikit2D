@@ -1,4 +1,5 @@
 #include "UISystem.h"
+#include "ComponentFunctors.h"
 
 std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
 	std::shared_ptr<TransformComponent> transformComponent) {
@@ -204,24 +205,40 @@ void InteractionAddToSystem::processAddComponentToEntity() {
 	}
 	if (objectEntity && subjectEntity) {
 		int action = 0;
-		std::cout << "Enter the 1 to delete or 2 to add ClickMoveComponent, 0 to do nothing" << std::endl;
+		std::cout << "Enter the 1 to delete or 2 to add Component, 0 to do nothing" << std::endl;
 		std::cin >> action;
 
 		auto interactionComponentSubject = subjectEntity->getComponent<InteractionAddToEntityComponent>();
 
 		switch (action) {
-		case 0:
+			case 0:
 			break;
-		case 1:
-			interactionComponentSubject->_removeFunctor(objectEntity);
-			break;
-		case 2:
-			std::shared_ptr<Component> addedComponent = interactionComponentSubject->_createFunctor();
-			objectEntity->addComponent(addedComponent);
-			break;
+			case 1:
+			{
+				std::cout << "Choose component" << std::endl;
+				for (std::map<std::string, std::shared_ptr<ComponentFunctor> >::iterator it = componentFunctors.begin(); it != componentFunctors.end(); ++it) {
+					cout << "Name " << it->first << "\n";
+				}
+				std::string key;
+				std::cin >> key;
+
+				componentFunctors[key]->removeFunctor(objectEntity);
+				break;
+			}
+			case 2:
+			{
+				std::cout << "Choose component" << std::endl;
+				for (std::map<std::string, std::shared_ptr<ComponentFunctor> >::iterator it = componentFunctors.begin(); it != componentFunctors.end(); ++it) {
+					cout << "Name " << it->first << "\n";
+				}
+				std::string key;
+				std::cin >> key;
+
+				std::shared_ptr<Component> addedComponent = componentFunctors[key]->createFunctor();
+				objectEntity->addComponent(addedComponent);
+				break;
+			}
 		}
-
-
 	}
 
 	//We should handle only if BOTH entities subject and object are ready for interaction

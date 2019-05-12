@@ -1,8 +1,7 @@
 #pragma once
 #include "platformGL.h"
-#include "texture.h"
 #include <png.h>
-
+#include <vector>
 //needed for internal libPNG conversions
 struct DataHandle {
 	DataHandle(png_byte* _data, png_size_t _size, png_size_t _offset) : data(_data), size(_size), offset(_offset) {
@@ -24,7 +23,7 @@ public:
 	unsigned int getWidth();
 	unsigned int getHeight();
 	int getBitdepth();
-	vector<unsigned char> getData();
+	std::vector<unsigned char> getData();
 
 private:
 	int readAndUpdateInfo(png_structp PNGPtr, png_infop infoPTR);
@@ -34,5 +33,5 @@ private:
 	unsigned int height;
 	int bitDepth;
 	int colorFormat;
-	vector<unsigned char> data;
+	std::vector<unsigned char> data;
 };

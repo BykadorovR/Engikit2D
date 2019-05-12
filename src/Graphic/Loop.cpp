@@ -7,6 +7,7 @@
 #include "GraphicSystem.h"
 #include "UISystem.h"
 #include "Events.h"
+#include "ComponentFunctors.h"
 
 /*
 TODO: 
@@ -67,8 +68,12 @@ void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
 	Texture textureRaw("../data/textures/air_hockey_surface.png", 0, 0, atlas);
 	Texture textureAnim("../data/textures/firstmain_idle.png", 0, 1024, 1, 3, atlas);
+	std::shared_ptr<TextureAtlas> atlas2 = std::make_shared<TextureAtlas>(4096, 4096);
+	Texture textureRawBear("../data/textures/bear.png", 0, 0, atlas2);
 
 	atlas->loadAtlas();
+	atlas2->loadAtlas();
+	registerComponentFunctors();
 
 	newSprite = createSprite(100, 0, 100, 100, textureRaw);
 	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
@@ -104,26 +109,13 @@ void on_surface_changed() {
 	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
 	
 	staticSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::SUBJECT);
-	staticSprite->getComponent<InteractionAddToEntityComponent>()->_createFunctor = []() -> std::shared_ptr<ClickMoveComponent> {
-		std::shared_ptr<ClickMoveComponent> clickComponent(new ClickMoveComponent());
-		int speed;
-		std::cout << "Enter the speed" << std::endl;
-		std::cin >> speed;
-		clickComponent->initialize(speed);
-		return clickComponent;
-	};
-	staticSprite->getComponent<InteractionAddToEntityComponent>()->_removeFunctor = [](std::shared_ptr<Entity> targetEntity) -> void {
-		targetEntity->removeComponent<ClickMoveComponent>();
-	};
 
-
-	helpSprite = createSprite(300, 0, 100, 100, textureRaw);
+	helpSprite = createSprite(300, 0, 100, 100, textureRawBear);
 	helpSprite->createComponent<ClickInsideComponent>()->initialize(false);
 	helpSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
 	helpSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
 
 	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
-	//animatedSprite->createComponent<ClickMoveComponent>()->initialize(2);
 	animatedSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
 	animatedSprite->createComponent<ClickInsideComponent>()->initialize();
 	animatedSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "GG");

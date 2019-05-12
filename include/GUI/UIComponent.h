@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "Window.h"
 #include "Events.h"
-
+#include "Entity.h"
 class ClickMoveComponent : public Component, IMouseEvent {
 public:
 	std::tuple<int, int> _leftClick;

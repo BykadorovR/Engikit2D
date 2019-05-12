@@ -62,7 +62,7 @@ public:
 		return false;
 	}
 private:
-	vector<shared_ptr<Component> > components;
+	std::vector<shared_ptr<Component> > components;
 };
 
 
