@@ -126,11 +126,6 @@ void on_surface_changed() {
 	cameraSystem = world.createSystem<CameraSystem>();
 }
 
-void update(int value) {
-	glutPostRedisplay();  // Redraw windows
-	glutTimerFunc(40, update, 0);
-}
-
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	cameraSystem->update(world.getEntityManager());
@@ -139,5 +134,4 @@ void on_draw_frame() {
 	drawSystem->update(world.getEntityManager());
 	interactionAddToSystem->update(world.getEntityManager());
 	saveLoadSystem->update(world.getEntityManager());
-	glutSwapBuffers(); // Flush drawing commands
 }

@@ -3,12 +3,8 @@
 #include "PlatformGL.h"
 #include <vector>
 
-//TODO: Pattern observed, all components should be subscribed to Mouse class
-//Move implementation to respective cpp (Bridge pattern) (defines or separate files?)
-//MouseEvent class should be singleton
-
 //These methods are needed cause we should send callback to glut but we can't use classes' methods
-void mousePress(int button, int state, int x, int y);
+void mousePress(GLFWwindow* window, int button, int action, int mods);
 
 //Interface that should be inherited by classes that want handle mouse events
 class IMouseEvent {
@@ -32,5 +28,5 @@ public:
 	void registerComponent(IMouseEvent* listener);
 	void unregisterComponent(IMouseEvent* listener);
 
-	void mousePress(int button, int state, int x, int y);
+	void mousePress(GLFWwindow* window, int button, int action, int mods);
 };

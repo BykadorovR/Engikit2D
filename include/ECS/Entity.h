@@ -71,7 +71,6 @@ private:
 };
 
 
-//TODO: rewrite as singleton
 /*
 Class which is used for entities creating/removing ONLY
 It just stores all available entities and pull of free indexes for new entities

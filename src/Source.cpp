@@ -9,27 +9,60 @@
 #include "Common.h"
 #include "Events.h"
 
+static void error_callback(int error, const char* description)
+{
+	fprintf(stderr, "Error: %s\n", description);
+}
+
 //need to separate to cpp and h due to a lot of dependencies between classes
 int main(int argc, char **argv) {
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB);
-	glutInitWindowSize(resolution.first, resolution.second);
-	glutCreateWindow("2D Image Texture");
-	if (int status = glewInit() != GLEW_OK)
+	if (!glfwInit())
 	{
-		printf("Error in glewInit %d\n", status);
-
-		return 1;
+		return -1;
 	}
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Мы хотим использовать OpenGL 3.3
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Мы не хотим старый OpenGL
+
+	GLFWwindow* mainWindow;
+	GLFWwindow* controlWindow;
+	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", NULL, NULL);
+	if (mainWindow == NULL) {
+		glfwTerminate();
+		return -1;
+	}
+	controlWindow = glfwCreateWindow(resolution.first, resolution.second, "Control window", NULL, NULL);
+	if (controlWindow == NULL) {
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(mainWindow);
+
+	glewExperimental = true;
+	GLenum err = glewInit();
+	if (GLEW_OK != err)
+	{
+		/* Problem: glewInit failed, something is seriously wrong. */
+		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+		return -1;
+	}
+
+	glfwSetMouseButtonCallback(mainWindow, mousePress);
+	glfwSetMouseButtonCallback(controlWindow, mousePress);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glutDisplayFunc(&on_draw_frame);
-	glutMouseFunc(&mousePress);
-	glutTimerFunc(33, update, 0);
+
 	on_surface_created();
 	on_surface_changed();
-	glutMainLoop();
+	while (!glfwWindowShouldClose(mainWindow)) {
+		// OpenGL API calls go here...
+
+		on_draw_frame();
+		glfwSwapBuffers(mainWindow);
+		glfwPollEvents();
+	}
+
 	return 0;
 }

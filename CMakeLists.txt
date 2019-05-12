@@ -18,11 +18,12 @@ ExternalProject_Add(
   INSTALL_COMMAND ""
   )
 
+
 ExternalProject_Add(
-  freeglut
-  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/freeglut
+  glfw
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw
   DOWNLOAD_COMMAND "" # Disable download step
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/freeglut -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG} -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -DBUILD_SHARED_LIBS=ON -G "${CMAKE_GENERATOR}" ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG} -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
   INSTALL_COMMAND ""
   )
 
@@ -68,19 +69,20 @@ source_group("include" FILES ${app_other_headers})
 #include headers to project (so they will be shown in include folder)
 add_executable(game ${app_ecs_headers} ${app_graphic_headers} ${app_gui_headers} ${app_other_headers} ${app_graphic_source} ${app_gui_source} ${app_ecs_source} ${app_other_source})
 
-add_dependencies(game glew freeglut libpng)
+add_dependencies(game glew glfw libpng)
 
 #add folders with gmock headers to "include" section in VS test project
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)
-target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/json/include)
-target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/freeglut/include)
+target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/include)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libpng)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/zlib)
 
-#link freeglut libraries
-target_link_libraries(game debug ${CMAKE_CURRENT_BINARY_DIR}/freeglut-prefix/src/freeglut-build/lib/Debug/freeglutd.lib)
-target_link_libraries(game optimized ${CMAKE_CURRENT_BINARY_DIR}/freeglut-prefix/src/freeglut-build/lib/Release/freeglut.lib)
+target_link_libraries(game opengl32.lib)
+
+#link glfw libraries
+target_link_libraries(game debug ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw-build/src/Debug/glfw3dll.lib)
+target_link_libraries(game optimized ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw-build/src/Release/glfw3dll.lib)
 
 #link glew libraries
 target_link_libraries(game debug ${CMAKE_CURRENT_BINARY_DIR}/glew-prefix/src/glew-build/lib/Debug/glew32d.lib)
@@ -98,20 +100,22 @@ source_group("test" FILES ${TEST_SOURCE})
 
 add_executable(tests ${TEST_SOURCE})
 
-add_dependencies(tests googletest glew freeglut libpng)
+add_dependencies(tests googletest glew glfw libpng)
 
 #add folders with gmock headers to "include" section in VS test project
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/json/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/googletest/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)
-target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/freeglut/include)
+target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libpng)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/zlib)
 
-#link freeglut libraries
-target_link_libraries(tests debug ${CMAKE_CURRENT_BINARY_DIR}/freeglut-prefix/src/freeglut-build/lib/Debug/freeglutd.lib)
-target_link_libraries(tests optimized ${CMAKE_CURRENT_BINARY_DIR}/freeglut-prefix/src/freeglut-build/lib/Release/freeglut.lib)
+target_link_libraries(game opengl32.lib)
+
+#link glfw libraries
+target_link_libraries(tests debug ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw-build/src/Debug/glfw3dll.lib)
+target_link_libraries(tests optimized ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw-build/src/Release/glfw3dll.lib)
 
 #link glew libraries
 target_link_libraries(tests debug ${CMAKE_CURRENT_BINARY_DIR}/glew-prefix/src/glew-build/lib/Debug/glew32d.lib)

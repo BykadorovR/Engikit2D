@@ -138,10 +138,11 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 		if (transformTextureObject)
 			transformUpdate(vertexObject, transformTextureObject);
 
+		
 		auto textureObject = entity->getComponent<TextureComponent>();
 		if (textureObject)
 			textureUpdate(textureObject);
-
+		
 		auto animatedTextureObject = entity->getComponent<AnimatedTextureComponent>();
 		if (animatedTextureObject)
 			animatedTextureUpdate(animatedTextureObject);

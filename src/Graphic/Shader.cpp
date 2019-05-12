@@ -14,6 +14,20 @@ GLuint Shader::compileShader(std::string source, GLenum type) {
 	glShaderSource(shader_object_id, 1, &shaderText, &size);
 	glCompileShader(shader_object_id);
 	glGetShaderiv(shader_object_id, GL_COMPILE_STATUS, &compile_status);
+	if (compile_status == 0) {
+		GLint maxLength = 0;
+		glGetShaderiv(shader_object_id, GL_INFO_LOG_LENGTH, &maxLength);
+
+		// The maxLength includes the NULL character
+		std::vector<GLchar> errorLog(maxLength);
+		glGetShaderInfoLog(shader_object_id, maxLength, &maxLength, &errorLog[0]);
+		std::string textLog(&errorLog[0]);
+		std::cout << textLog << std::endl;
+
+		// Provide the infolog in whatever manor you deem best.
+		// Exit with failure.
+		glDeleteShader(shader_object_id); // Don't leak the shader.
+	}
 	assert(compile_status != 0);
 
 	return shader_object_id;
