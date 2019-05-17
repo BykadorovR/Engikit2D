@@ -25,6 +25,8 @@ public:
 class InteractionAddToSystem : public System {
 	void processAddComponentToEntity();
 	void processCreateEntity();
+	void processManageTextures();
 public:
 	void update();
 };
+

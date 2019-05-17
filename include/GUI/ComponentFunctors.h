@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "UIComponent.h"
 #include "GraphicComponent.h"
+#include "Texture.h"
 
 class ComponentFunctor {
 public:
@@ -27,19 +28,45 @@ class ClickMoveComponentFunctor : public ComponentFunctor {
 };
 
 class TextureComponentFunctor : public ComponentFunctor {
+public:
+	TextureComponentFunctor(std::shared_ptr<TextureManager> textureManager) {
+		_textureManager = textureManager;
+	}
+
 	//TODO: How to use atlas and textures dynamically
 	std::shared_ptr<Component> createFunctor() {
-		std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-		std::string texturePath;
-		std::cout << "Enter path to texture" << std::endl;
-		std::cin >> texturePath;
-		Texture textureRaw(texturePath, 0, 0);
-		std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(textureRaw.getWidth(), textureRaw.getHeight());
-		textureRaw.setAtlas(atlas);
-		atlas->loadAtlas();
-		textureComponent->initialize(textureRaw, program);
+		int textureID;
+		std::cout << "Enter texture ID" << std::endl;
+		std::cin >> textureID;
+
+		std::shared_ptr<Texture> targetTexture = _textureManager->getTexture(textureID);
+		if (targetTexture->getRow() > 1 || targetTexture->getColumn() > 1) {
+			std::shared_ptr<AnimatedTextureComponent> textureComponent(new AnimatedTextureComponent());
+			int tilesCount = targetTexture->getRow() * targetTexture->getColumn();
+			std::cout << "Enter order for " << tilesCount << " tiles" << std::endl;
+			std::vector<int> tilesOrder;
+			while (tilesCount-- > 0) {
+				int input;
+				std::cin >> input;
+				tilesOrder.push_back(input);
+			}
+			
+			std::cout << "Enter latency for " << tilesCount << " tiles" << std::endl;
+			std::vector<int> tilesLatency;
+			while (tilesCount-- > 0) {
+				int input;
+				std::cin >> input;
+				tilesLatency.push_back(input);
+			}
+
+			textureComponent->initialize(targetTexture, tilesOrder, tilesLatency, program);
+			return textureComponent;
+		}
+	
+		std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
+		textureComponent->initialize(targetTexture, program);
 		return textureComponent;
 	};
 
@@ -47,6 +74,8 @@ class TextureComponentFunctor : public ComponentFunctor {
 		targetEntity->removeComponent<TextureComponent>();
 	};
 
+	std::shared_ptr<TextureManager> _textureManager;
+
 };
 
-void registerComponentFunctors();
+void registerComponentFunctors(std::shared_ptr<TextureManager> textureManager);

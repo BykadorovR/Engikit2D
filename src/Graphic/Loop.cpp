@@ -24,7 +24,7 @@ void on_surface_created() {
 
 World world;
 
-shared_ptr<Entity> createSprite(int x, int y, int width, int height, Texture texture) {
+shared_ptr<Entity> createSprite(int x, int y, int width, int height, std::shared_ptr<Texture> texture) {
 	shared_ptr<Entity> sprite;
 	Shader shader;
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
@@ -36,7 +36,7 @@ shared_ptr<Entity> createSprite(int x, int y, int width, int height, Texture tex
 }
 
 shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height,
-										std::vector<int> tiles, std::vector<int> latency, Texture texture) {
+										std::vector<int> tiles, std::vector<int> latency, std::shared_ptr<Texture> texture) {
 	shared_ptr<Entity> sprite;
 	Shader shader;
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
@@ -61,19 +61,18 @@ int transform(float shiftX, float shiftY, shared_ptr<Entity> object) {
 shared_ptr<DrawSystem> drawSystem;
 shared_ptr<MouseSystem> mouseSystem;
 shared_ptr<InteractionAddToSystem> interactionAddToSystem;
-shared_ptr<Entity> animatedSprite, staticSprite, helpSprite, newSprite;
+shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite;
 
 
 void on_surface_changed() {
+	std::shared_ptr<TextureManager> textureManager = std::make_shared<TextureManager>();
+
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
-	Texture textureRaw("../data/textures/air_hockey_surface.png", 0, 0, atlas);
-	Texture textureAnim("../data/textures/firstmain_idle.png", 0, 1024, 1, 3, atlas);
-	std::shared_ptr<TextureAtlas> atlas2 = std::make_shared<TextureAtlas>(4096, 4096);
-	Texture textureRawBear("../data/textures/bear.png", 0, 0, atlas2);
+	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>("../data/textures/air_hockey_surface.png", 0, 0, atlas);
+	std::shared_ptr<Texture> textureAnim = std::make_shared<Texture>("../data/textures/firstmain_idle.png", 0, 1024, 1, 3, atlas);
 
 	atlas->loadAtlas();
-	atlas2->loadAtlas();
-	registerComponentFunctors();
+	registerComponentFunctors(textureManager);
 
 	newSprite = createSprite(100, 0, 100, 100, textureRaw);
 	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
@@ -107,13 +106,12 @@ void on_surface_changed() {
 	staticSprite = createSprite(200, 0, 100, 100, textureRaw);
 	staticSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
-	
 	staticSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::SUBJECT);
 
-	helpSprite = createSprite(300, 0, 100, 100, textureRawBear);
-	helpSprite->createComponent<ClickInsideComponent>()->initialize(false);
-	helpSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
-	helpSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
+	textureSprite = createSprite(300, 0, 100, 100, textureRaw);
+	textureSprite->createComponent<ClickInsideComponent>()->initialize(false);
+	textureSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	textureSprite->createComponent<TextureManagerComponent>()->initialize(textureManager);
 
 	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
 	animatedSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);

@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 #include <assert.h>
+#include "Shader.h"
+#include <iostream>
 
 using namespace std;
 
@@ -75,6 +77,7 @@ Texture::Texture() {
 }
 
 Texture::Texture(std::string path, int posXAtlas, int posYAtlas, std::shared_ptr<TextureAtlas> atlas) {
+	_path = path;
 	_posXAtlas = posXAtlas;
 	_posYAtlas = posYAtlas;
 	_atlas = atlas;
@@ -90,26 +93,6 @@ Texture::Texture(std::string path, int posXAtlas, int posYAtlas, int row, int co
 	    : Texture(path, posXAtlas, posYAtlas, atlas) {
 	_row = row;
 	_column = column;
-}
-
-Texture::Texture(std::string path, int posXAtlas, int posYAtlas) {
-	_posXAtlas = posXAtlas;
-	_posYAtlas = posYAtlas;
-	//
-	_imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
-	_imageLoader->loadPNG(&path[0]);
-	_width = _imageLoader->getWidth();
-	_height = _imageLoader->getHeight();
-}
-
-Texture::Texture(std::string path, int posXAtlas, int posYAtlas, int row, int column) : Texture(path, posXAtlas, posYAtlas) {
-	_row = row;
-	_column = column;
-}
-
-void Texture::setAtlas(std::shared_ptr<TextureAtlas> atlas) {
-	_atlas = atlas;
-	_atlas->addTexture(_imageLoader->getData(), _posXAtlas, _posYAtlas, _width, _height);
 }
 
 int Texture::getWidth() {
@@ -136,4 +119,66 @@ int Texture::getColumn() {
 }
 int Texture::getRow() {
 	return _row;
+}
+
+int Texture::getPosXAtlas() {
+	return _posXAtlas;
+}
+
+int Texture::getPosYAtlas() {
+	return _posYAtlas;
+}
+
+std::string Texture::getPath() {
+	return _path;
+}
+
+std::shared_ptr<Texture> TextureManager::getTexture(int textureID) {
+	return textureList[textureID];
+}
+
+void TextureManager::printTextures() {
+	for (int i = 0; i < textureList.size(); i++) {
+		std::cout << "Path: " << textureList[i]->getPath() << ";\n ID: " << i << "; Size: " << textureList[i]->getWidth() << "x" << textureList[i]->getHeight()
+				  << "; Atlas ID: " << findAtlasID(textureList[i]->getAtlas()) << "; Atlas position: " 
+			      << textureList[i]->getPosXAtlas() << "x" << textureList[i]->getPosYAtlas() << std::endl;
+	}
+}
+
+int TextureManager::findAtlasID(std::shared_ptr<TextureAtlas> atlas) {
+	for (map<int, std::shared_ptr<TextureAtlas> >::iterator it = atlasMap.begin(); it != atlasMap.end(); ++it) {
+		if (atlas == it->second) {
+			//we found needed atlas
+			return it->first;
+		}
+	}
+}
+
+std::shared_ptr<TextureAtlas> TextureManager::findAtlas(int atlasID) {
+	std::shared_ptr<TextureAtlas> targetAtlas = nullptr;
+	for (map<int, std::shared_ptr<TextureAtlas> >::iterator it = atlasMap.begin(); it != atlasMap.end(); ++it) {
+		if (atlasID == it->first) {
+			//we found needed atlas
+			targetAtlas = it->second;
+		}
+	}
+	//atlas wasn't found need to create the new one
+	if (targetAtlas == nullptr) {
+		targetAtlas = std::make_shared<TextureAtlas>(4096, 4096);
+		atlasMap[atlasID] = targetAtlas;
+		targetAtlas->loadAtlas();
+	}
+	return targetAtlas;
+}
+ 
+void TextureManager::loadTexture(std::string imagePath, int atlasID, int atlasX, int atlasY) {
+	std::shared_ptr<TextureAtlas> targetAtlas = findAtlas(atlasID);
+	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>(imagePath, atlasX, atlasY, targetAtlas);
+	textureList.push_back(textureRaw);
+}
+
+void TextureManager::loadTexture(std::string imagePath, int atlasID, int atlasX, int atlasY, int tileX, int tileY) {
+	std::shared_ptr<TextureAtlas> targetAtlas = findAtlas(atlasID);
+	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>(imagePath, atlasX, atlasY, tileX, tileY, targetAtlas);
+	textureList.push_back(textureRaw);
 }

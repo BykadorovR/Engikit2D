@@ -4,6 +4,8 @@
 #include "Window.h"
 #include "Events.h"
 #include "Entity.h"
+#include "Texture.h"
+
 class ClickMoveComponent : public Component, IMouseEvent {
 public:
 	std::tuple<int, int> _leftClick;
@@ -124,4 +126,15 @@ public:
 	void initialize() {
 	}
 
+};
+
+class TextureManagerComponent : public Component {
+public:
+	bool _interactReady = false;
+	std::string _textureName;
+	std::shared_ptr<TextureManager> _textureManager;
+
+	void initialize(std::shared_ptr<TextureManager> textureManager) {
+		_textureManager = textureManager;
+	}
 };

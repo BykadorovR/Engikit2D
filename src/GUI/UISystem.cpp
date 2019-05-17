@@ -101,7 +101,7 @@ void MouseSystem::update() {
 		auto clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 		auto groupComponent = entity->getComponent<GroupEntitiesComponent>();
 		auto interactionComponent = entity->getComponent<InteractionAddToEntityComponent>();
-
+		auto textureManagerComponent = entity->getComponent<TextureManagerComponent>();
 
 		if (objectComponent && clickInsideComponent && groupComponent) {			
 			int clickedInside = std::get<1>(processClickInside(objectComponent, clickInsideComponent, groupComponent));
@@ -112,6 +112,8 @@ void MouseSystem::update() {
 				playerControlledEntitiesDisableMoving += clickedInside;
 			if (interactionComponent && clickedInside)
 				interactionComponent->_interactReady = true;
+			if (textureManagerComponent && clickedInside)
+				textureManagerComponent->_interactReady = true;
 		}
 
 		auto transformComponent = entity->getComponent<TransformComponent>();
@@ -159,6 +161,46 @@ void MouseSystem::update() {
 	}
 }
 
+void InteractionAddToSystem::processManageTextures() {
+	for (auto entity : getEntities()) {
+		auto textureManagerComponent = entity->getComponent<TextureManagerComponent>();
+		if (!textureManagerComponent)
+			continue;
+		if (textureManagerComponent->_interactReady) {
+			int action = 0;
+			std::cout << "Enter the 1 to get Textures list or 2 to add Texture, 0 to do nothing" << std::endl;
+			std::cin >> action;
+			switch (action) {
+			case 0:
+				break;
+			case 1:
+				textureManagerComponent->_textureManager->printTextures();
+				break;
+			case 2:
+				std::string fullPath;
+				std::cout << "Enter full path to image" << std::endl;
+				std::cin >> fullPath;
+				int atlasID, x, y;
+				std::cout << "Enter atlas ID, position x, y in atlas" << std::endl;
+				std::cin >> atlasID >> x >> y;
+				int textureMode;
+				std::cout << "Enter 1 if Texture, 2 if AnimatedTexture" << std::endl;
+				std::cin >> textureMode;
+				if (textureMode == 1) {
+					textureManagerComponent->_textureManager->loadTexture(fullPath, atlasID, x, y);
+				} else if (textureMode == 2) {
+					int tileX, tileY;
+					std::cout << "Enter x tiles number and y tiles number" << std::endl;
+					std::cin >> tileX >> tileY;
+					textureManagerComponent->_textureManager->loadTexture(fullPath, atlasID, x, y, tileX, tileY);
+				}
+				break;
+			}
+			textureManagerComponent->_interactReady = false;
+		}
+	}
+}
+
 void InteractionAddToSystem::processCreateEntity() {
 	//
 
@@ -194,9 +236,7 @@ void InteractionAddToSystem::processAddComponentToEntity() {
 	//find interaction components with subject and object types
 	for (auto entity : getEntities()) {
 		auto interactionComponent = entity->getComponent<InteractionAddToEntityComponent>();
-		if (!interactionComponent)
-			continue;
-		if (interactionComponent->_interactReady) {
+		if (interactionComponent && interactionComponent->_interactReady) {
 			if (interactionComponent->_interactionMember == InteractionMember::OBJECT)
 				objectEntity = entity;
 			else if (interactionComponent->_interactionMember == InteractionMember::SUBJECT)
@@ -258,4 +298,5 @@ void InteractionAddToSystem::processAddComponentToEntity() {
 void InteractionAddToSystem::update() {
 	processAddComponentToEntity();
 	processCreateEntity();
+	processManageTextures();
 }
