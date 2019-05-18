@@ -106,7 +106,8 @@ void MouseSystem::update() {
 		if (objectComponent && clickInsideComponent && groupComponent) {			
 			int clickedInside = std::get<1>(processClickInside(objectComponent, clickInsideComponent, groupComponent));
 			if (clickedInside) {
-				std::cout << "Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber << " " << groupComponent->_groupName << std::endl;
+				std::cout << "Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber 
+					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl;
 			}
 			if (clickInsideComponent->_moveToByClick == false)
 				playerControlledEntitiesDisableMoving += clickedInside;

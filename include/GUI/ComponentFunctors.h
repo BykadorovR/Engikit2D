@@ -40,6 +40,9 @@ public:
 		int textureID;
 		std::cout << "Enter texture ID" << std::endl;
 		std::cin >> textureID;
+		GLuint programID;
+		std::cout << "Enter program ID" << std::endl;
+		std::cin >> programID;
 
 		std::shared_ptr<Texture> targetTexture = _textureManager->getTexture(textureID);
 		if (targetTexture->getRow() > 1 || targetTexture->getColumn() > 1) {
@@ -61,12 +64,12 @@ public:
 				tilesLatency.push_back(input);
 			}
 
-			textureComponent->initialize(targetTexture, tilesOrder, tilesLatency, program);
+			textureComponent->initialize(targetTexture, tilesOrder, tilesLatency, programID);
 			return textureComponent;
 		}
 	
 		std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
-		textureComponent->initialize(targetTexture, program);
+		textureComponent->initialize(targetTexture, programID);
 		return textureComponent;
 	};
 
