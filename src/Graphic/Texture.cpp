@@ -37,7 +37,7 @@ void TextureAtlas::addTexture(std::vector<unsigned char> data, int startX, int s
 		}
 }
 
-void TextureAtlas::loadAtlas() {
+void TextureAtlas::initializeAtlas() {
 	GLuint textureObjectId;
 	GLenum ARGBFormat = 0x1908;
 	glGenTextures(1, &textureObjectId);
@@ -50,6 +50,12 @@ void TextureAtlas::loadAtlas() {
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	_atlasID = textureObjectId;
+}
+
+void TextureAtlas::loadAtlas() {
+	GLenum ARGBFormat = 0x1908;
+	glTexImage2D(GL_TEXTURE_2D, 0, ARGBFormat, _width, _height, 0, ARGBFormat, GL_UNSIGNED_BYTE, &_data[0]);
+
 }
 
 int TextureAtlas::getWidth() {
@@ -134,6 +140,7 @@ std::string Texture::getPath() {
 }
 
 std::shared_ptr<Texture> TextureManager::getTexture(int textureID) {
+	textureList[textureID]->getAtlas()->loadAtlas();
 	return textureList[textureID];
 }
 
@@ -166,7 +173,6 @@ std::shared_ptr<TextureAtlas> TextureManager::findAtlas(int atlasID) {
 	if (targetAtlas == nullptr) {
 		targetAtlas = std::make_shared<TextureAtlas>(4096, 4096);
 		atlasMap[atlasID] = targetAtlas;
-		targetAtlas->loadAtlas();
 	}
 	return targetAtlas;
 }

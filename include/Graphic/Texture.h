@@ -16,6 +16,7 @@ public:
 	TextureAtlas(int width, int height);
 
 	void addTexture(std::vector<unsigned char> data, int startX, int startY, int width, int height);
+	void initializeAtlas();
 	void loadAtlas();
 
 	int getWidth();
