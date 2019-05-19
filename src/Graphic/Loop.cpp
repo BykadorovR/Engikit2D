@@ -72,7 +72,6 @@ void on_surface_changed() {
 	std::shared_ptr<Texture> textureAnim = std::make_shared<Texture>("../data/textures/firstmain_idle.png", 0, 1024, 1, 3, atlas);
 
 	atlas->initializeAtlas();
-	//atlas->loadAtlas();
 	registerComponentFunctors(textureManager);
 
 	newSprite = createSprite(100, 0, 100, 100, textureRaw);

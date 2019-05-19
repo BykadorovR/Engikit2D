@@ -52,12 +52,6 @@ void TextureAtlas::initializeAtlas() {
 	_atlasID = textureObjectId;
 }
 
-void TextureAtlas::loadAtlas() {
-	GLenum ARGBFormat = 0x1908;
-	glTexImage2D(GL_TEXTURE_2D, 0, ARGBFormat, _width, _height, 0, ARGBFormat, GL_UNSIGNED_BYTE, &_data[0]);
-
-}
-
 int TextureAtlas::getWidth() {
 	return _width;
 }
@@ -140,7 +134,7 @@ std::string Texture::getPath() {
 }
 
 std::shared_ptr<Texture> TextureManager::getTexture(int textureID) {
-	textureList[textureID]->getAtlas()->loadAtlas();
+	textureList[textureID]->getAtlas()->initializeAtlas();
 	return textureList[textureID];
 }
 

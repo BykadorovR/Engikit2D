@@ -6,6 +6,6 @@ Needed to store user created components in container
 */
 class Component {
 public:
-	int _componentID;
+	int _componentID = 0;
 	virtual ~Component() = default;
 };
