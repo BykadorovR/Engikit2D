@@ -26,7 +26,7 @@ public:
 		int componentIndex = -1;
 		for (unsigned int i = 0; i < components.size(); i++) {
 			const std::type_info& existingType = typeid(*components[i].get());
-			if (std::type_index(targetType) == std::type_index(existingType)) {
+			if (std::type_index(targetType) == std::type_index(existingType) || components[i].get()->_componentID == concreteComponent.get()->_componentID) {
 				componentIndex = i;
 			}
 		}

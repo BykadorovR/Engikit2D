@@ -45,6 +45,7 @@ public:
 class TextureComponent : public Component {
 public:
 	void initialize(std::shared_ptr<Texture> texture, GLuint program) {
+		_componentID = 1;
 		_texture = texture;
 		_program = program;
 		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
@@ -90,6 +91,7 @@ public:
 class AnimatedTextureComponent : public Component {
 public:
 	void initialize(std::shared_ptr<Texture> texture, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
+		_componentID = 1;
 		_texture = texture;
 		_program = program;
 		_tilesLatency = tilesLatency;
