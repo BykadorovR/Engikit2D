@@ -1,5 +1,6 @@
 #include "UISystem.h"
 #include "ComponentFunctors.h"
+#include "GUISave.h"
 
 std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
 	std::shared_ptr<TransformComponent> transformComponent) {
@@ -102,6 +103,7 @@ void MouseSystem::update() {
 		auto groupComponent = entity->getComponent<GroupEntitiesComponent>();
 		auto interactionComponent = entity->getComponent<InteractionAddToEntityComponent>();
 		auto textureManagerComponent = entity->getComponent<TextureManagerComponent>();
+		auto saveLoadComponent = entity->getComponent<SaveLoadComponent>();
 
 		if (objectComponent && clickInsideComponent && groupComponent) {			
 			int clickedInside = std::get<1>(processClickInside(objectComponent, clickInsideComponent, groupComponent));
@@ -115,6 +117,8 @@ void MouseSystem::update() {
 				interactionComponent->_interactReady = true;
 			if (textureManagerComponent && clickedInside)
 				textureManagerComponent->_interactReady = true;
+			if (saveLoadComponent && clickedInside)
+				saveLoadComponent->_interactReady = true;
 		}
 
 		auto transformComponent = entity->getComponent<TransformComponent>();
@@ -300,4 +304,55 @@ void InteractionAddToSystem::update() {
 	processAddComponentToEntity();
 	processCreateEntity();
 	processManageTextures();
+}
+
+
+void SaveLoadSystem::processSave(std::string fileName) {
+	std::shared_ptr<GUISave> save = std::make_shared<GUISave>(fileName);
+	for (auto entity : getEntities()) {
+		for (auto functor : componentFunctors) {
+			functor.second->serializeFunctor(entity, save);
+		}
+	}
+	save->saveToFile();
+}
+
+void SaveLoadSystem::processLoad(std::string fileName) {
+	std::shared_ptr<GUISave> load = make_shared<GUISave>(fileName);
+	load->loadFile();
+	for (json::iterator it = load->_jsonFile.begin(); it != load->_jsonFile.end(); ++it) {
+		std::cout << it.key() << std::endl;
+		std::shared_ptr<Entity> targetEntity = nullptr;
+		for (auto entity : getEntities()) {
+			if (entity->_index == std::stoi(it.key()))
+				targetEntity = entity;
+		}
+		if (targetEntity == nullptr) {
+			targetEntity = getEntityManager()->create();
+		}
+		for (auto functor : componentFunctors) {
+			functor.second->deserializeFunctor(targetEntity, it.value());
+		}
+	}
+}
+
+void SaveLoadSystem::update() {
+	for (auto entity : getEntities()) {
+		auto saveLoadComponent = entity->getComponent<SaveLoadComponent>();
+		if (saveLoadComponent && saveLoadComponent->_interactReady) {
+			int mode;
+			std::cout << "Enter 0 to save scene to file, 1 to load scene from file, 2 to do nothing" << std::endl;
+			std::cin >> mode;
+			std::string fileName;
+			std::cout << "Enter filename" << std::endl;
+			std::cin >> fileName;
+			if (mode == 0) {
+				processSave(fileName);
+			} 
+			if (mode == 1) {
+				processLoad(fileName);
+			}
+			saveLoadComponent->_interactReady = false;
+		}
+	}
 }

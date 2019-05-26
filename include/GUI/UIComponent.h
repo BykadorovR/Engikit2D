@@ -5,6 +5,10 @@
 #include "Events.h"
 #include "Entity.h"
 #include "Texture.h"
+#include "nlohmann\json.hpp"
+#include "GUISave.h"
+
+using json = nlohmann::json;
 
 class ClickMoveComponent : public Component, IMouseEvent {
 public:
@@ -13,8 +17,11 @@ public:
 	float _speed;
 	bool _move = false;
 
-	void initialize(float speed) {
+	ClickMoveComponent() {
 		MouseEvent::instance().registerComponent(this);
+	}
+
+	void initialize(float speed) {
 		_speed = speed;
 	}
 
@@ -52,6 +59,12 @@ public:
 		_rightClickFlag = true;
 	}
 
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
 	~ClickInsideComponent() {
 		MouseEvent::instance().unregisterComponent(this);
 	}
@@ -66,6 +79,13 @@ public:
 		_groupNumber = groupNumber;
 		_groupName = groupName;
 	}
+
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
 };
 
 class ClickClickMoveComponent : public Component, IMouseEvent {
@@ -91,6 +111,12 @@ public:
 	void mouseClickDownRight(int x, int y) {
 	}
 
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
 	~ClickClickMoveComponent() {
 		MouseEvent::instance().unregisterComponent(this);
 	}
@@ -113,6 +139,12 @@ public:
 		_interactionMember = interactionMember;
 	}
 
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
 };
 
 class InteractionCreateEntityComponent : public Component {
@@ -126,6 +158,13 @@ public:
 	void initialize() {
 	}
 
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+
 };
 
 class TextureManagerComponent : public Component {
@@ -136,5 +175,26 @@ public:
 
 	void initialize(std::shared_ptr<TextureManager> textureManager) {
 		_textureManager = textureManager;
+	}
+
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+};
+
+class SaveLoadComponent : public Component {
+public:
+	bool _interactReady = false;
+
+	void initialize() {
+	}
+
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
 	}
 };

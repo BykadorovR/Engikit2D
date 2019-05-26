@@ -30,6 +30,12 @@ public:
 		assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
 	//
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;
@@ -69,6 +75,13 @@ public:
 		_textureID = texture->getAtlas()->getAtlasID();
 
 	}
+
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
 	//
 	Buffer _buffer;
 	std::shared_ptr<Texture> _texture;
@@ -119,6 +132,13 @@ public:
 
 	}
 
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+
 	float _widthTile;
 	float _heightTile;
 	int _currentAnimateTile = 0;
@@ -155,6 +175,12 @@ public:
 		_coords = coords;
 	}
 	
+	void serialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
+	}
+
 	Matrix2D _result;
 	std::tuple<float, float> _coords;
 	GLuint _program;

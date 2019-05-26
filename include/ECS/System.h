@@ -21,6 +21,10 @@ public:
 	void setEntityManager(shared_ptr<EntityManager> _entityManager) {
 		entityManager = _entityManager;
 	}
+
+	shared_ptr<EntityManager> getEntityManager() {
+		return entityManager;
+	}
 private:
 	//Reference to EntityManager to be able obtain all related Entities
 	shared_ptr<EntityManager> entityManager;

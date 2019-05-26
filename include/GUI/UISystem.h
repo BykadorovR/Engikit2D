@@ -30,3 +30,10 @@ public:
 	void update();
 };
 
+class SaveLoadSystem : public System {
+	void processSave(std::string fileName);
+	void processLoad(std::string fileName);
+public:
+	void update();
+};
+

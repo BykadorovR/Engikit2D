@@ -61,6 +61,11 @@ public:
 		}
 		return false;
 	}
+
+	std::vector<shared_ptr<Component> > getComponents() {
+		return components;
+	}
+
 private:
 	std::vector<shared_ptr<Component> > components;
 };

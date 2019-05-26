@@ -8,6 +8,8 @@ class ComponentFunctor {
 public:
 	virtual std::shared_ptr<Component> createFunctor() = 0;
 	virtual void removeFunctor(std::shared_ptr<Entity> targetEntity) = 0;
+	virtual void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) = 0;
+	virtual void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) = 0;
 };
 
 extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFunctors;
@@ -20,10 +22,35 @@ class ClickMoveComponentFunctor : public ComponentFunctor {
 		std::cin >> speed;
 		clickComponent->initialize(speed);
 		return clickComponent;
-	};
+	}
+
 	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
 		targetEntity->removeComponent<ClickMoveComponent>();
-	};
+	}
+
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<ClickMoveComponent> clickMoveComponent = targetEntity->getComponent<ClickMoveComponent>();
+		if (!clickMoveComponent)
+			return;
+		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["leftClick"] = { std::get<0>(clickMoveComponent->_leftClick), std::get<1>(clickMoveComponent->_leftClick) };
+		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["rightClick"] = { std::get<0>(clickMoveComponent->_rightClick), std::get<1>(clickMoveComponent->_rightClick) };
+		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["speed"] = clickMoveComponent->_speed;
+		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["move"] = clickMoveComponent->_move;
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<ClickMoveComponent> clickMoveComponent = targetEntity->getComponent<ClickMoveComponent>();
+		if (!clickMoveComponent) {
+			clickMoveComponent = std::shared_ptr<ClickMoveComponent>(new ClickMoveComponent());
+			targetEntity->addComponent(clickMoveComponent);
+		}
+		clickMoveComponent->_leftClick = { jsonFile["ClickMoveComponent"]["leftClick"][0], jsonFile["ClickMoveComponent"]["leftClick"][1] };
+		clickMoveComponent->_rightClick = { jsonFile["ClickMoveComponent"]["rightClick"][0], jsonFile["ClickMoveComponent"]["rightClick"][1] };
+		clickMoveComponent->_speed = jsonFile["ClickMoveComponent"]["speed"];
+		clickMoveComponent->_move = jsonFile["ClickMoveComponent"]["move"];
+	}
 
 };
 
@@ -71,11 +98,17 @@ public:
 		std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
 		textureComponent->initialize(targetTexture, programID);
 		return textureComponent;
-	};
+	}
 
 	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
 		targetEntity->removeComponent<TextureComponent>();
-	};
+	}
+
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	}
 
 	std::shared_ptr<TextureManager> _textureManager;
 

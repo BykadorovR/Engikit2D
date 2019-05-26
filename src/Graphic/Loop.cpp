@@ -8,15 +8,9 @@
 #include "UISystem.h"
 #include "Events.h"
 #include "ComponentFunctors.h"
+#include <nlohmann/json.hpp>
 
-/*
-TODO: 
-collision component
-move GraphicComponent impl to cpp file
-add rotate and scale functions
-create windows with buttons
-*/
-
+using json = nlohmann::json;
 
 void on_surface_created() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -61,7 +55,8 @@ int transform(float shiftX, float shiftY, shared_ptr<Entity> object) {
 shared_ptr<DrawSystem> drawSystem;
 shared_ptr<MouseSystem> mouseSystem;
 shared_ptr<InteractionAddToSystem> interactionAddToSystem;
-shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite;
+shared_ptr<SaveLoadSystem> saveLoadSystem;
+shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite, loadSaveSprite;
 
 
 void on_surface_changed() {
@@ -113,6 +108,11 @@ void on_surface_changed() {
 	textureSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
 	textureSprite->createComponent<TextureManagerComponent>()->initialize(textureManager);
 
+	loadSaveSprite = createSprite(400, 0, 100, 100, textureRaw);
+	loadSaveSprite->createComponent<ClickInsideComponent>()->initialize(false);
+	loadSaveSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	loadSaveSprite->createComponent<SaveLoadComponent>()->initialize();
+
 	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
 	animatedSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
 	animatedSprite->createComponent<ClickInsideComponent>()->initialize();
@@ -123,7 +123,7 @@ void on_surface_changed() {
 	drawSystem = world.createSystem<DrawSystem>();
 	mouseSystem = world.createSystem<MouseSystem>();
 	interactionAddToSystem = world.createSystem<InteractionAddToSystem>();
-
+	saveLoadSystem = world.createSystem<SaveLoadSystem>();
 }
 
 void update(int value) {
@@ -137,6 +137,7 @@ void on_draw_frame() {
 	mouseSystem->update();
 	drawSystem->update();
 	interactionAddToSystem->update();
+	saveLoadSystem->update();
 
 	glutSwapBuffers(); // Flush drawing commands
 }

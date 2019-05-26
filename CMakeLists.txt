@@ -72,6 +72,7 @@ add_dependencies(game glew freeglut libpng)
 
 #add folders with gmock headers to "include" section in VS test project
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)
+target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/json/include)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/freeglut/include)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libpng)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/)
@@ -100,6 +101,7 @@ add_executable(tests ${TEST_SOURCE})
 add_dependencies(tests googletest glew freeglut libpng)
 
 #add folders with gmock headers to "include" section in VS test project
+target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/json/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/googletest/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/freeglut/include)
