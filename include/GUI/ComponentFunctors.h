@@ -33,33 +33,34 @@ class ClickMoveComponentFunctor : public ComponentFunctor {
 		std::shared_ptr<ClickMoveComponent> clickMoveComponent = targetEntity->getComponent<ClickMoveComponent>();
 		if (!clickMoveComponent)
 			return;
-		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["leftClick"] = { std::get<0>(clickMoveComponent->_leftClick), std::get<1>(clickMoveComponent->_leftClick) };
-		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["rightClick"] = { std::get<0>(clickMoveComponent->_rightClick), std::get<1>(clickMoveComponent->_rightClick) };
-		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["speed"] = clickMoveComponent->_speed;
-		save->_jsonFile[std::to_string(entityID)]["ClickMoveComponent"]["move"] = clickMoveComponent->_move;
+
+		save->_jsonFile["Entity"]["ID"] = entityID;
+		save->_jsonFile["Entity"]["ClickMoveComponent"]["leftClick"] = { std::get<0>(clickMoveComponent->_leftClick), std::get<1>(clickMoveComponent->_leftClick) };
+		save->_jsonFile["Entity"]["ClickMoveComponent"]["rightClick"] = { std::get<0>(clickMoveComponent->_rightClick), std::get<1>(clickMoveComponent->_rightClick) };
+		save->_jsonFile["Entity"]["ClickMoveComponent"]["speed"] = clickMoveComponent->_speed;
+		save->_jsonFile["Entity"]["ClickMoveComponent"]["move"] = clickMoveComponent->_move;
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
-		int entityID = targetEntity->_index;
 		std::shared_ptr<ClickMoveComponent> clickMoveComponent = targetEntity->getComponent<ClickMoveComponent>();
 		if (!clickMoveComponent) {
 			clickMoveComponent = std::shared_ptr<ClickMoveComponent>(new ClickMoveComponent());
-			targetEntity->addComponent(clickMoveComponent);
 		}
+
+		if (jsonFile["ClickMoveComponent"].empty())
+			return;
+
 		clickMoveComponent->_leftClick = { jsonFile["ClickMoveComponent"]["leftClick"][0], jsonFile["ClickMoveComponent"]["leftClick"][1] };
 		clickMoveComponent->_rightClick = { jsonFile["ClickMoveComponent"]["rightClick"][0], jsonFile["ClickMoveComponent"]["rightClick"][1] };
 		clickMoveComponent->_speed = jsonFile["ClickMoveComponent"]["speed"];
 		clickMoveComponent->_move = jsonFile["ClickMoveComponent"]["move"];
+		targetEntity->addComponent(clickMoveComponent);
 	}
 
 };
 
 class TextureComponentFunctor : public ComponentFunctor {
 public:
-	TextureComponentFunctor(std::shared_ptr<TextureManager> textureManager) {
-		_textureManager = textureManager;
-	}
-
 	//TODO: How to use atlas and textures dynamically
 	std::shared_ptr<Component> createFunctor() {
 		Shader shader;
@@ -71,7 +72,7 @@ public:
 		std::cout << "Enter program ID" << std::endl;
 		std::cin >> programID;
 
-		std::shared_ptr<Texture> targetTexture = _textureManager->getTexture(textureID);
+		auto targetTexture = TextureManager::instance()->getTexture(textureID);
 		if (targetTexture->getRow() > 1 || targetTexture->getColumn() > 1) {
 			std::shared_ptr<AnimatedTextureComponent> textureComponent(new AnimatedTextureComponent());
 			int tilesCount = targetTexture->getRow() * targetTexture->getColumn();
@@ -105,13 +106,27 @@ public:
 	}
 
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+		if (!textureComponent)
+			return;
+		save->_jsonFile["Entity"]["TextureComponent"]["textureID"] = textureComponent->_texture->getTextureID();
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
-	}
+		int entityID = targetEntity->_index;
+		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+		if (!textureComponent) {
+			textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
+			targetEntity->addComponent(textureComponent);
+		}
+		Shader shader;
+		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+		int textureID = jsonFile["TextureComponent"]["textureID"];
 
-	std::shared_ptr<TextureManager> _textureManager;
+		textureComponent->initialize(textureID, program);
+	}
 
 };
 
-void registerComponentFunctors(std::shared_ptr<TextureManager> textureManager);
+void registerComponentFunctors();

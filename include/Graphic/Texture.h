@@ -22,12 +22,14 @@ public:
 	int getHeight();
 	unsigned char* getData();
 	unsigned char& operator[](int index);
-	GLuint getAtlasID();
-
+	int getAtlasID();
+	void setAtlasID(int atlasID);
+	GLuint getTexureObjectID();
 private:
 	int _width, _height;
 	std::vector<unsigned char> _data;
-	GLuint _atlasID;
+	GLuint _textureObjectId;
+	int _atlasID;
 };
 
 class Texture {
@@ -46,6 +48,8 @@ public:
 	int getX();
 	int getY();
 	std::string getPath();
+	void setTextureID(int textureID);
+	int getTextureID();
 
 private:
 	std::shared_ptr<TextureAtlas> _atlas;
@@ -54,20 +58,29 @@ private:
 	int _posXAtlas, _posYAtlas;
 	int _width, _height;
 	int _row, _column;
+	int _textureID;
 };
 
 class TextureManager {
-public:
+private:
+	int textureCounter = 0;
 	TextureManager() {
 
 	}
+public:
+	static TextureManager* instance() {
+		static TextureManager textureManager;
+		return &textureManager;
+	}
 	void printTextures();
-	void loadTexture(std::string imagePath, int atlasID, int atlasX, int atlasY);
-	void loadTexture(std::string imagePath, int atlasID, int atlasX, int atlasY, int tileX, int tileY);
+	std::shared_ptr<Texture> loadTexture(std::string imagePath, int atlasID, int atlasX, int atlasY);
+	std::shared_ptr<Texture> loadTexture(std::string imagePath, int atlasID, int atlasX, int atlasY, int tileX, int tileY);
 	std::shared_ptr<Texture> getTexture(int textureID);
+	std::vector<std::shared_ptr<Texture> > getTextureList();
+	std::vector<std::shared_ptr<TextureAtlas> > getAtlasList();
+	std::shared_ptr<TextureAtlas> loadAtlas(int atlasID, int width, int height);
 private:
-	int findAtlasID(std::shared_ptr<TextureAtlas> atlas);
 	std::shared_ptr<TextureAtlas> findAtlas(int atlasID);
-	std::map<int, std::shared_ptr<TextureAtlas> > atlasMap;
+	std::vector<std::shared_ptr<TextureAtlas> > atlasList;
 	std::vector<std::shared_ptr<Texture> > textureList;
 };

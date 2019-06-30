@@ -1,5 +1,6 @@
 #include "GUISave.h"
 #include <fstream>
+#include <iomanip>
 
 GUISave::GUISave(std::string fileName) {
 	_fileName = fileName;
@@ -15,5 +16,5 @@ void GUISave::loadFile() {
 
 void GUISave::saveToFile() {
 	std::ofstream file(_fileName);
-	file << _jsonFile;
+	file << std::setw(4) << _jsonFile << std::endl;
 }

@@ -1,7 +1,6 @@
 #pragma once
 #include "Component.h"
 #include "Common.h"
-#include "Window.h"
 #include "Events.h"
 #include "Entity.h"
 #include "Texture.h"
@@ -171,10 +170,9 @@ class TextureManagerComponent : public Component {
 public:
 	bool _interactReady = false;
 	std::string _textureName;
-	std::shared_ptr<TextureManager> _textureManager;
+	
+	void initialize() {
 
-	void initialize(std::shared_ptr<TextureManager> textureManager) {
-		_textureManager = textureManager;
 	}
 
 	void serialize(int entityID, std::shared_ptr<GUISave> save) {

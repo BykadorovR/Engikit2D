@@ -25,7 +25,7 @@ void textureUpdate(std::shared_ptr<TextureComponent> object) {
 	//bind texture and handle fragment shader
 	//we can use multiple textures, but we use only one, do it active and send textureUnitLocation = 0 to shader
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, object->_textureID);
+	glBindTexture(GL_TEXTURE_2D, object->_textureObject);
 	glUniform1i(object->_uTextureUnitLocation, 0);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
@@ -39,7 +39,7 @@ void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
 	glUniform1f(object->_uAdjustXLocation, object->_widthTile * object->_tilesOrder[(object->_currentAnimateTile)]);
 	//bind texture and handle fragment shader
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, object->_textureID);
+	glBindTexture(GL_TEXTURE_2D, object->_textureObject);
 	glUniform1i(object->_uTextureUnitLocation, 0);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -67,8 +67,8 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Tr
 	transform->_coords = { 0, 0 };
 }
 
-void DrawSystem::update() {
-	for (auto entity : getEntities()) {
+void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
+	for (auto entity : entityManager->getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
 		assert(vertexObject);
 		vertexUpdate(vertexObject);

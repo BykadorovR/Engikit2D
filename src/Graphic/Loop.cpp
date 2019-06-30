@@ -60,18 +60,16 @@ shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite, loadS
 
 
 void on_surface_changed() {
-	std::shared_ptr<TextureManager> textureManager = std::make_shared<TextureManager>();
-
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
 	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>("../data/textures/air_hockey_surface.png", 0, 0, atlas);
 	std::shared_ptr<Texture> textureAnim = std::make_shared<Texture>("../data/textures/firstmain_idle.png", 0, 1024, 1, 3, atlas);
 
 	atlas->initializeAtlas();
-	registerComponentFunctors(textureManager);
+	registerComponentFunctors();
 
 	newSprite = createSprite(100, 0, 100, 100, textureRaw);
 	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
-	newSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	newSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	newSprite->createComponent<InteractionCreateEntityComponent>()->initialize();
 	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [textureRaw](std::tuple<int, int> coords, std::tuple<int, int> size) -> std::shared_ptr<Entity> {
 		shared_ptr<Entity> sprite;
@@ -100,23 +98,23 @@ void on_surface_changed() {
 
 	staticSprite = createSprite(200, 0, 100, 100, textureRaw);
 	staticSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
-	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	staticSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::SUBJECT);
 
 	textureSprite = createSprite(300, 0, 100, 100, textureRaw);
 	textureSprite->createComponent<ClickInsideComponent>()->initialize(false);
-	textureSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
-	textureSprite->createComponent<TextureManagerComponent>()->initialize(textureManager);
+	textureSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
+	textureSprite->createComponent<TextureManagerComponent>()->initialize();
 
 	loadSaveSprite = createSprite(400, 0, 100, 100, textureRaw);
 	loadSaveSprite->createComponent<ClickInsideComponent>()->initialize(false);
-	loadSaveSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "Environment");
+	loadSaveSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	loadSaveSprite->createComponent<SaveLoadComponent>()->initialize();
 
 	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
 	animatedSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
 	animatedSprite->createComponent<ClickInsideComponent>()->initialize();
-	animatedSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "GG");
+	animatedSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "GG");
 
 
 
@@ -134,10 +132,10 @@ void update(int value) {
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	mouseSystem->update();
-	drawSystem->update();
-	interactionAddToSystem->update();
-	saveLoadSystem->update();
+	mouseSystem->update(world.getEntityManager());
+	drawSystem->update(world.getEntityManager());
+	interactionAddToSystem->update(world.getEntityManager());
+	saveLoadSystem->update(world.getEntityManager());
 
 	glutSwapBuffers(); // Flush drawing commands
 }

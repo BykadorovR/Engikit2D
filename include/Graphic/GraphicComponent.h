@@ -30,12 +30,6 @@ public:
 		assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
-	void serialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
-	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
 	//
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;
@@ -50,6 +44,32 @@ public:
 
 class TextureComponent : public Component {
 public:
+	void initialize(int textureID, GLuint program) {
+		_componentID = 1;
+		_texture = TextureManager::instance()->getTexture(textureID);
+		_program = program;
+		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
+		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
+		float textureWidthN = (float)_texture->getWidth() / (float)_texture->getAtlas()->getWidth();
+		float textureHeightN = (float)_texture->getHeight() / (float)_texture->getAtlas()->getHeight();
+		// Order of coordinates: S, T
+		// 0   2
+		// | / |
+		// 1   3
+		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
+								posXInAtlasN,                 posYInAtlasN + textureHeightN,
+								posXInAtlasN + textureWidthN, posYInAtlasN,
+								posXInAtlasN + textureWidthN, posYInAtlasN + textureHeightN };
+		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
+		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
+		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
+		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
+		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
+
+		_textureObject = _texture->getAtlas()->getTexureObjectID();
+
+	}
+
 	void initialize(std::shared_ptr<Texture> texture, GLuint program) {
 		_componentID = 1;
 		_texture = texture;
@@ -72,14 +92,8 @@ public:
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
 		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
 
-		_textureID = texture->getAtlas()->getAtlasID();
+		_textureObject = texture->getAtlas()->getTexureObjectID();
 
-	}
-
-	void serialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
-	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
 	}
 
 	//
@@ -87,7 +101,8 @@ public:
 	std::shared_ptr<Texture> _texture;
 	//
 	GLuint _program;
-	GLuint _textureID;
+	//atlas ID
+	GLuint _textureObject;
 	GLint _aTextureCoordinatesLocation;
 	GLint _uTextureUnitLocation;
 	GLint _uAdjustXLocation;
@@ -103,6 +118,34 @@ public:
 
 class AnimatedTextureComponent : public Component {
 public:
+	void initialize(int textureID, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
+		_componentID = 1;
+		_texture = TextureManager::instance()->getTexture(textureID);
+		_program = program;
+		_tilesLatency = tilesLatency;
+		_tilesOrder = tilesOrder;
+		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
+		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
+		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();
+		_widthTile = widthTile;
+		float heightTile = (float)_texture->getHeight() / (float)_texture->getRow() / (float)_texture->getAtlas()->getHeight();
+		_heightTile = heightTile;
+		// Order of coordinates: S, T
+		// 0   2
+		// | / |
+		// 1   3
+		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
+								posXInAtlasN,                 posYInAtlasN + heightTile,
+								posXInAtlasN + widthTile, posYInAtlasN,
+								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
+		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
+		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
+		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
+		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
+		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
+		_textureObject = _texture->getAtlas()->getTexureObjectID();
+
+	}
 	void initialize(std::shared_ptr<Texture> texture, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
 		_componentID = 1;
 		_texture = texture;
@@ -128,16 +171,9 @@ public:
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
 		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
-		_textureID = texture->getAtlas()->getAtlasID();
+		_textureObject = texture->getAtlas()->getTexureObjectID();
 
 	}
-
-	void serialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
-	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
 
 	float _widthTile;
 	float _heightTile;
@@ -150,7 +186,7 @@ public:
 	std::shared_ptr<Texture> _texture;
 	//
 	GLuint _program;
-	GLuint _textureID;
+	GLuint _textureObject;
 	GLint _aTextureCoordinatesLocation;
 	GLint _uTextureUnitLocation;
 	GLint _uAdjustXLocation;
@@ -173,12 +209,6 @@ public:
 
 	void setTransform(std::tuple<float, float> coords) {
 		_coords = coords;
-	}
-	
-	void serialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
-	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
 	}
 
 	Matrix2D _result;

@@ -11,33 +11,17 @@ components through ComponentManager class.
 class System {
 public:
 	// Called every game update
-	virtual void update() {};
+	virtual void update(shared_ptr<EntityManager> entityManager) {};
 
-	vector<shared_ptr<Entity> > getEntities() {
-		return entityManager->getEntities();
-	}
-	
-	//Set entity pool current system will work with
-	void setEntityManager(shared_ptr<EntityManager> _entityManager) {
-		entityManager = _entityManager;
-	}
-
-	shared_ptr<EntityManager> getEntityManager() {
-		return entityManager;
-	}
-private:
-	//Reference to EntityManager to be able obtain all related Entities
-	shared_ptr<EntityManager> entityManager;
 };
 
 class SystemManager {
 public:
 	template <class ConcreteSystem>
-	shared_ptr<ConcreteSystem> create(shared_ptr<EntityManager> entityManager) {
+	shared_ptr<ConcreteSystem> create() {
 		shared_ptr<ConcreteSystem> system = get<ConcreteSystem>();
 		if (system == nullptr) {
 			system = make_shared<ConcreteSystem>();
-			dynamic_pointer_cast<System>(system)->setEntityManager(entityManager);
 			systems.push_back(system);
 			return system;
 		}

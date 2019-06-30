@@ -84,12 +84,12 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickInside(std
 //TODO: DISABLE ONLY MOVEMENT SYSTEM IF CLICKED
 //THINK ABOUT SEVERAL CLICKTOMOVE ENTITIES
 //DO MORE APROPRIATE LOGIC FOR HANDLING mainHeroDisableMoving (NOW ONLY 1 is disallowed but it's not correct so GG moves to second click)
-void MouseSystem::update() {
+void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 	std::vector<std::shared_ptr<Entity> > playerControlledEntities;
 	int playerControlledEntitiesDisableMoving = 0;
 
 	//first of all we should find GG
-	for (auto entity : getEntities()) {
+	for (auto entity : entityManager->getEntities()) {
 		auto clickMoveComponent = entity->getComponent<ClickMoveComponent>();
 		//Can use existence of ClickMoveComponent also
 		if (clickMoveComponent)
@@ -97,7 +97,7 @@ void MouseSystem::update() {
 	}
 
 	//handle all components except ClickMoveComponent
-	for (auto entity : getEntities()) {
+	for (auto entity : entityManager->getEntities()) {
 		auto objectComponent = entity->getComponent<ObjectComponent>();
 		auto clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 		auto groupComponent = entity->getComponent<GroupEntitiesComponent>();
@@ -166,8 +166,8 @@ void MouseSystem::update() {
 	}
 }
 
-void InteractionAddToSystem::processManageTextures() {
-	for (auto entity : getEntities()) {
+void InteractionAddToSystem::processManageTextures(shared_ptr<EntityManager> entityManager) {
+	for (auto entity : entityManager->getEntities()) {
 		auto textureManagerComponent = entity->getComponent<TextureManagerComponent>();
 		if (!textureManagerComponent)
 			continue;
@@ -179,7 +179,7 @@ void InteractionAddToSystem::processManageTextures() {
 			case 0:
 				break;
 			case 1:
-				textureManagerComponent->_textureManager->printTextures();
+				TextureManager::instance()->printTextures();
 				break;
 			case 2:
 				std::string fullPath;
@@ -192,12 +192,12 @@ void InteractionAddToSystem::processManageTextures() {
 				std::cout << "Enter 1 if Texture, 2 if AnimatedTexture" << std::endl;
 				std::cin >> textureMode;
 				if (textureMode == 1) {
-					textureManagerComponent->_textureManager->loadTexture(fullPath, atlasID, x, y);
+					TextureManager::instance()->loadTexture(fullPath, atlasID, x, y);
 				} else if (textureMode == 2) {
 					int tileX, tileY;
 					std::cout << "Enter x tiles number and y tiles number" << std::endl;
 					std::cin >> tileX >> tileY;
-					textureManagerComponent->_textureManager->loadTexture(fullPath, atlasID, x, y, tileX, tileY);
+					TextureManager::instance()->loadTexture(fullPath, atlasID, x, y, tileX, tileY);
 				}
 				break;
 			}
@@ -206,10 +206,10 @@ void InteractionAddToSystem::processManageTextures() {
 	}
 }
 
-void InteractionAddToSystem::processCreateEntity() {
+void InteractionAddToSystem::processCreateEntity(shared_ptr<EntityManager> entityManager) {
 	//
 
-	for (auto entity : getEntities()) {
+	for (auto entity : entityManager->getEntities()) {
 		auto interactionComponent = entity->getComponent<InteractionCreateEntityComponent>();
 		if (!interactionComponent)
 			continue;
@@ -235,11 +235,11 @@ void InteractionAddToSystem::processCreateEntity() {
 	}
 }
 
-void InteractionAddToSystem::processAddComponentToEntity() {
+void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManager> entityManager) {
 	shared_ptr<Entity> subjectEntity = nullptr;
 	shared_ptr<Entity> objectEntity = nullptr;
 	//find interaction components with subject and object types
-	for (auto entity : getEntities()) {
+	for (auto entity : entityManager->getEntities()) {
 		auto interactionComponent = entity->getComponent<InteractionAddToEntityComponent>();
 		if (interactionComponent && interactionComponent->_interactReady) {
 			if (interactionComponent->_interactionMember == InteractionMember::OBJECT)
@@ -300,59 +300,102 @@ void InteractionAddToSystem::processAddComponentToEntity() {
 	}
 }
 
-void InteractionAddToSystem::update() {
-	processAddComponentToEntity();
-	processCreateEntity();
-	processManageTextures();
+void InteractionAddToSystem::update(shared_ptr<EntityManager> entityManager) {
+	processAddComponentToEntity(entityManager);
+	processCreateEntity(entityManager);
+	processManageTextures(entityManager);
 }
 
-
-void SaveLoadSystem::processSave(std::string fileName) {
-	std::shared_ptr<GUISave> save = std::make_shared<GUISave>(fileName);
-	for (auto entity : getEntities()) {
-		for (auto functor : componentFunctors) {
-			functor.second->serializeFunctor(entity, save);
-		}
+void SaveLoadSystem::saveEntities(shared_ptr<EntityManager> entityManager, std::shared_ptr<GUISave> fileSave) {
+	for (auto entity : entityManager->getEntities()) {
+		auto groupEntitiesComponent = entity->getComponent<GroupEntitiesComponent>();
+		if (groupEntitiesComponent && groupEntitiesComponent->_groupName != std::string("Engine"))
+			for (auto functor : componentFunctors) {
+				functor.second->serializeFunctor(entity, fileSave);
+			}
 	}
-	save->saveToFile();
+	fileSave->saveToFile();
 }
 
-void SaveLoadSystem::processLoad(std::string fileName) {
-	std::shared_ptr<GUISave> load = make_shared<GUISave>(fileName);
-	load->loadFile();
-	for (json::iterator it = load->_jsonFile.begin(); it != load->_jsonFile.end(); ++it) {
-		std::cout << it.key() << std::endl;
+void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::shared_ptr<GUISave> fileLoad) {
+	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
 		std::shared_ptr<Entity> targetEntity = nullptr;
-		for (auto entity : getEntities()) {
-			if (entity->_index == std::stoi(it.key()))
-				targetEntity = entity;
-		}
-		if (targetEntity == nullptr) {
-			targetEntity = getEntityManager()->create();
-		}
-		for (auto functor : componentFunctors) {
-			functor.second->deserializeFunctor(targetEntity, it.value());
+		if (std::string("Entity") == it.key()) {
+			for (auto entity : entityManager->getEntities()) {
+				if (it.value()["ID"] == entity->_index)
+					targetEntity = entity;
+			}
+			if (targetEntity == nullptr) {
+				targetEntity = entityManager->create();
+				targetEntity->_index = it.value()["ID"];
+			}
+			for (auto functor : componentFunctors) {
+				functor.second->deserializeFunctor(targetEntity, it.value());
+			}
 		}
 	}
 }
 
-void SaveLoadSystem::update() {
-	for (auto entity : getEntities()) {
+void SaveLoadSystem::saveTextures(std::shared_ptr<GUISave> fileSave) {
+	auto textureManager = TextureManager::instance();
+	//texture atlases:
+	//width height atlasID
+	//textures: path width height row column atlasID posXAtlas posYAtlas
+	//
+	for (auto &textureAtlas : textureManager->getAtlasList()) {
+		fileSave->_jsonFile["textureAtlas"] = { textureAtlas->getAtlasID(), textureAtlas->getWidth(), textureAtlas->getHeight() };
+	}
+	for (auto &texture : textureManager->getTextureList()) {
+		fileSave->_jsonFile["texture"] = { texture->getTextureID(), texture->getPath(), texture->getAtlas()->getAtlasID(), texture->getPosXAtlas(), texture->getPosYAtlas(),
+										   texture->getRow(), texture->getColumn() };
+	}
+	fileSave->saveToFile();
+}
+
+void SaveLoadSystem::loadTextures(std::shared_ptr<GUISave> fileLoad) {
+	auto textureManager = TextureManager::instance();
+	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
+		if (it.key() == "textureAtlas") {
+			textureManager->loadAtlas(it.value()[0], it.value()[1], it.value()[2]);
+		}
+	}
+	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
+		if (it.key() == "texture") {
+			auto texture = textureManager->loadTexture(it.value()[1], it.value()[2], it.value()[3], it.value()[4], it.value()[5], it.value()[6]);
+			texture->setTextureID(it.value()[0]);
+		}
+	}
+}
+
+void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
+	std::string fileName;
+	int mode = 2;
+	//find save sprite and check interaction component is ready
+	for (auto entity : entityManager->getEntities()) {
 		auto saveLoadComponent = entity->getComponent<SaveLoadComponent>();
 		if (saveLoadComponent && saveLoadComponent->_interactReady) {
-			int mode;
 			std::cout << "Enter 0 to save scene to file, 1 to load scene from file, 2 to do nothing" << std::endl;
 			std::cin >> mode;
-			std::string fileName;
+			if (mode == 2) {
+				saveLoadComponent->_interactReady = false;
+				return;
+			}
 			std::cout << "Enter filename" << std::endl;
 			std::cin >> fileName;
-			if (mode == 0) {
-				processSave(fileName);
-			} 
-			if (mode == 1) {
-				processLoad(fileName);
-			}
 			saveLoadComponent->_interactReady = false;
 		}
+	}
+
+	if (mode == 0) {
+		std::shared_ptr<GUISave> saveFile = std::make_shared<GUISave>(fileName);
+		//First of all need to save texture atlases and textures
+		saveTextures(saveFile);
+		saveEntities(entityManager, saveFile);
+	}
+	if (mode == 1) {
+		std::shared_ptr<GUISave> loadFile = make_shared<GUISave>(fileName);
+		loadFile->loadFile();
+		loadTextures(loadFile);
+		loadEntities(entityManager, loadFile);
 	}
 }

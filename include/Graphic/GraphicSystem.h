@@ -6,7 +6,7 @@ private:
 	void draw();
 public:
 	// Called every game update
-	void update();
+	void update(shared_ptr<EntityManager> entityManager);
 
 };
 
@@ -15,7 +15,7 @@ private:
 	void draw(std::shared_ptr<ObjectComponent> object);
 public:
 	// Called every game update
-	void update();
+	void update(shared_ptr<EntityManager> entityManager);
 };
 
 class TextureSystem : public System {
@@ -23,7 +23,7 @@ private:
 	void draw(std::shared_ptr<TextureComponent> object);
 public:
 	// Called every game update
-	void update();
+	void update(shared_ptr<EntityManager> entityManager);
 };
 
 class AnimatedTextureSystem : public System {
@@ -31,12 +31,12 @@ private:
 	void draw(std::shared_ptr<AnimatedTextureComponent> object);
 public:
 	// Called every game update
-	void update();
+	void update(shared_ptr<EntityManager> entityManager);
 };
 
 class TransformSystem : public System {
 private:
 	void draw(std::shared_ptr<TransformComponent> object);
 public:
-	void update();
+	void update(shared_ptr<EntityManager> entityManager);
 };

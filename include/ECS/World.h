@@ -35,7 +35,7 @@ public:
 
 	template <class ConcreteSystem>
 	shared_ptr<ConcreteSystem> createSystem() {
-		return systemManager->create<ConcreteSystem>(entityManager);
+		return systemManager->create<ConcreteSystem>();
 	}
 
 	//get existing system or create new one
@@ -44,6 +44,13 @@ public:
 		return systemManager->get<ConcreteSystem>();
 	}
 
+	shared_ptr<EntityManager> getEntityManager() {
+		return entityManager;
+	}
+
+	shared_ptr<SystemManager> getSystemManager() {
+		return systemManager;
+	}
 
 private:
 	shared_ptr<EntityManager> entityManager; //Reference to entityManager (to be able delete entity ID)
