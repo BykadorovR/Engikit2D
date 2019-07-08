@@ -52,8 +52,8 @@ class ClickMoveComponentFunctor : public ComponentFunctor {
 
 		clickMoveComponent->_leftClick = { jsonFile["ClickMoveComponent"]["leftClick"][0], jsonFile["ClickMoveComponent"]["leftClick"][1] };
 		clickMoveComponent->_rightClick = { jsonFile["ClickMoveComponent"]["rightClick"][0], jsonFile["ClickMoveComponent"]["rightClick"][1] };
-		clickMoveComponent->_speed = jsonFile["ClickMoveComponent"]["speed"];
 		clickMoveComponent->_move = jsonFile["ClickMoveComponent"]["move"];
+		clickMoveComponent->initialize(jsonFile["ClickMoveComponent"]["speed"]);
 		targetEntity->addComponent(clickMoveComponent);
 	}
 
@@ -134,10 +134,13 @@ public:
 class ObjectComponentFunctor : public ComponentFunctor {
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
 		int entityID = targetEntity->_index;
-		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
-		if (!textureComponent)
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		if (!objectComponent)
 			return;
-		save->_jsonFile["Entity"]["TextureComponent"]["textureID"] = textureComponent->_texture->getTextureID();
+
+		save->_jsonFile["Entity"]["ID"] = entityID;
+		save->_jsonFile["Entity"]["ObjectComponent"]["sceneCoord"] = {objectComponent->_sceneX, objectComponent->_sceneY};
+		save->_jsonFile["Entity"]["ObjectComponent"]["objectSize"] = { objectComponent->_objectWidth, objectComponent->_objectHeight };
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
@@ -148,16 +151,13 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			targetEntity->addComponent(objectComponent);
 		}
 
-		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
-		if (!textureComponent) {
-			textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
-			targetEntity->addComponent(textureComponent);
-		}
-		int textureID = jsonFile["TextureComponent"]["textureID"];
-
-		textureComponent->initialize(textureID, program);
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+		float sceneX = jsonFile["ObjectComponent"]["sceneCoord"][0];
+		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
+		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
+		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
+		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
 	}
 
 };
