@@ -115,16 +115,49 @@ public:
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		if (!objectComponent)
+			return;
+		auto program = objectComponent->_program;
 		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
 		if (!textureComponent) {
 			textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
 			targetEntity->addComponent(textureComponent);
 		}
-		Shader shader;
-		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 		int textureID = jsonFile["TextureComponent"]["textureID"];
 
 		textureComponent->initialize(textureID, program);
+	}
+
+};
+
+class ObjectComponentFunctor : public ComponentFunctor {
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+		if (!textureComponent)
+			return;
+		save->_jsonFile["Entity"]["TextureComponent"]["textureID"] = textureComponent->_texture->getTextureID();
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		if (!objectComponent) {
+			objectComponent = std::shared_ptr<ObjectComponent>(new ObjectComponent());
+			targetEntity->addComponent(objectComponent);
+		}
+
+		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+		if (!textureComponent) {
+			textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
+			targetEntity->addComponent(textureComponent);
+		}
+		int textureID = jsonFile["TextureComponent"]["textureID"];
+
+		textureComponent->initialize(textureID, program);
+		Shader shader;
+		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	}
 
 };
