@@ -134,8 +134,8 @@ public:
 class ObjectComponentFunctor : public ComponentFunctor {
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor() {
-		std::shared_ptr<ObjectComponent> clickComponent(new ObjectComponent());
-		return clickComponent;
+		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
+		return objectComponent;
 	}
 
 	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
@@ -168,7 +168,91 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
 		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
 	}
+};
 
+class ClickInsideFunctor : public ComponentFunctor {
+	//this component can't be added to Entity, so it's just a stub
+	std::shared_ptr<Component> createFunctor() {
+		std::shared_ptr<ClickInsideComponent> clickComponent(new ClickInsideComponent());
+		bool moveToByClick;
+		std::cout << "Move toward this object allowed?" << std::endl;
+		std::cin >> moveToByClick;
+		clickComponent->initialize(moveToByClick);
+		return clickComponent;
+	}
+
+	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
+		targetEntity->removeComponent<ClickInsideComponent>();
+	}
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<ClickInsideComponent> clickInsideComponent = targetEntity->getComponent<ClickInsideComponent>();
+		if (!clickInsideComponent)
+			return;
+
+		save->_jsonFile["Entity"]["ID"] = entityID;
+		save->_jsonFile["Entity"]["ClickInsideComponent"]["moveToByClick"] = clickInsideComponent->_moveToByClick;
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		int entityID = targetEntity->_index;
+		if (jsonFile["ClickInsideComponent"].empty())
+			return;
+
+		std::shared_ptr<ClickInsideComponent> clickInsideComponent = targetEntity->getComponent<ClickInsideComponent>();
+		if (!clickInsideComponent) {
+			clickInsideComponent = std::shared_ptr<ClickInsideComponent>(new ClickInsideComponent());
+			targetEntity->addComponent(clickInsideComponent);
+		}
+
+		bool moveToByClick = jsonFile["ClickInsideComponent"]["moveToByClick"];
+		clickInsideComponent->initialize(moveToByClick);
+	}
+};
+
+class GroupEntitiesFunctor : public ComponentFunctor {
+	//this component can't be added to Entity, so it's just a stub
+	std::shared_ptr<Component> createFunctor() {
+		std::shared_ptr<GroupEntitiesComponent> groupEntitiesComponent(new GroupEntitiesComponent());
+		uint32_t groupNumber;
+		std::string groupName;
+		std::cout << "Group number" << std::endl;
+		std::cin >> groupNumber;
+		std::cout << "Group name" << std::endl;
+		std::cin >> groupName;
+		groupEntitiesComponent->initialize(groupNumber, groupName);
+		return groupEntitiesComponent;
+	}
+
+	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
+		targetEntity->removeComponent<GroupEntitiesComponent>();
+	}
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<GroupEntitiesComponent> groupEntitiesComponent = targetEntity->getComponent<GroupEntitiesComponent>();
+		if (!groupEntitiesComponent)
+			return;
+
+		save->_jsonFile["Entity"]["ID"] = entityID;
+		save->_jsonFile["Entity"]["GroupEntitiesComponent"]["groupNumber"] = groupEntitiesComponent->_groupNumber;
+		save->_jsonFile["Entity"]["GroupEntitiesComponent"]["groupName"] = groupEntitiesComponent->_groupName;
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		int entityID = targetEntity->_index;
+		if (jsonFile["GroupEntitiesComponent"].empty())
+			return;
+
+		std::shared_ptr<GroupEntitiesComponent> groupEntitiesComponent = targetEntity->getComponent<GroupEntitiesComponent>();
+		if (!groupEntitiesComponent) {
+			groupEntitiesComponent = std::shared_ptr<GroupEntitiesComponent>(new GroupEntitiesComponent());
+			targetEntity->addComponent(groupEntitiesComponent);
+		}
+
+		uint32_t groupNumber = jsonFile["GroupEntitiesComponent"]["groupNumber"];
+		std::string groupName = jsonFile["GroupEntitiesComponent"]["groupName"];
+		groupEntitiesComponent->initialize(groupNumber, groupName);
+	}
 };
 
 void registerComponentFunctors();

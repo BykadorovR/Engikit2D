@@ -6,4 +6,6 @@ void registerComponentFunctors() {
 	componentFunctors["ObjectComponent"] = make_shared<ObjectComponentFunctor>();
 	componentFunctors["ClickMoveComponent"] = make_shared<ClickMoveComponentFunctor>(); 
 	componentFunctors["TextureComponent"] = make_shared<TextureComponentFunctor>();
+	componentFunctors["ClickInsideComponent"] = make_shared<ClickInsideFunctor>();
+	componentFunctors["GroupEntitiesComponent"] = make_shared<GroupEntitiesFunctor>();
 }
