@@ -132,6 +132,15 @@ public:
 };
 
 class ObjectComponentFunctor : public ComponentFunctor {
+	//this component can't be added to Entity, so it's just a stub
+	std::shared_ptr<Component> createFunctor() {
+		std::shared_ptr<ObjectComponent> clickComponent(new ObjectComponent());
+		return clickComponent;
+	}
+
+	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
+		targetEntity->removeComponent<ObjectComponent>();
+	}
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
 		int entityID = targetEntity->_index;
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
