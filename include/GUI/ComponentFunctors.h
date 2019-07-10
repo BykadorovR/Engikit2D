@@ -255,4 +255,89 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 	}
 };
 
+class InteractionAddToEntityFunctor : public ComponentFunctor {
+	//this component can't be added to Entity, so it's just a stub
+	std::shared_ptr<Component> createFunctor() {
+		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent(new InteractionAddToEntityComponent());
+		bool interactionMember;
+		std::cout << "Object = 0, Subject = 1" << std::endl;
+		std::cin >> interactionMember;
+		interactionAddToEntityComponent->initialize((InteractionMember) interactionMember);
+		return interactionAddToEntityComponent;
+	}
+
+	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
+		targetEntity->removeComponent<InteractionAddToEntityComponent>();
+	}
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
+		if (!interactionAddToEntityComponent)
+			return;
+
+		save->_jsonFile["Entity"]["ID"] = entityID;
+		save->_jsonFile["Entity"]["InteractionAddToEntityComponent"]["interactMember"] = interactionAddToEntityComponent->_interactionMember;
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		int entityID = targetEntity->_index;
+		if (jsonFile["InteractionAddToEntityComponent"].empty())
+			return;
+
+		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
+		if (!interactionAddToEntityComponent) {
+			interactionAddToEntityComponent = std::shared_ptr<InteractionAddToEntityComponent>(new InteractionAddToEntityComponent());
+			targetEntity->addComponent(interactionAddToEntityComponent);
+		}
+
+		InteractionMember interactionMember = jsonFile["InteractionAddToEntityComponent"]["interactMember"];
+		interactionAddToEntityComponent->initialize(interactionMember);
+	}
+};
+
+class TransformFunctor : public ComponentFunctor {
+	//this component can't be added to Entity, so it's just a stub
+	std::shared_ptr<Component> createFunctor() {
+		std::shared_ptr<TransformComponent> transformComponent(new TransformComponent());
+		std::tuple<float, float> coords;
+		GLuint program;
+		std::cout << "Enter programID:" << std::endl;
+		std::cin >> program;
+		std::cout << "Enter direction (x,y):" << std::endl;
+		std::cin >> std::get<0>(coords) >> std::get<1>(coords);
+		
+		transformComponent->initialize(program);
+		transformComponent->setTransform(coords);
+		return transformComponent;
+	}
+
+	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
+		targetEntity->removeComponent<InteractionAddToEntityComponent>();
+	}
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
+		if (!interactionAddToEntityComponent)
+			return;
+
+		save->_jsonFile["Entity"]["ID"] = entityID;
+		save->_jsonFile["Entity"]["InteractionAddToEntityComponent"]["interactMember"] = interactionAddToEntityComponent->_interactionMember;
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		int entityID = targetEntity->_index;
+		if (jsonFile["InteractionAddToEntityComponent"].empty())
+			return;
+
+		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
+		if (!interactionAddToEntityComponent) {
+			interactionAddToEntityComponent = std::shared_ptr<InteractionAddToEntityComponent>(new InteractionAddToEntityComponent());
+			targetEntity->addComponent(interactionAddToEntityComponent);
+		}
+
+		InteractionMember interactionMember = jsonFile["InteractionAddToEntityComponent"]["interactMember"];
+		interactionAddToEntityComponent->initialize(interactionMember);
+	}
+};
+
 void registerComponentFunctors();
