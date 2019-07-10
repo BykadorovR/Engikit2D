@@ -312,31 +312,37 @@ class TransformFunctor : public ComponentFunctor {
 	}
 
 	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
-		targetEntity->removeComponent<InteractionAddToEntityComponent>();
+		targetEntity->removeComponent<TransformComponent>();
 	}
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
 		int entityID = targetEntity->_index;
-		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
-		if (!interactionAddToEntityComponent)
+		std::shared_ptr<TransformComponent> transformComponent = targetEntity->getComponent<TransformComponent>();
+		if (!transformComponent)
 			return;
 
 		save->_jsonFile["Entity"]["ID"] = entityID;
-		save->_jsonFile["Entity"]["InteractionAddToEntityComponent"]["interactMember"] = interactionAddToEntityComponent->_interactionMember;
+		save->_jsonFile["Entity"]["TransformComponent"]["coords"] = transformComponent->_coords;
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
-		if (jsonFile["InteractionAddToEntityComponent"].empty())
+		if (jsonFile["TransformComponent"].empty())
 			return;
 
-		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
-		if (!interactionAddToEntityComponent) {
-			interactionAddToEntityComponent = std::shared_ptr<InteractionAddToEntityComponent>(new InteractionAddToEntityComponent());
-			targetEntity->addComponent(interactionAddToEntityComponent);
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		if (!objectComponent)
+			return;
+		auto program = objectComponent->_program;
+
+		std::shared_ptr<TransformComponent> transformComponent = targetEntity->getComponent<TransformComponent>();
+		if (!transformComponent) {
+			transformComponent = std::shared_ptr<TransformComponent>(new TransformComponent());
+			targetEntity->addComponent(transformComponent);
 		}
 
-		InteractionMember interactionMember = jsonFile["InteractionAddToEntityComponent"]["interactMember"];
-		interactionAddToEntityComponent->initialize(interactionMember);
+		std::tuple<float, float> coords = jsonFile["InteractionAddToEntityComponent"]["coords"];
+		transformComponent->initialize(program);
+		transformComponent->setTransform(coords);
 	}
 };
 
