@@ -111,11 +111,11 @@ void on_surface_changed() {
 	loadSaveSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	loadSaveSprite->createComponent<SaveLoadComponent>()->initialize();
 
-	animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
+	/*animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
 	animatedSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
 	animatedSprite->createComponent<ClickInsideComponent>()->initialize();
 	animatedSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "GG");
-
+	*/
 
 
 	drawSystem = world.createSystem<DrawSystem>();

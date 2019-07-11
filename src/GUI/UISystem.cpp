@@ -227,7 +227,10 @@ void InteractionAddToSystem::processCreateEntity(shared_ptr<EntityManager> entit
 					interactionComponent->_removeFunctor(entityID);
 				break;
 				case 2:
-					interactionComponent->_createFunctor(interactionComponent->creationCoords, interactionComponent->creationSize);
+					std::tuple<int, int> size;
+					std::cout << "Enter the size: width and height:" << std::endl;
+					std::cin >> std::get<0>(size) >> std::get<1>(size);
+					interactionComponent->_createFunctor(interactionComponent->creationCoords, size);
 				break;
 			}
 			interactionComponent->_interactReady = false;
@@ -361,7 +364,7 @@ void SaveLoadSystem::loadTextures(std::shared_ptr<GUISave> fileLoad) {
 	}
 	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
 		if (it.key() == "texture") {
-			auto texture = textureManager->loadTexture(it.value()[1], it.value()[2], it.value()[3], it.value()[4], it.value()[5], it.value()[6]);
+			auto texture = textureManager->loadTexture(it.value()[1], it.value()[2], it.value()[3], it.value()[4], it.value()[6], it.value()[5]);
 			texture->setTextureID(it.value()[0]);
 		}
 	}

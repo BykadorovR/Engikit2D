@@ -76,7 +76,7 @@ public:
 		if (targetTexture->getRow() > 1 || targetTexture->getColumn() > 1) {
 			std::shared_ptr<AnimatedTextureComponent> textureComponent(new AnimatedTextureComponent());
 			int tilesCount = targetTexture->getRow() * targetTexture->getColumn();
-			std::cout << "Enter order for " << tilesCount << " tiles" << std::endl;
+			std::cout << "Enter order for " << tilesCount << " tiles (after each number press enter)" << std::endl;
 			std::vector<int> tilesOrder;
 			while (tilesCount-- > 0) {
 				int input;
@@ -84,7 +84,8 @@ public:
 				tilesOrder.push_back(input);
 			}
 			
-			std::cout << "Enter latency for " << tilesCount << " tiles" << std::endl;
+			tilesCount = targetTexture->getRow() * targetTexture->getColumn();
+			std::cout << "Enter latency for " << tilesCount << " tiles (after each number press enter)" << std::endl;
 			std::vector<int> tilesLatency;
 			while (tilesCount-- > 0) {
 				int input;
@@ -108,9 +109,15 @@ public:
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
 		int entityID = targetEntity->_index;
 		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
-		if (!textureComponent)
-			return;
-		save->_jsonFile["Entity"]["TextureComponent"]["textureID"] = textureComponent->_texture->getTextureID();
+		if (textureComponent)
+			save->_jsonFile["Entity"]["TextureComponent"]["textureID"] = textureComponent->_texture->getTextureID();
+
+		std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
+		if (animatedTextureComponent) {
+			save->_jsonFile["Entity"]["AnimatedTextureComponent"]["textureID"] = animatedTextureComponent->_texture->getTextureID();
+			save->_jsonFile["Entity"]["AnimatedTextureComponent"]["tilesOrder"] = animatedTextureComponent->_tilesOrder;
+			save->_jsonFile["Entity"]["AnimatedTextureComponent"]["tilesLatency"] = animatedTextureComponent->_tilesLatency;
+		}
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
@@ -119,14 +126,28 @@ public:
 		if (!objectComponent)
 			return;
 		auto program = objectComponent->_program;
-		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
-		if (!textureComponent) {
-			textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
-			targetEntity->addComponent(textureComponent);
-		}
-		int textureID = jsonFile["TextureComponent"]["textureID"];
+		if (!jsonFile["TextureComponent"].empty()) {
+			std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+			if (!textureComponent) {
+				textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
+				targetEntity->addComponent(textureComponent);
+			}
+			int textureID = jsonFile["TextureComponent"]["textureID"];
 
-		textureComponent->initialize(textureID, program);
+			textureComponent->initialize(textureID, program);
+		}
+		if (!jsonFile["AnimatedTextureComponent"].empty()) {
+			std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
+			if (!animatedTextureComponent) {
+				animatedTextureComponent = std::shared_ptr<AnimatedTextureComponent>(new AnimatedTextureComponent());
+				targetEntity->addComponent(animatedTextureComponent);
+			}
+			int textureID = jsonFile["AnimatedTextureComponent"]["textureID"];
+			std::vector<int> tilesOrder = jsonFile["AnimatedTextureComponent"]["tilesOrder"];
+			std::vector<int> tilesLatency = jsonFile["AnimatedTextureComponent"]["tilesLatency"];
+
+			animatedTextureComponent->initialize(textureID, tilesOrder, tilesLatency, program);
+		}
 	}
 
 };

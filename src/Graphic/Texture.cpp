@@ -206,7 +206,7 @@ std::shared_ptr<Texture> TextureManager::loadTexture(std::string imagePath, int 
 
 std::shared_ptr<Texture> TextureManager::loadTexture(std::string imagePath, int atlasID, int atlasX, int atlasY, int tileX, int tileY) {
 	std::shared_ptr<TextureAtlas> targetAtlas = findAtlas(atlasID);
-	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>(imagePath, atlasX, atlasY, tileX, tileY, targetAtlas);
+	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>(imagePath, atlasX, atlasY, tileY, tileX, targetAtlas);
 	textureRaw->setTextureID(textureCounter++);
 	textureList.push_back(textureRaw);
 	return textureRaw;
