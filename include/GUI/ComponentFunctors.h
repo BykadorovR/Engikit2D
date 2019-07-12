@@ -3,6 +3,7 @@
 #include "UIComponent.h"
 #include "GraphicComponent.h"
 #include "Texture.h"
+#include <sstream>
 
 class ComponentFunctor {
 public:
@@ -75,24 +76,21 @@ public:
 		auto targetTexture = TextureManager::instance()->getTexture(textureID);
 		if (targetTexture->getRow() > 1 || targetTexture->getColumn() > 1) {
 			std::shared_ptr<AnimatedTextureComponent> textureComponent(new AnimatedTextureComponent());
-			int tilesCount = targetTexture->getRow() * targetTexture->getColumn();
-			std::cout << "Enter order for " << tilesCount << " tiles (after each number press enter)" << std::endl;
-			std::vector<int> tilesOrder;
-			while (tilesCount-- > 0) {
-				int input;
-				std::cin >> input;
-				tilesOrder.push_back(input);
-			}
-			
-			tilesCount = targetTexture->getRow() * targetTexture->getColumn();
-			std::cout << "Enter latency for " << tilesCount << " tiles (after each number press enter)" << std::endl;
-			std::vector<int> tilesLatency;
-			while (tilesCount-- > 0) {
-				int input;
-				std::cin >> input;
-				tilesLatency.push_back(input);
-			}
+			std::vector<int> tilesOrder, tilesLatency;
+			std::string line;
 
+			while (tilesOrder.size() == 0 || tilesOrder.size() != tilesLatency.size()) {
+				tilesOrder.clear();
+				tilesLatency.clear();
+				std::cout << "Enter order for tiles (separated by spaces, enter -1 in the end)" << std::endl;
+				int input;
+				while ((cin >> input) && input != -1)
+					tilesOrder.push_back(input);
+
+				std::cout << "Enter latency for tiles (separated by spaces, enter -1 in the end)" << std::endl;
+				while ((cin >> input) && input != -1)
+					tilesLatency.push_back(input);
+			}
 			textureComponent->initialize(targetTexture, tilesOrder, tilesLatency, programID);
 			return textureComponent;
 		}
@@ -361,7 +359,7 @@ class TransformFunctor : public ComponentFunctor {
 			targetEntity->addComponent(transformComponent);
 		}
 
-		std::tuple<float, float> coords = jsonFile["InteractionAddToEntityComponent"]["coords"];
+		std::tuple<float, float> coords = jsonFile["TransformComponent"]["coords"];
 		transformComponent->initialize(program);
 		transformComponent->setTransform(coords);
 	}
