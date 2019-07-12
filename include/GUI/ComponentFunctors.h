@@ -154,6 +154,16 @@ class ObjectComponentFunctor : public ComponentFunctor {
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor() {
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
+		int sceneX, sceneY, objectWidth, objectHeight;
+		GLuint program;
+		std::cout << "Enter x and y of object on scene:" << std::endl;
+		std::cin >> sceneX >> sceneY;
+		std::cout << "Enter width and height of object:" << std::endl;
+		std::cin >> objectWidth >> objectHeight;
+		std::cout << "Enter programID (use the same as in current object):" << std::endl;
+		std::cin >> program;
+		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
+
 		return objectComponent;
 	}
 
