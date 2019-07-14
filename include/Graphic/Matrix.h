@@ -16,6 +16,7 @@ public:
 	void operator=(Matrix2D& right);
 	float& operator[](int index);
 	Matrix2D operator*(Matrix2D &right);
+	Matrix2D operator+(Matrix2D &right);
 
 private:
 	std::vector<float> _matrix;

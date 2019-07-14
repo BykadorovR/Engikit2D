@@ -25,7 +25,7 @@ shared_ptr<Entity> createSprite(int x, int y, int width, int height, std::shared
 	sprite = world.createEntity();
 	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
 	sprite->createComponent<TextureComponent>()->initialize(texture, program);
-	sprite->createComponent<TransformComponent>()->initialize(program);
+	//sprite->createComponent<TransformComponent>()->initialize(program);
 	return sprite;
 }
 
@@ -56,6 +56,7 @@ shared_ptr<DrawSystem> drawSystem;
 shared_ptr<MouseSystem> mouseSystem;
 shared_ptr<InteractionAddToSystem> interactionAddToSystem;
 shared_ptr<SaveLoadSystem> saveLoadSystem;
+shared_ptr<CameraSystem> cameraSystem;
 shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite, loadSaveSprite;
 
 
@@ -122,6 +123,7 @@ void on_surface_changed() {
 	mouseSystem = world.createSystem<MouseSystem>();
 	interactionAddToSystem = world.createSystem<InteractionAddToSystem>();
 	saveLoadSystem = world.createSystem<SaveLoadSystem>();
+	cameraSystem = world.createSystem<CameraSystem>();
 }
 
 void update(int value) {
@@ -136,6 +138,6 @@ void on_draw_frame() {
 	drawSystem->update(world.getEntityManager());
 	interactionAddToSystem->update(world.getEntityManager());
 	saveLoadSystem->update(world.getEntityManager());
-
+	cameraSystem->update(world.getEntityManager());
 	glutSwapBuffers(); // Flush drawing commands
 }

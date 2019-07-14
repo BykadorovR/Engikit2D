@@ -3,6 +3,7 @@
 #include "UIComponent.h"
 #include "GraphicComponent.h"
 #include "Texture.h"
+#include "Camera.h"
 #include <sstream>
 
 class ComponentFunctor {
@@ -372,6 +373,30 @@ class TransformFunctor : public ComponentFunctor {
 		std::tuple<float, float> coords = jsonFile["TransformComponent"]["coords"];
 		transformComponent->initialize(program);
 		transformComponent->setTransform(coords);
+	}
+};
+
+class CameraFunctor : public ComponentFunctor {
+	std::shared_ptr<Component> createFunctor() {
+		std::shared_ptr<CameraComponent> cameraComponent(new CameraComponent());
+		int entityID;
+		std::cout << "Enter entityID:" << std::endl;
+		std::cin >> entityID;
+		
+		cameraComponent->initialize(entityID);
+		return cameraComponent;
+	}
+
+	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
+		targetEntity->removeComponent<CameraComponent>();
+	}
+
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+
+	}
+
+	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+
 	}
 };
 

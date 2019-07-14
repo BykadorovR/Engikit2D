@@ -73,3 +73,13 @@ Matrix2D Matrix2D::operator*(Matrix2D &right) {
 	}
 	return temp;
 }
+
+Matrix2D Matrix2D::operator+(Matrix2D &right) {
+	Matrix2D temp;
+	for (int i = 0; i < _size; i++) {
+		for (int j = 0; j < _size; j++) {
+			temp[j + i * _size] = _matrix[j + i * _size] + right[j + i * _size];
+		}
+	}
+	return temp;
+}

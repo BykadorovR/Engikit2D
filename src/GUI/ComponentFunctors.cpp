@@ -10,4 +10,5 @@ void registerComponentFunctors() {
 	componentFunctors["GroupEntitiesComponent"] = make_shared<GroupEntitiesFunctor>();
 	componentFunctors["InteractionAddToEntityComponent"] = make_shared<InteractionAddToEntityFunctor>();
 	componentFunctors["TransformComponent"] = make_shared<TransformFunctor>();
+	componentFunctors["CameraComponent"] = make_shared<CameraFunctor>();
 }

@@ -2,8 +2,7 @@
 #include "ComponentFunctors.h"
 #include "GUISave.h"
 
-std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
-	std::shared_ptr<TransformComponent> transformComponent) {
+std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent) {
 	int currentClickX = std::get<0>(clickClickMoveComponent->_currentClick);
 	int currentClickY = std::get<1>(clickClickMoveComponent->_currentClick);
 	std::tuple<std::tuple<int, int>, ClickCount> clickedInside = { {0, 0}, ClickCount::NO };
@@ -121,12 +120,11 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 				saveLoadComponent->_interactReady = true;
 		}
 
-		auto transformComponent = entity->getComponent<TransformComponent>();
 		auto clickClickMoveComponent = entity->getComponent<ClickClickMoveComponent>();
 		auto interactionCreateEntityComponent = entity->getComponent<InteractionCreateEntityComponent>();
 
-		if (objectComponent && clickClickMoveComponent && transformComponent) {
-			auto clickedInsideTuple = processClickClickMove(objectComponent, clickClickMoveComponent, transformComponent);
+		if (objectComponent && clickClickMoveComponent) {
+			auto clickedInsideTuple = processClickClickMove(objectComponent, clickClickMoveComponent);
 			int clickedInside = std::get<1>(clickedInsideTuple);
 
 			if (clickClickMoveComponent->_moveToByClickFirst == false && clickedInside == ClickCount::FIRST)
@@ -402,3 +400,36 @@ void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
 		loadEntities(entityManager, loadFile);
 	}
 }
+
+void CameraSystem::update(shared_ptr<EntityManager> entityManager) {
+	std::shared_ptr<CameraComponent> cameraComponent;
+	int targetEntityID = -1;
+	std::tuple<float, float> coords;
+	for (auto entity : entityManager->getEntities()) {
+		cameraComponent = entity->getComponent<CameraComponent>();
+		if (cameraComponent) {
+			targetEntityID = cameraComponent->_entityID;
+		}
+	}
+
+	if (targetEntityID < 0)
+		return;
+
+	for (auto entity : entityManager->getEntities()) {
+		if (entity->_index == targetEntityID) {
+			auto transformComponent = entity->getComponent<TransformComponent>();
+			if (transformComponent) {
+				coords = transformComponent->_coords;
+			}
+		}
+	}
+
+	for (auto entity : entityManager->getEntities()) {
+		auto objectComponent = entity->getComponent<ObjectComponent>();
+		int programID = objectComponent->_program;
+		cameraComponent->setTransform(programID, coords);
+		objectComponent->_sceneX += std::get<0>(coords);
+		objectComponent->_sceneY += std::get<1>(coords);
+	}
+}
+

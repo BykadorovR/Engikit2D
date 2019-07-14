@@ -10,8 +10,7 @@ enum ClickCount {
 };
 
 class MouseSystem : public System {
-	std::tuple<std::tuple<int, int>, ClickCount> processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent,
-		std::shared_ptr<TransformComponent> transformComponent);
+	std::tuple<std::tuple<int, int>, ClickCount> processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent);
 
 	void processClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickMoveComponent> clickMoveComponent,
 		std::shared_ptr<TransformComponent> transformComponent);
@@ -39,3 +38,7 @@ public:
 	void update(shared_ptr<EntityManager> entityManager);
 };
 
+class CameraSystem : public System {
+public:
+	void update(shared_ptr<EntityManager> entityManager);
+};
