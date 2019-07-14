@@ -51,9 +51,9 @@ void MouseSystem::processClickMove(std::shared_ptr<ObjectComponent> objectCompon
 	float stepY = sin(angle) * speed;
 	if (abs(objectX - clickX) > speed || abs(objectY - clickY) > speed) {
 		transformComponent->setTransform({ stepX, stepY });
-	}
-	else {
+	} else {
 		clickMoveComponent->_move = false;
+		transformComponent->_coords = { 0, 0 };
 	}
 }
 
@@ -153,8 +153,9 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 		auto clickMoveComponent = entity->getComponent<ClickMoveComponent>();
 		auto transformComponent = entity->getComponent<TransformComponent>();
 
-		if (objectComponent && clickMoveComponent && transformComponent && !playerControlledEntitiesDisableMoving)
+		if (objectComponent && clickMoveComponent && transformComponent && !playerControlledEntitiesDisableMoving) {
 			processClickMove(objectComponent, clickMoveComponent, transformComponent);
+		}
 		else if (playerControlledEntitiesDisableMoving) {
 			if (clickMoveComponent) {
 				clickMoveComponent->_leftClick = { 0, 0 };
@@ -400,36 +401,3 @@ void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
 		loadEntities(entityManager, loadFile);
 	}
 }
-
-void CameraSystem::update(shared_ptr<EntityManager> entityManager) {
-	std::shared_ptr<CameraComponent> cameraComponent;
-	int targetEntityID = -1;
-	std::tuple<float, float> coords;
-	for (auto entity : entityManager->getEntities()) {
-		cameraComponent = entity->getComponent<CameraComponent>();
-		if (cameraComponent) {
-			targetEntityID = cameraComponent->_entityID;
-		}
-	}
-
-	if (targetEntityID < 0)
-		return;
-
-	for (auto entity : entityManager->getEntities()) {
-		if (entity->_index == targetEntityID) {
-			auto transformComponent = entity->getComponent<TransformComponent>();
-			if (transformComponent) {
-				coords = transformComponent->_coords;
-			}
-		}
-	}
-
-	for (auto entity : entityManager->getEntities()) {
-		auto objectComponent = entity->getComponent<ObjectComponent>();
-		int programID = objectComponent->_program;
-		cameraComponent->setTransform(programID, coords);
-		objectComponent->_sceneX += std::get<0>(coords);
-		objectComponent->_sceneY += std::get<1>(coords);
-	}
-}
-

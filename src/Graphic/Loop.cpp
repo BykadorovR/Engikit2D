@@ -23,7 +23,7 @@ shared_ptr<Entity> createSprite(int x, int y, int width, int height, std::shared
 	Shader shader;
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	sprite = world.createEntity();
-	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
+	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, 0, program);
 	sprite->createComponent<TextureComponent>()->initialize(texture, program);
 	//sprite->createComponent<TransformComponent>()->initialize(program);
 	return sprite;
@@ -35,7 +35,7 @@ shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height,
 	Shader shader;
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	sprite = world.createEntity();
-	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
+	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, 0, program);
 	sprite->createComponent<TransformComponent>()->initialize(program);
 	sprite->createComponent<AnimatedTextureComponent>()->initialize(texture, tiles, latency, program);
 	return sprite;
@@ -56,7 +56,6 @@ shared_ptr<DrawSystem> drawSystem;
 shared_ptr<MouseSystem> mouseSystem;
 shared_ptr<InteractionAddToSystem> interactionAddToSystem;
 shared_ptr<SaveLoadSystem> saveLoadSystem;
-shared_ptr<CameraSystem> cameraSystem;
 shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite, loadSaveSprite;
 
 
@@ -77,7 +76,10 @@ void on_surface_changed() {
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 		sprite = world.createEntity();
-		sprite->createComponent<ObjectComponent>()->initialize(std::get<0>(coords), std::get<1>(coords), std::get<0>(size), std::get<1>(size), program);
+		bool hud;
+		std::cout << "Is it HUD? (0 or 1)" << std::endl;
+		std::cin >> hud;
+		sprite->createComponent<ObjectComponent>()->initialize(std::get<0>(coords), std::get<1>(coords), std::get<0>(size), std::get<1>(size), hud, program);
 		//TODO: path to texture?
 		sprite->createComponent<TextureComponent>()->initialize(textureRaw, program);
 		sprite->createComponent<TransformComponent>()->initialize(program);
@@ -123,7 +125,6 @@ void on_surface_changed() {
 	mouseSystem = world.createSystem<MouseSystem>();
 	interactionAddToSystem = world.createSystem<InteractionAddToSystem>();
 	saveLoadSystem = world.createSystem<SaveLoadSystem>();
-	cameraSystem = world.createSystem<CameraSystem>();
 }
 
 void update(int value) {
@@ -138,6 +139,5 @@ void on_draw_frame() {
 	drawSystem->update(world.getEntityManager());
 	interactionAddToSystem->update(world.getEntityManager());
 	saveLoadSystem->update(world.getEntityManager());
-	cameraSystem->update(world.getEntityManager());
 	glutSwapBuffers(); // Flush drawing commands
 }

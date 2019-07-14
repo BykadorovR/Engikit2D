@@ -8,7 +8,8 @@
 
 class ObjectComponent : public Component {
 public:
-	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
+	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, bool hud, GLuint program) {
+		_hud = hud;
 		_program = program;
 		_objectWidth = objectWidth;
 		_objectHeight = objectHeight;
@@ -30,6 +31,7 @@ public:
 		assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
+	bool _hud;
 	//
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;

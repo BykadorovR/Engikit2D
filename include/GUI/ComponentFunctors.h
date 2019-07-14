@@ -163,7 +163,10 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		std::cin >> objectWidth >> objectHeight;
 		std::cout << "Enter programID (use the same as in current object):" << std::endl;
 		std::cin >> program;
-		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
+		bool hud;
+		std::cout << "Is it HUD? (0 or 1)" << std::endl;
+		std::cin >> hud;
+		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, hud, program);
 
 		return objectComponent;
 	}
@@ -180,6 +183,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"]["ID"] = entityID;
 		save->_jsonFile["Entity"]["ObjectComponent"]["sceneCoord"] = {objectComponent->_sceneX, objectComponent->_sceneY};
 		save->_jsonFile["Entity"]["ObjectComponent"]["objectSize"] = { objectComponent->_objectWidth, objectComponent->_objectHeight };
+		save->_jsonFile["Entity"]["ObjectComponent"]["HUD"] = objectComponent->_hud;
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
@@ -196,7 +200,8 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
 		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
-		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
+		bool HUD = jsonFile["ObjectComponent"]["HUD"];
+		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, HUD, program);
 	}
 };
 
@@ -382,8 +387,10 @@ class CameraFunctor : public ComponentFunctor {
 		int entityID;
 		std::cout << "Enter entityID:" << std::endl;
 		std::cin >> entityID;
-		
-		cameraComponent->initialize(entityID);
+		int programID;
+		std::cout << "Enter programID:" << std::endl;
+		std::cin >> programID;
+		cameraComponent->initialize(entityID, programID);
 		return cameraComponent;
 	}
 

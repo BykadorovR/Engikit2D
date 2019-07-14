@@ -1,5 +1,5 @@
 #include "GraphicSystem.h"
-
+#include "Camera.h"
 //INFO: for now every object use OWN program, all of them use one shader, though. It's convinient enough in sense of 
 //programming (no needs to think about uniforms state) but can affect performance.
 //If any perf gaps, need to add vertexReset, transformReset, etc functions which will zero uniforms
@@ -64,14 +64,51 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Tr
 	glUniformMatrix4fv(transform->_uMatrixLocation, 1, false, transform->_result.getData());
 	object->_sceneX += adjustX;
 	object->_sceneY += adjustY;
+	//TODO: ISSUE!! ORDER DEPENDENCIES BETWEEN CAMERA AND TRANSFORM. CAMERA USES _coords VAR TOO
 	transform->_coords = { 0, 0 };
 }
 
+void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
+	Matrix2D move;
+	float x = -std::get<0>(coords);
+	float y = -std::get<1>(coords);
+	move.translate(x, y);
+	camera->_viewMatrix = camera->_viewMatrix * move;
+	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, camera->_viewMatrix.getData());
+	camera->setTransform(coords);
+	object->_sceneX += std::get<0>(coords);
+	object->_sceneY += std::get<1>(coords);
+}
+
 void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
+	std::shared_ptr<CameraComponent> cameraComponent;
+	int targetEntityID = -1;
+	std::tuple<float, float> coords = { 0, 0 };
+	for (auto entity : entityManager->getEntities()) {
+		cameraComponent = entity->getComponent<CameraComponent>();
+		if (cameraComponent) {
+			targetEntityID = cameraComponent->_entityID;
+		}
+	}
+
+	if (targetEntityID >= 0) {
+		for (auto entity : entityManager->getEntities()) {
+			if (entity->_index == targetEntityID) {
+				auto transformComponent = entity->getComponent<TransformComponent>();
+				if (transformComponent) {
+					coords = transformComponent->_coords;
+				}
+			}
+		}
+	}
+
 	for (auto entity : entityManager->getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
 		assert(vertexObject);
 		vertexUpdate(vertexObject);
+
+		if (cameraComponent && vertexObject->_hud == false)
+			cameraUpdate(vertexObject, cameraComponent, coords);
 
 		auto transformTextureObject = entity->getComponent<TransformComponent>();
 		if (transformTextureObject)

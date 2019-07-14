@@ -1,22 +1,27 @@
+#pragma once
 #include "Entity.h"
 #include "Component.h"
-#include "ComponentFunctors.h"
 #include "Matrix.h"
 
 class CameraComponent : public Component {
 public:
-	void initialize(int entityID) {
+	void initialize(int entityID, GLuint program) {
 		_entityID = entityID;
+		_uViewMatrixLocation = glGetUniformLocation(program, _uViewMatrix.c_str());
 		_viewMatrix.identity();
 	}
 
-	void setTransform(GLuint program, std::tuple<float, float> coords) {
-		_uViewMatrixLocation = glGetUniformLocation(program, _uViewMatrix.c_str());
-		_viewMatrix.translate(std::get<0>(coords), std::get<1>(coords));
+	void setTransform(std::tuple<float, float> coords) {
+		Matrix2D move;
+		float x = -std::get<0>(coords);
+		float y = -std::get<1>(coords);
+		move.translate(x, y);
+		_viewMatrix = _viewMatrix * move;
 		glUniformMatrix4fv(_uViewMatrixLocation, 1, false, _viewMatrix.getData());
 	}
 
 	int _entityID;
+	GLuint _program;
 	Matrix2D _viewMatrix;
 	//
 	GLint _uViewMatrixLocation;
