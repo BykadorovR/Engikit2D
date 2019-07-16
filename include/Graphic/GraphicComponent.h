@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "Matrix.h"
+#include "Events.h"
 
 class ObjectComponent : public Component {
 public:
@@ -201,19 +202,50 @@ public:
 	std::string _uAdjustY = "u_AdjustY";
 };
 
-class TransformComponent : public Component {
+
+enum MoveTypes {
+	PlayerControlled = 0,
+	StaticallyDefined = 1
+};
+
+class MoveComponent : public Component, IMouseEvent {
 public:
-	void initialize(GLuint program) {
+	void initialize(MoveTypes type, GLuint program, int speed) {
+		_type = type;
 		_program = program;
+		_speed = speed;
 		_result.identity();
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
+		MouseEvent::instance().registerComponent(this);
+	}
+
+	void initialize(MoveTypes type, GLuint program, int speed, std::tuple<float, float> endPoint) {
+		this->initialize(type, program, speed);
+		_leftClick = endPoint;
+	}
+
+	void mouseClickDownLeft(int x, int y) {
+		_leftClick = { x, y };
+	}
+	void mouseClickDownRight(int x, int y) {
+		_rightClick = { x, y };
 	}
 
 	void setTransform(std::tuple<float, float> coords) {
 		_coords = coords;
 	}
 
+	~MoveComponent() {
+		if (_type == PlayerControlled)
+			MouseEvent::instance().unregisterComponent(this);
+	}
+
+	int _speed;
+	MoveTypes _type;
+	bool _move = false;
 	Matrix2D _result;
+	std::tuple<float, float> _leftClick;
+	std::tuple<float, float> _rightClick;
 	std::tuple<float, float> _coords;
 	GLuint _program;
 	//

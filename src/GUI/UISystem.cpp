@@ -32,28 +32,38 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(
 	return clickedInside;
 }
 
-void MouseSystem::processClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickMoveComponent> clickMoveComponent,
-	std::shared_ptr<TransformComponent> transformComponent) {
-	float speed = clickMoveComponent->_speed;
-	int clickX = std::get<0>(clickMoveComponent->_leftClick);
-	int clickY = std::get<1>(clickMoveComponent->_leftClick);
+void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<MoveComponent> moveComponent) {
+	float speed = moveComponent->_speed;
+	int clickX = std::get<0>(moveComponent->_leftClick);
+	int clickY = std::get<1>(moveComponent->_leftClick);
 	if (!clickX || !clickY)
 		return;
-	if (clickMoveComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
+	if (moveComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
 		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight)
 		return;
 
-	clickMoveComponent->_move = true;
+	moveComponent->_move = true;
 	int objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
 	int objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
 	float angle = atan2(clickY - objectY, clickX - objectX);
 	float stepX = cos(angle) * speed;
 	float stepY = sin(angle) * speed;
 	if (abs(objectX - clickX) > speed || abs(objectY - clickY) > speed) {
-		transformComponent->setTransform({ stepX, stepY });
+		moveComponent->setTransform({ stepX, stepY });
 	} else {
-		clickMoveComponent->_move = false;
-		transformComponent->_coords = { 0, 0 };
+		moveComponent->_move = false;
+		moveComponent->_coords = { 0, 0 };
+	}
+}
+
+void MoveSystem::update(std::shared_ptr<EntityManager> entityManager) {
+	for (auto entity : entityManager->getEntities()) {
+		auto objectComponent = entity->getComponent<ObjectComponent>();
+		auto moveComponent = entity->getComponent<MoveComponent>();
+
+		if (objectComponent && moveComponent) {
+			moveEntity(objectComponent, moveComponent);
+		}
 	}
 }
 
@@ -85,13 +95,12 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickInside(std
 //DO MORE APROPRIATE LOGIC FOR HANDLING mainHeroDisableMoving (NOW ONLY 1 is disallowed but it's not correct so GG moves to second click)
 void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 	std::vector<std::shared_ptr<Entity> > playerControlledEntities;
-	int playerControlledEntitiesDisableMoving = 0;
 
 	//first of all we should find GG
 	for (auto entity : entityManager->getEntities()) {
-		auto clickMoveComponent = entity->getComponent<ClickMoveComponent>();
+		auto moveComponent = entity->getComponent<MoveComponent>();
 		//Can use existence of ClickMoveComponent also
-		if (clickMoveComponent)
+		if (moveComponent && moveComponent->_type == PlayerControlled)
 			playerControlledEntities.push_back(entity);
 	}
 
@@ -110,8 +119,17 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 				std::cout << "Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber 
 					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl;
 			}
-			if (clickInsideComponent->_moveToByClick == false)
-				playerControlledEntitiesDisableMoving += clickedInside;
+			if (clickedInside && clickInsideComponent->_moveToByClick == false) {
+				for (auto playerEntity : playerControlledEntities) {
+					auto moveComponent = playerEntity->getComponent<MoveComponent>();
+					if (moveComponent) {
+						moveComponent->_move = false;
+						moveComponent->_coords = { 0, 0 };
+						moveComponent->_leftClick = { 0, 0 };
+						moveComponent->_rightClick = { 0, 0 };
+					}
+				}
+			}
 			if (interactionComponent && clickedInside)
 				interactionComponent->_interactReady = true;
 			if (textureManagerComponent && clickedInside)
@@ -127,10 +145,28 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			auto clickedInsideTuple = processClickClickMove(objectComponent, clickClickMoveComponent);
 			int clickedInside = std::get<1>(clickedInsideTuple);
 
-			if (clickClickMoveComponent->_moveToByClickFirst == false && clickedInside == ClickCount::FIRST)
-				playerControlledEntitiesDisableMoving += clickedInside;
-			if (clickClickMoveComponent->_moveToByClickSecond == false && clickedInside == ClickCount::SECOND)
-				playerControlledEntitiesDisableMoving += clickedInside;
+			if (clickClickMoveComponent->_moveToByClickFirst == false && clickedInside == ClickCount::FIRST) {
+				for (auto playerEntity : playerControlledEntities) {
+					auto moveComponent = playerEntity->getComponent<MoveComponent>();
+					if (moveComponent) {
+						moveComponent->_move = false;
+						moveComponent->_coords = { 0, 0 };
+						moveComponent->_leftClick = { 0, 0 };
+						moveComponent->_rightClick = { 0, 0 };
+					}
+				}
+			}
+			if (clickClickMoveComponent->_moveToByClickSecond == false && clickedInside == ClickCount::SECOND) {
+				for (auto playerEntity : playerControlledEntities) {
+					auto moveComponent = playerEntity->getComponent<MoveComponent>();
+					if (moveComponent) {
+						moveComponent->_move = false;
+						moveComponent->_coords = { 0, 0 };
+						moveComponent->_leftClick = { 0, 0 };
+						moveComponent->_rightClick = { 0, 0 };
+					}
+				}
+			}
 
 			if (interactionComponent && clickedInside == ClickCount::SECOND)
 				interactionComponent->_interactReady = true;
@@ -144,22 +180,6 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			if (interactionCreateEntityComponent && clickedInside == ClickCount::FIRST) {
 				interactionCreateEntityComponent->creationCoords = { 0, 0 };
 				interactionCreateEntityComponent->_interactReady = false;
-			}
-		}
-	}
-
-	for (auto entity : playerControlledEntities) {
-		auto objectComponent = entity->getComponent<ObjectComponent>();
-		auto clickMoveComponent = entity->getComponent<ClickMoveComponent>();
-		auto transformComponent = entity->getComponent<TransformComponent>();
-
-		if (objectComponent && clickMoveComponent && transformComponent && !playerControlledEntitiesDisableMoving) {
-			processClickMove(objectComponent, clickMoveComponent, transformComponent);
-		}
-		else if (playerControlledEntitiesDisableMoving) {
-			if (clickMoveComponent) {
-				clickMoveComponent->_leftClick = { 0, 0 };
-				clickMoveComponent->_rightClick = { 0, 0 };
 			}
 		}
 	}

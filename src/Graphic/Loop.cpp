@@ -36,28 +36,16 @@ shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height,
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	sprite = world.createEntity();
 	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, 0, program);
-	sprite->createComponent<TransformComponent>()->initialize(program);
 	sprite->createComponent<AnimatedTextureComponent>()->initialize(texture, tiles, latency, program);
 	return sprite;
 }
-
-int transform(float shiftX, float shiftY, shared_ptr<Entity> object) {
-	auto component = object->getComponent<TransformComponent>();
-	if (component) {
-		component->setTransform({shiftX, shiftY});
-		return 0;
-	}
-	return -1;
-}
-
-
 
 shared_ptr<DrawSystem> drawSystem;
 shared_ptr<MouseSystem> mouseSystem;
 shared_ptr<InteractionAddToSystem> interactionAddToSystem;
 shared_ptr<SaveLoadSystem> saveLoadSystem;
 shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite, loadSaveSprite;
-
+shared_ptr<MoveSystem> moveSystem;
 
 void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
@@ -82,7 +70,6 @@ void on_surface_changed() {
 		sprite->createComponent<ObjectComponent>()->initialize(std::get<0>(coords), std::get<1>(coords), std::get<0>(size), std::get<1>(size), hud, program);
 		//TODO: path to texture?
 		sprite->createComponent<TextureComponent>()->initialize(textureRaw, program);
-		sprite->createComponent<TransformComponent>()->initialize(program);
 		sprite->createComponent<ClickInsideComponent>()->initialize(false);
 		int groupID = 0;
 		std::cout << "Enter the group ID" << std::endl;
@@ -125,6 +112,7 @@ void on_surface_changed() {
 	mouseSystem = world.createSystem<MouseSystem>();
 	interactionAddToSystem = world.createSystem<InteractionAddToSystem>();
 	saveLoadSystem = world.createSystem<SaveLoadSystem>();
+	moveSystem = world.createSystem<MoveSystem>();
 }
 
 void update(int value) {
@@ -134,7 +122,7 @@ void update(int value) {
 
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+	moveSystem->update(world.getEntityManager());
 	mouseSystem->update(world.getEntityManager());
 	drawSystem->update(world.getEntityManager());
 	interactionAddToSystem->update(world.getEntityManager());

@@ -9,33 +9,6 @@
 
 using json = nlohmann::json;
 
-class ClickMoveComponent : public Component, IMouseEvent {
-public:
-	std::tuple<int, int> _leftClick;
-	std::tuple<int, int> _rightClick;
-	float _speed;
-	bool _move = false;
-
-	ClickMoveComponent() {
-		MouseEvent::instance().registerComponent(this);
-	}
-
-	void initialize(float speed) {
-		_speed = speed;
-	}
-
-	void mouseClickDownLeft(int x, int y) {
-		_leftClick = { x, y };
-	}
-	void mouseClickDownRight(int x, int y) {
-		_rightClick = { x, y };
-	}
-
-	~ClickMoveComponent() {
-		MouseEvent::instance().unregisterComponent(this);
-	}
-};
-
 class ClickInsideComponent : public Component, IMouseEvent {
 public:
 	std::tuple<int, int> _leftClick;

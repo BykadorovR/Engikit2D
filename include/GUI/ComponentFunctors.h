@@ -16,51 +16,6 @@ public:
 
 extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFunctors;
 
-class ClickMoveComponentFunctor : public ComponentFunctor {
-	std::shared_ptr<Component> createFunctor() {
-		std::shared_ptr<ClickMoveComponent> clickComponent(new ClickMoveComponent());
-		int speed;
-		std::cout << "Enter the speed" << std::endl;
-		std::cin >> speed;
-		clickComponent->initialize(speed);
-		return clickComponent;
-	}
-
-	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
-		targetEntity->removeComponent<ClickMoveComponent>();
-	}
-
-	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
-		int entityID = targetEntity->_index;
-		std::shared_ptr<ClickMoveComponent> clickMoveComponent = targetEntity->getComponent<ClickMoveComponent>();
-		if (!clickMoveComponent)
-			return;
-
-		save->_jsonFile["Entity"]["ID"] = entityID;
-		save->_jsonFile["Entity"]["ClickMoveComponent"]["leftClick"] = { std::get<0>(clickMoveComponent->_leftClick), std::get<1>(clickMoveComponent->_leftClick) };
-		save->_jsonFile["Entity"]["ClickMoveComponent"]["rightClick"] = { std::get<0>(clickMoveComponent->_rightClick), std::get<1>(clickMoveComponent->_rightClick) };
-		save->_jsonFile["Entity"]["ClickMoveComponent"]["speed"] = clickMoveComponent->_speed;
-		save->_jsonFile["Entity"]["ClickMoveComponent"]["move"] = clickMoveComponent->_move;
-	}
-
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
-		std::shared_ptr<ClickMoveComponent> clickMoveComponent = targetEntity->getComponent<ClickMoveComponent>();
-		if (!clickMoveComponent) {
-			clickMoveComponent = std::shared_ptr<ClickMoveComponent>(new ClickMoveComponent());
-		}
-
-		if (jsonFile["ClickMoveComponent"].empty())
-			return;
-
-		clickMoveComponent->_leftClick = { jsonFile["ClickMoveComponent"]["leftClick"][0], jsonFile["ClickMoveComponent"]["leftClick"][1] };
-		clickMoveComponent->_rightClick = { jsonFile["ClickMoveComponent"]["rightClick"][0], jsonFile["ClickMoveComponent"]["rightClick"][1] };
-		clickMoveComponent->_move = jsonFile["ClickMoveComponent"]["move"];
-		clickMoveComponent->initialize(jsonFile["ClickMoveComponent"]["speed"]);
-		targetEntity->addComponent(clickMoveComponent);
-	}
-
-};
-
 class TextureComponentFunctor : public ComponentFunctor {
 public:
 	//TODO: How to use atlas and textures dynamically
@@ -330,38 +285,63 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 	}
 };
 
-class TransformFunctor : public ComponentFunctor {
-	//this component can't be added to Entity, so it's just a stub
+class MoveFunctor : public ComponentFunctor {
 	std::shared_ptr<Component> createFunctor() {
-		std::shared_ptr<TransformComponent> transformComponent(new TransformComponent());
-		std::tuple<float, float> coords;
+		std::shared_ptr<MoveComponent> moveComponent(new MoveComponent());
+		MoveTypes moveType;
+		int moveTypeInt;
+		std::cout << "Choose number of type:" << std::endl;
+		std::cout << "PlayerControlled " << PlayerControlled << std::endl;
+		std::cout << "Predefined " << StaticallyDefined << std::endl;
+		std::cin >> moveTypeInt;
+		moveType = (MoveTypes) moveTypeInt;
 		GLuint program;
 		std::cout << "Enter programID:" << std::endl;
 		std::cin >> program;
-		std::cout << "Enter direction (x,y):" << std::endl;
-		std::cin >> std::get<0>(coords) >> std::get<1>(coords);
-		
-		transformComponent->initialize(program);
-		transformComponent->setTransform(coords);
-		return transformComponent;
+		int speed;
+		std::cout << "Enter the speed" << std::endl;
+		std::cin >> speed;
+
+		switch (moveType) {
+			case PlayerControlled:
+				moveComponent->initialize(moveType, program, speed);
+			break;
+			case StaticallyDefined:
+				std::tuple<float, float> endPoint;
+				std::cout << "Enter end point (x,y):" << std::endl;
+				std::cin >> std::get<0>(endPoint) >> std::get<1>(endPoint);
+				moveComponent->initialize(moveType, program, speed, endPoint);
+			break;
+		}
+
+		return moveComponent;
 	}
 
 	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
-		targetEntity->removeComponent<TransformComponent>();
+		targetEntity->removeComponent<MoveComponent>();
 	}
+
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
 		int entityID = targetEntity->_index;
-		std::shared_ptr<TransformComponent> transformComponent = targetEntity->getComponent<TransformComponent>();
-		if (!transformComponent)
+		std::shared_ptr<MoveComponent> moveComponent = targetEntity->getComponent<MoveComponent>();
+		if (!moveComponent)
 			return;
 
 		save->_jsonFile["Entity"]["ID"] = entityID;
-		save->_jsonFile["Entity"]["TransformComponent"]["coords"] = transformComponent->_coords;
+		save->_jsonFile["Entity"]["MoveComponent"]["type"] = moveComponent->_type;
+		if (moveComponent->_type == StaticallyDefined)
+			save->_jsonFile["Entity"]["MoveComponent"]["coords"] = moveComponent->_coords;
+		else {
+			save->_jsonFile["Entity"]["MoveComponent"]["leftClick"] = { std::get<0>(moveComponent->_leftClick), std::get<1>(moveComponent->_leftClick) };
+			save->_jsonFile["Entity"]["MoveComponent"]["rightClick"] = { std::get<0>(moveComponent->_rightClick), std::get<1>(moveComponent->_rightClick) };
+		}
+		save->_jsonFile["Entity"]["MoveComponent"]["speed"] = moveComponent->_speed;
+		save->_jsonFile["Entity"]["MoveComponent"]["move"] = moveComponent->_move;
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
-		if (jsonFile["TransformComponent"].empty())
+		if (jsonFile["MoveComponent"].empty())
 			return;
 
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
@@ -369,15 +349,27 @@ class TransformFunctor : public ComponentFunctor {
 			return;
 		auto program = objectComponent->_program;
 
-		std::shared_ptr<TransformComponent> transformComponent = targetEntity->getComponent<TransformComponent>();
-		if (!transformComponent) {
-			transformComponent = std::shared_ptr<TransformComponent>(new TransformComponent());
-			targetEntity->addComponent(transformComponent);
+		std::shared_ptr<MoveComponent> moveComponent = targetEntity->getComponent<MoveComponent>();
+		if (!moveComponent) {
+			moveComponent = std::shared_ptr<MoveComponent>(new MoveComponent());
+			targetEntity->addComponent(moveComponent);
 		}
 
-		std::tuple<float, float> coords = jsonFile["TransformComponent"]["coords"];
-		transformComponent->initialize(program);
-		transformComponent->setTransform(coords);
+		MoveTypes type = jsonFile["MoveComponent"]["type"];
+		int speed = jsonFile["MoveComponent"]["speed"];
+		bool move = jsonFile["MoveComponent"]["move"];
+		if (type == StaticallyDefined) {
+			std::tuple<float, float> coords = jsonFile["MoveComponent"]["coords"];
+			moveComponent->initialize(type, program, speed, coords);
+		}
+		else {
+			std::tuple<float, float> leftClick = jsonFile["MoveComponent"]["leftClick"];
+			std::tuple<float, float> rightClick = jsonFile["MoveComponent"]["rightClick"];
+			moveComponent->initialize(type, program, speed);
+			moveComponent->_leftClick = leftClick;
+			moveComponent->_rightClick = rightClick;
+		}
+
 	}
 };
 

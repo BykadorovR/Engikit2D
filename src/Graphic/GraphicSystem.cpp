@@ -55,17 +55,17 @@ void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
 	}
 }
 
-void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TransformComponent> transform) {
-	float adjustX = std::get<0>(transform->_coords);
-	float adjustY = std::get<1>(transform->_coords);
+void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<MoveComponent> move) {
+	float adjustX = std::get<0>(move->_coords);
+	float adjustY = std::get<1>(move->_coords);
 	Matrix2D matrix;
 	matrix.translate(adjustX, adjustY);
-	transform->_result = transform->_result * matrix;
-	glUniformMatrix4fv(transform->_uMatrixLocation, 1, false, transform->_result.getData());
+	move->_result = move->_result * matrix;
+	glUniformMatrix4fv(move->_uMatrixLocation, 1, false, move->_result.getData());
 	object->_sceneX += adjustX;
 	object->_sceneY += adjustY;
 	//TODO: ISSUE!! ORDER DEPENDENCIES BETWEEN CAMERA AND TRANSFORM. CAMERA USES _coords VAR TOO
-	transform->_coords = { 0, 0 };
+	move->_coords = { 0, 0 };
 }
 
 void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
@@ -75,13 +75,11 @@ void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Camer
 	move.translate(x, y);
 	camera->_viewMatrix = camera->_viewMatrix * move;
 	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, camera->_viewMatrix.getData());
-	camera->setTransform(coords);
 	object->_sceneX += std::get<0>(coords);
 	object->_sceneY += std::get<1>(coords);
 }
 
-void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
-	std::shared_ptr<CameraComponent> cameraComponent;
+std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent> cameraComponent) {
 	int targetEntityID = -1;
 	std::tuple<float, float> coords = { 0, 0 };
 	for (auto entity : entityManager->getEntities()) {
@@ -94,13 +92,20 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 	if (targetEntityID >= 0) {
 		for (auto entity : entityManager->getEntities()) {
 			if (entity->_index == targetEntityID) {
-				auto transformComponent = entity->getComponent<TransformComponent>();
-				if (transformComponent) {
-					coords = transformComponent->_coords;
+				auto moveComponent = entity->getComponent<MoveComponent>();
+				if (moveComponent) {
+					coords = moveComponent->_coords;
 				}
 			}
 		}
 	}
+
+	return coords;
+}
+
+void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
+	std::shared_ptr<CameraComponent> cameraComponent;
+	auto coords = cameraFindCoords(entityManager, cameraComponent);
 
 	for (auto entity : entityManager->getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
@@ -110,7 +115,7 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 		if (cameraComponent && vertexObject->_hud == false)
 			cameraUpdate(vertexObject, cameraComponent, coords);
 
-		auto transformTextureObject = entity->getComponent<TransformComponent>();
+		auto transformTextureObject = entity->getComponent<MoveComponent>();
 		if (transformTextureObject)
 			transformUpdate(vertexObject, transformTextureObject);
 

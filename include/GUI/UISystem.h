@@ -9,11 +9,15 @@ enum ClickCount {
 	SECOND = 2
 };
 
+class MoveSystem : public System {
+	void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<MoveComponent> moveComponent);
+
+public:
+	void update(shared_ptr<EntityManager> entityManager);
+};
+
 class MouseSystem : public System {
 	std::tuple<std::tuple<int, int>, ClickCount> processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent);
-
-	void processClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickMoveComponent> clickMoveComponent,
-		std::shared_ptr<TransformComponent> transformComponent);
 
 	std::tuple<std::tuple<int, int>, ClickCount> processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
 		std::shared_ptr<GroupEntitiesComponent> groupComponent);
