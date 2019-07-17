@@ -60,7 +60,7 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Mo
 	float adjustY = std::get<1>(move->_coords);
 	Matrix2D matrix;
 	matrix.translate(adjustX, adjustY);
-	move->_result = move->_result * matrix;
+	object->_transform = object->_transform * matrix;
 	glUniformMatrix4fv(move->_uMatrixLocation, 1, false, move->_result.getData());
 	object->_sceneX += adjustX;
 	object->_sceneY += adjustY;
@@ -73,8 +73,8 @@ void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Camer
 	float x = -std::get<0>(coords);
 	float y = -std::get<1>(coords);
 	move.translate(x, y);
-	camera->_viewMatrix = camera->_viewMatrix * move;
-	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, camera->_viewMatrix.getData());
+	object->_camera = object->_camera * move;
+	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
 	object->_sceneX += std::get<0>(coords);
 	object->_sceneY += std::get<1>(coords);
 }

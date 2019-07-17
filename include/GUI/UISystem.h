@@ -11,6 +11,7 @@ enum ClickCount {
 
 class MoveSystem : public System {
 	void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<MoveComponent> moveComponent);
+	void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<CameraComponent> cameraComponent);
 
 public:
 	void update(shared_ptr<EntityManager> entityManager);

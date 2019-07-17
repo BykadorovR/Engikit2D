@@ -33,6 +33,9 @@ public:
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
 	bool _hud;
+	Matrix2D _transform;
+	Matrix2D _camera;
+	int _cameraSpeed;
 	//
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;
@@ -216,7 +219,12 @@ public:
 		_speed = speed;
 		_result.identity();
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
-		MouseEvent::instance().registerComponent(this);
+		_leftClick = { 0, 0 };
+		_rightClick = { 0, 0 };
+		_coords = { 0, 0 };
+		_move = false;
+		if (_type == PlayerControlled)
+			MouseEvent::instance().registerComponent(this);
 	}
 
 	void initialize(MoveTypes type, GLuint program, int speed, std::tuple<float, float> endPoint) {

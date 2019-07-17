@@ -8,12 +8,18 @@ public:
 	void initialize(int entityID, GLuint program) {
 		_entityID = entityID;
 		_uViewMatrixLocation = glGetUniformLocation(program, _uViewMatrix.c_str());
-		_viewMatrix.identity();
 	}
 
+	void setTransform(std::tuple<float, float> coords) {
+		_coords = coords;
+	}
+
+	bool _move = false;
+	std::tuple<float, float> _leftClick;
+	std::tuple<float, float> _rightClick;
+	std::tuple<float, float> _coords;
 	int _entityID;
 	GLuint _program;
-	Matrix2D _viewMatrix;
 	//
 	GLint _uViewMatrixLocation;
 	//

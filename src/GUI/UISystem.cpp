@@ -56,6 +56,32 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 	}
 }
 
+void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<CameraComponent> cameraComponent) {
+	float speed = objectComponent->_cameraSpeed;
+	int clickX = std::get<0>(cameraComponent->_leftClick);
+	int clickY = std::get<1>(cameraComponent->_leftClick);
+	if (!clickX || !clickY)
+		return;
+	if (cameraComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
+		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight)
+		return;
+
+	cameraComponent->_move = true;
+	int objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
+	int objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
+	float angle = atan2(clickY - objectY, clickX - objectX);
+	float stepX = cos(angle) * speed;
+	float stepY = sin(angle) * speed;
+	if (abs(objectX - clickX) > speed || abs(objectY - clickY) > speed) {
+		cameraComponent->setTransform({ stepX, stepY });
+	}
+	else {
+		cameraComponent->_move = false;
+		cameraComponent->_coords = { 0, 0 };
+	}
+}
+
+
 void MoveSystem::update(std::shared_ptr<EntityManager> entityManager) {
 	for (auto entity : entityManager->getEntities()) {
 		auto objectComponent = entity->getComponent<ObjectComponent>();
