@@ -75,28 +75,16 @@ void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Camer
 	move.translate(x, y);
 	object->_camera = object->_camera * move;
 	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
-	object->_sceneX += std::get<0>(coords);
-	object->_sceneY += std::get<1>(coords);
 }
 
-std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent> cameraComponent) {
+std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent>& cameraComponent, std::shared_ptr<ObjectComponent>& cameraObjectComponent) {
 	int targetEntityID = -1;
 	std::tuple<float, float> coords = { 0, 0 };
 	for (auto entity : entityManager->getEntities()) {
 		cameraComponent = entity->getComponent<CameraComponent>();
 		if (cameraComponent) {
-			targetEntityID = cameraComponent->_entityID;
-		}
-	}
-
-	if (targetEntityID >= 0) {
-		for (auto entity : entityManager->getEntities()) {
-			if (entity->_index == targetEntityID) {
-				auto moveComponent = entity->getComponent<MoveComponent>();
-				if (moveComponent) {
-					coords = moveComponent->_coords;
-				}
-			}
+			coords = cameraComponent->_coords;
+			cameraObjectComponent = entity->getComponent<ObjectComponent>();
 		}
 	}
 
@@ -105,15 +93,23 @@ std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManage
 
 void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 	std::shared_ptr<CameraComponent> cameraComponent;
-	auto coords = cameraFindCoords(entityManager, cameraComponent);
+	std::shared_ptr<ObjectComponent> cameraObjectComponent;
+	auto coords = cameraFindCoords(entityManager, cameraComponent, cameraObjectComponent);
 
 	for (auto entity : entityManager->getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
 		assert(vertexObject);
 		vertexUpdate(vertexObject);
 
-		if (cameraComponent && vertexObject->_hud == false)
+		if (cameraComponent) {
+			cameraObjectComponent->_sceneX += std::get<0>(coords);
+			cameraObjectComponent->_sceneY += std::get<1>(coords);
+
+		}
+
+		if (vertexObject->_hud == false) {
 			cameraUpdate(vertexObject, cameraComponent, coords);
+		}
 
 		auto transformTextureObject = entity->getComponent<MoveComponent>();
 		if (transformTextureObject)

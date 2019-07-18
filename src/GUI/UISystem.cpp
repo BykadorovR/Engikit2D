@@ -56,7 +56,7 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 	}
 }
 
-void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<CameraComponent> cameraComponent) {
+void CameraSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<CameraComponent> cameraComponent) {
 	float speed = objectComponent->_cameraSpeed;
 	int clickX = std::get<0>(cameraComponent->_leftClick);
 	int clickY = std::get<1>(cameraComponent->_leftClick);
@@ -92,6 +92,18 @@ void MoveSystem::update(std::shared_ptr<EntityManager> entityManager) {
 		}
 	}
 }
+
+void CameraSystem::update(std::shared_ptr<EntityManager> entityManager) {
+	for (auto entity : entityManager->getEntities()) {
+		auto objectComponent = entity->getComponent<ObjectComponent>();
+		auto cameraComponent = entity->getComponent<CameraComponent>();
+
+		if (objectComponent && cameraComponent) {
+			moveEntity(objectComponent, cameraComponent);
+		}
+	}
+}
+
 
 std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickInside(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickInsideComponent> clickInsideComponent,
 	std::shared_ptr<GroupEntitiesComponent> groupComponent) {
@@ -154,6 +166,13 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 						moveComponent->_leftClick = { 0, 0 };
 						moveComponent->_rightClick = { 0, 0 };
 					}
+					auto cameraComponent = playerEntity->getComponent<CameraComponent>();
+					if (cameraComponent) {
+						cameraComponent->_move = false;
+						cameraComponent->_coords = { 0, 0 };
+						cameraComponent->_leftClick = { 0, 0 };
+						cameraComponent->_rightClick = { 0, 0 };
+					}
 				}
 			}
 			if (interactionComponent && clickedInside)
@@ -180,6 +199,13 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 						moveComponent->_leftClick = { 0, 0 };
 						moveComponent->_rightClick = { 0, 0 };
 					}
+					auto cameraComponent = playerEntity->getComponent<CameraComponent>();
+					if (cameraComponent) {
+						cameraComponent->_move = false;
+						cameraComponent->_coords = { 0, 0 };
+						cameraComponent->_leftClick = { 0, 0 };
+						cameraComponent->_rightClick = { 0, 0 };
+					}
 				}
 			}
 			if (clickClickMoveComponent->_moveToByClickSecond == false && clickedInside == ClickCount::SECOND) {
@@ -190,6 +216,13 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 						moveComponent->_coords = { 0, 0 };
 						moveComponent->_leftClick = { 0, 0 };
 						moveComponent->_rightClick = { 0, 0 };
+					}
+					auto cameraComponent = playerEntity->getComponent<CameraComponent>();
+					if (cameraComponent) {
+						cameraComponent->_move = false;
+						cameraComponent->_coords = { 0, 0 };
+						cameraComponent->_leftClick = { 0, 0 };
+						cameraComponent->_rightClick = { 0, 0 };
 					}
 				}
 			}
@@ -272,10 +305,7 @@ void InteractionAddToSystem::processCreateEntity(shared_ptr<EntityManager> entit
 					interactionComponent->_removeFunctor(entityID);
 				break;
 				case 2:
-					std::tuple<int, int> size;
-					std::cout << "Enter the size: width and height:" << std::endl;
-					std::cin >> std::get<0>(size) >> std::get<1>(size);
-					interactionComponent->_createFunctor(interactionComponent->creationCoords, size);
+					interactionComponent->_createFunctor(interactionComponent->creationCoords);
 				break;
 			}
 			interactionComponent->_interactReady = false;

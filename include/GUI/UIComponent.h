@@ -122,7 +122,7 @@ public:
 class InteractionCreateEntityComponent : public Component {
 public:
 	bool _interactReady = false;
-	std::function<std::shared_ptr<Entity>(std::tuple<int, int>, std::tuple<int, int>)> _createFunctor;
+	std::function<std::shared_ptr<Entity>(std::tuple<int, int>)> _createFunctor;
 	std::function<void(int)> _removeFunctor;
 	std::tuple<int, int> creationCoords;
 	std::tuple<int, int> creationSize = {100, 100};

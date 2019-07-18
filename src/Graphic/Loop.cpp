@@ -45,8 +45,8 @@ shared_ptr<MouseSystem> mouseSystem;
 shared_ptr<InteractionAddToSystem> interactionAddToSystem;
 shared_ptr<SaveLoadSystem> saveLoadSystem;
 shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite, loadSaveSprite;
+shared_ptr<CameraSystem> cameraSystem;
 shared_ptr<MoveSystem> moveSystem;
-
 void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
 	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>("../data/textures/air_hockey_surface.png", 0, 0, atlas);
@@ -59,7 +59,7 @@ void on_surface_changed() {
 	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	newSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	newSprite->createComponent<InteractionCreateEntityComponent>()->initialize();
-	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [textureRaw](std::tuple<int, int> coords, std::tuple<int, int> size) -> std::shared_ptr<Entity> {
+	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [textureRaw](std::tuple<int, int> coords) -> std::shared_ptr<Entity> {
 		shared_ptr<Entity> sprite;
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
@@ -67,7 +67,18 @@ void on_surface_changed() {
 		bool hud;
 		std::cout << "Is it HUD? (0 or 1)" << std::endl;
 		std::cin >> hud;
-		sprite->createComponent<ObjectComponent>()->initialize(std::get<0>(coords), std::get<1>(coords), std::get<0>(size), std::get<1>(size), hud, program);
+		int speed;
+		std::cout << "Speed of camera for this object" << std::endl;
+		std::cin >> speed;
+		int objectWidth, objectHeight;
+		std::cout << "Enter width and height of object:" << std::endl;
+		std::cin >> objectWidth >> objectHeight;
+
+		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
+		objectComponent->initialize(std::get<0>(coords), std::get<1>(coords), objectWidth, objectHeight, hud, program);
+		objectComponent->_cameraSpeed = speed;
+		sprite->addComponent(objectComponent);
+
 		//TODO: path to texture?
 		sprite->createComponent<TextureComponent>()->initialize(textureRaw, program);
 		sprite->createComponent<ClickInsideComponent>()->initialize(false);
@@ -79,6 +90,8 @@ void on_surface_changed() {
 		std::cin >> groupName;
 		sprite->createComponent<GroupEntitiesComponent>()->initialize(groupID, groupName);
 		sprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
+		
+		
 		return sprite;
 	};
 	newSprite->getComponent<InteractionCreateEntityComponent>()->_removeFunctor = [](int entityID) -> void {
@@ -90,7 +103,7 @@ void on_surface_changed() {
 	staticSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	staticSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	staticSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::SUBJECT);
-
+	
 	textureSprite = createSprite(300, 0, 100, 100, textureRaw);
 	textureSprite->createComponent<ClickInsideComponent>()->initialize(false);
 	textureSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
@@ -113,6 +126,7 @@ void on_surface_changed() {
 	interactionAddToSystem = world.createSystem<InteractionAddToSystem>();
 	saveLoadSystem = world.createSystem<SaveLoadSystem>();
 	moveSystem = world.createSystem<MoveSystem>();
+	cameraSystem = world.createSystem<CameraSystem>();
 }
 
 void update(int value) {
@@ -122,6 +136,7 @@ void update(int value) {
 
 void on_draw_frame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	cameraSystem->update(world.getEntityManager());
 	moveSystem->update(world.getEntityManager());
 	mouseSystem->update(world.getEntityManager());
 	drawSystem->update(world.getEntityManager());

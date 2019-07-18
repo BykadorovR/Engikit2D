@@ -121,7 +121,11 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		bool hud;
 		std::cout << "Is it HUD? (0 or 1)" << std::endl;
 		std::cin >> hud;
+		int speed;
+		std::cout << "Speed of camera for this object" << std::endl;
+		std::cin >> speed;
 		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, hud, program);
+		objectComponent->_cameraSpeed = speed;
 
 		return objectComponent;
 	}
@@ -136,6 +140,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			return;
 
 		save->_jsonFile["Entity"]["ID"] = entityID;
+		save->_jsonFile["Entity"]["ObjectComponent"]["cameraSpeed"] = objectComponent->_cameraSpeed;
 		save->_jsonFile["Entity"]["ObjectComponent"]["sceneCoord"] = {objectComponent->_sceneX, objectComponent->_sceneY};
 		save->_jsonFile["Entity"]["ObjectComponent"]["objectSize"] = { objectComponent->_objectWidth, objectComponent->_objectHeight };
 		save->_jsonFile["Entity"]["ObjectComponent"]["HUD"] = objectComponent->_hud;
@@ -151,12 +156,14 @@ class ObjectComponentFunctor : public ComponentFunctor {
 
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+		int cameraSpeed = jsonFile["ObjectComponent"]["cameraSpeed"];
 		float sceneX = jsonFile["ObjectComponent"]["sceneCoord"][0];
 		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
 		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
 		bool HUD = jsonFile["ObjectComponent"]["HUD"];
 		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, HUD, program);
+		objectComponent->_cameraSpeed = cameraSpeed;
 	}
 };
 
