@@ -5,8 +5,9 @@
 
 class CameraComponent : public Component, IMouseEvent {
 public:
-	void initialize(int entityID, GLuint program) {
+	void initialize(int entityID, int cameraSpeed, GLuint program) {
 		_entityID = entityID;
+		_cameraSpeed = cameraSpeed;
 		_uViewMatrixLocation = glGetUniformLocation(program, _uViewMatrix.c_str());
 		MouseEvent::instance().registerComponent(this);
 	}
@@ -26,6 +27,7 @@ public:
 		_rightClick = { x, y };
 	}
 
+	int _cameraSpeed;
 	bool _move = false;
 	std::tuple<float, float> _leftClick;
 	std::tuple<float, float> _rightClick;

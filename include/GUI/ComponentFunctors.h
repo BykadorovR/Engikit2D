@@ -122,10 +122,10 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		std::cout << "Is it HUD? (0 or 1)" << std::endl;
 		std::cin >> hud;
 		int speed;
-		std::cout << "Speed of camera for this object" << std::endl;
+		std::cout << "Speed coef from camera speed for this object" << std::endl;
 		std::cin >> speed;
 		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, hud, program);
-		objectComponent->_cameraSpeed = speed;
+		objectComponent->_cameraCoefSpeed = speed;
 
 		return objectComponent;
 	}
@@ -140,7 +140,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			return;
 
 		save->_jsonFile["Entity"]["ID"] = entityID;
-		save->_jsonFile["Entity"]["ObjectComponent"]["cameraSpeed"] = objectComponent->_cameraSpeed;
+		save->_jsonFile["Entity"]["ObjectComponent"]["cameraCoefSpeed"] = objectComponent->_cameraCoefSpeed;
 		save->_jsonFile["Entity"]["ObjectComponent"]["sceneCoord"] = {objectComponent->_sceneX, objectComponent->_sceneY};
 		save->_jsonFile["Entity"]["ObjectComponent"]["objectSize"] = { objectComponent->_objectWidth, objectComponent->_objectHeight };
 		save->_jsonFile["Entity"]["ObjectComponent"]["HUD"] = objectComponent->_hud;
@@ -156,14 +156,14 @@ class ObjectComponentFunctor : public ComponentFunctor {
 
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-		int cameraSpeed = jsonFile["ObjectComponent"]["cameraSpeed"];
+		int cameraSpeed = jsonFile["ObjectComponent"]["cameraCoefSpeed"];
 		float sceneX = jsonFile["ObjectComponent"]["sceneCoord"][0];
 		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
 		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
 		bool HUD = jsonFile["ObjectComponent"]["HUD"];
 		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, HUD, program);
-		objectComponent->_cameraSpeed = cameraSpeed;
+		objectComponent->_cameraCoefSpeed = cameraSpeed;
 	}
 };
 
@@ -187,7 +187,6 @@ class ClickInsideFunctor : public ComponentFunctor {
 		if (!clickInsideComponent)
 			return;
 
-		save->_jsonFile["Entity"]["ID"] = entityID;
 		save->_jsonFile["Entity"]["ClickInsideComponent"]["moveToByClick"] = clickInsideComponent->_moveToByClick;
 	}
 
@@ -230,7 +229,6 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 		if (!groupEntitiesComponent)
 			return;
 
-		save->_jsonFile["Entity"]["ID"] = entityID;
 		save->_jsonFile["Entity"]["GroupEntitiesComponent"]["groupNumber"] = groupEntitiesComponent->_groupNumber;
 		save->_jsonFile["Entity"]["GroupEntitiesComponent"]["groupName"] = groupEntitiesComponent->_groupName;
 	}
@@ -272,7 +270,6 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 		if (!interactionAddToEntityComponent)
 			return;
 
-		save->_jsonFile["Entity"]["ID"] = entityID;
 		save->_jsonFile["Entity"]["InteractionAddToEntityComponent"]["interactMember"] = interactionAddToEntityComponent->_interactionMember;
 	}
 
@@ -334,7 +331,6 @@ class MoveFunctor : public ComponentFunctor {
 		if (!moveComponent)
 			return;
 
-		save->_jsonFile["Entity"]["ID"] = entityID;
 		save->_jsonFile["Entity"]["MoveComponent"]["type"] = moveComponent->_type;
 		if (moveComponent->_type == StaticallyDefined)
 			save->_jsonFile["Entity"]["MoveComponent"]["coords"] = moveComponent->_coords;
@@ -375,6 +371,7 @@ class MoveFunctor : public ComponentFunctor {
 			moveComponent->initialize(type, program, speed);
 			moveComponent->_leftClick = leftClick;
 			moveComponent->_rightClick = rightClick;
+			moveComponent->_move = move;
 		}
 
 	}
@@ -389,7 +386,11 @@ class CameraFunctor : public ComponentFunctor {
 		int programID;
 		std::cout << "Enter programID:" << std::endl;
 		std::cin >> programID;
-		cameraComponent->initialize(entityID, programID);
+		int speed;
+		std::cout << "Enter camera speed: " << std::endl;
+		std::cin >> speed;
+
+		cameraComponent->initialize(entityID, speed, programID);
 		return cameraComponent;
 	}
 
@@ -398,10 +399,42 @@ class CameraFunctor : public ComponentFunctor {
 	}
 
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<CameraComponent> cameraComponent = targetEntity->getComponent<CameraComponent>();
+		if (!cameraComponent)
+			return;
 
+		save->_jsonFile["Entity"]["CameraComponent"]["leftClick"] = { std::get<0>(cameraComponent->_leftClick), std::get<1>(cameraComponent->_leftClick) };
+		save->_jsonFile["Entity"]["CameraComponent"]["rightClick"] = { std::get<0>(cameraComponent->_rightClick), std::get<1>(cameraComponent->_rightClick) };
+		save->_jsonFile["Entity"]["CameraComponent"]["speed"] = cameraComponent->_cameraSpeed;
+		save->_jsonFile["Entity"]["CameraComponent"]["move"] = cameraComponent->_move;
 	}
 
 	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		int entityID = targetEntity->_index;
+		if (jsonFile["CameraComponent"].empty())
+			return;
+
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		if (!objectComponent)
+			return;
+		auto program = objectComponent->_program;
+
+		std::shared_ptr<CameraComponent> cameraComponent = targetEntity->getComponent<CameraComponent>();
+		if (!cameraComponent) {
+			cameraComponent = std::shared_ptr<CameraComponent>(new CameraComponent());
+			targetEntity->addComponent(cameraComponent);
+		}
+
+		int speed = jsonFile["CameraComponent"]["speed"];
+		bool move = jsonFile["CameraComponent"]["move"];
+		std::tuple<float, float> leftClick = jsonFile["CameraComponent"]["leftClick"];
+		std::tuple<float, float> rightClick = jsonFile["CameraComponent"]["rightClick"];
+		cameraComponent->initialize(entityID, speed, program);
+		cameraComponent->_leftClick = leftClick;
+		cameraComponent->_rightClick = rightClick;
+		cameraComponent->_move = move;
+		
 
 	}
 };

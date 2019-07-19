@@ -57,7 +57,7 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 }
 
 void CameraSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<CameraComponent> cameraComponent) {
-	float speed = objectComponent->_cameraSpeed;
+	float speed = cameraComponent->_cameraSpeed;
 	int clickX = std::get<0>(cameraComponent->_leftClick);
 	int clickY = std::get<1>(cameraComponent->_leftClick);
 	if (!clickX || !clickY)

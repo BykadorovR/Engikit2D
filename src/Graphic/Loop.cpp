@@ -68,7 +68,7 @@ void on_surface_changed() {
 		std::cout << "Is it HUD? (0 or 1)" << std::endl;
 		std::cin >> hud;
 		int speed;
-		std::cout << "Speed of camera for this object" << std::endl;
+		std::cout << "Speed coef from camera speed for this object" << std::endl;
 		std::cin >> speed;
 		int objectWidth, objectHeight;
 		std::cout << "Enter width and height of object:" << std::endl;
@@ -76,7 +76,7 @@ void on_surface_changed() {
 
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
 		objectComponent->initialize(std::get<0>(coords), std::get<1>(coords), objectWidth, objectHeight, hud, program);
-		objectComponent->_cameraSpeed = speed;
+		objectComponent->_cameraCoefSpeed = speed;
 		sprite->addComponent(objectComponent);
 
 		//TODO: path to texture?

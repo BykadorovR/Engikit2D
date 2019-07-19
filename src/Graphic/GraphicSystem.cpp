@@ -70,14 +70,14 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Mo
 
 void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
 	Matrix2D move;
-	float x = -std::get<0>(coords);
-	float y = -std::get<1>(coords);
+	float x = -std::get<0>(coords) * object->_cameraCoefSpeed;
+	float y = -std::get<1>(coords) * object->_cameraCoefSpeed;
 	move.translate(x, y);
 	object->_camera = object->_camera * move;
 	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
 }
 
-std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent>& cameraComponent, std::shared_ptr<ObjectComponent>& cameraObjectComponent) {
+std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent>& cameraComponent, std::shared_ptr<ObjectComponent>& cameraObjectComponent, std::shared_ptr<Entity>& camera) {
 	int targetEntityID = -1;
 	std::tuple<float, float> coords = { 0, 0 };
 	for (auto entity : entityManager->getEntities()) {
@@ -85,6 +85,8 @@ std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManage
 		if (cameraComponent) {
 			coords = cameraComponent->_coords;
 			cameraObjectComponent = entity->getComponent<ObjectComponent>();
+			camera = entity;
+			break;
 		}
 	}
 
@@ -94,20 +96,22 @@ std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManage
 void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 	std::shared_ptr<CameraComponent> cameraComponent;
 	std::shared_ptr<ObjectComponent> cameraObjectComponent;
-	auto coords = cameraFindCoords(entityManager, cameraComponent, cameraObjectComponent);
+	std::shared_ptr<Entity> camera;
+	auto coords = cameraFindCoords(entityManager, cameraComponent, cameraObjectComponent, camera);
 
 	for (auto entity : entityManager->getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
 		assert(vertexObject);
 		vertexUpdate(vertexObject);
 
-		if (cameraComponent) {
+		if (cameraComponent && entity == camera) {
 			cameraObjectComponent->_sceneX += std::get<0>(coords);
 			cameraObjectComponent->_sceneY += std::get<1>(coords);
+			coords = { -std::get<0>(coords), -std::get<1>(coords) };
 
 		}
 
-		if (vertexObject->_hud == false) {
+		if (cameraComponent && vertexObject->_hud == false ) {
 			cameraUpdate(vertexObject, cameraComponent, coords);
 		}
 

@@ -35,7 +35,7 @@ public:
 	bool _hud;
 	Matrix2D _transform;
 	Matrix2D _camera;
-	int _cameraSpeed;
+	int _cameraCoefSpeed;
 	//
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;
