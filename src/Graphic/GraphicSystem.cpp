@@ -29,6 +29,7 @@ void textureUpdate(std::shared_ptr<TextureComponent> object) {
 		glBindTexture(GL_TEXTURE_2D, object->_textureObject);
 		glUniform1i(object->_uTextureUnitLocation, 0);
 	}
+	glUniform1i(object->_uSolidLocation, object->_solid);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
@@ -90,14 +91,14 @@ void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Camer
 	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
 }
 
-std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent>& cameraComponent, std::shared_ptr<ObjectComponent>& cameraObjectComponent, std::shared_ptr<Entity>& camera) {
+std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent>& cameraComponent, /*std::shared_ptr<ObjectComponent>& cameraObjectComponent,*/ std::shared_ptr<Entity>& camera) {
 	int targetEntityID = -1;
 	std::tuple<float, float> coords = { 0, 0 };
 	for (auto entity : entityManager->getEntities()) {
 		cameraComponent = entity->getComponent<CameraComponent>();
 		if (cameraComponent) {
 			coords = cameraComponent->_coords;
-			cameraObjectComponent = entity->getComponent<ObjectComponent>();
+			//cameraObjectComponent = entity->getComponent<ObjectComponent>();
 			camera = entity;
 			break;
 		}
@@ -108,9 +109,9 @@ std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManage
 
 void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 	std::shared_ptr<CameraComponent> cameraComponent;
-	std::shared_ptr<ObjectComponent> cameraObjectComponent;
+	//std::shared_ptr<ObjectComponent> cameraObjectComponent;
 	std::shared_ptr<Entity> camera;
-	auto coords = cameraFindCoords(entityManager, cameraComponent, cameraObjectComponent, camera);
+	auto coords = cameraFindCoords(entityManager, cameraComponent, /*cameraObjectComponent,*/ camera);
 
 	for (auto entity : entityManager->getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
@@ -118,17 +119,19 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 		vertexUpdate(vertexObject);
 
 		if (cameraComponent && entity == camera) {
-			cameraObjectComponent->_sceneX += std::get<0>(coords);
-			cameraObjectComponent->_sceneY += std::get<1>(coords);
-			coords = { -std::get<0>(coords), -std::get<1>(coords) };
+			cameraComponent->_cameraX += std::get<0>(coords);
+			cameraComponent->_cameraY += std::get<1>(coords);
+			//coords = { -std::get<0>(coords), -std::get<1>(coords) };
 
 		}
+		
 
 		if (cameraComponent && camera != entity) {
 			cameraUpdateRest(vertexObject, cameraComponent, coords);
-		} else if (cameraComponent && camera == entity) {
+		} /*else if (cameraComponent && camera == entity) {
 			cameraUpdate(vertexObject, cameraComponent, coords);
 		}
+		*/
 
 		auto transformTextureObject = entity->getComponent<MoveComponent>();
 		if (transformTextureObject)

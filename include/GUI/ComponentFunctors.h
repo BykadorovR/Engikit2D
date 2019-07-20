@@ -11,7 +11,7 @@ public:
 	virtual std::shared_ptr<Component> createFunctor() = 0;
 	virtual void removeFunctor(std::shared_ptr<Entity> targetEntity) = 0;
 	virtual void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) = 0;
-	virtual void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) = 0;
+	virtual int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) = 0;
 };
 
 extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFunctors;
@@ -21,7 +21,6 @@ public:
 	//TODO: How to use atlas and textures dynamically
 	std::shared_ptr<Component> createFunctor() {
 		Shader shader;
-		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 		int textureID;
 		std::cout << "Enter texture ID" << std::endl;
 		std::cin >> textureID;
@@ -57,7 +56,20 @@ public:
 	}
 
 	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
-		targetEntity->removeComponent<TextureComponent>();
+		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+		if (textureComponent) {
+			textureComponent->_solid = 1;
+			textureComponent->_texture = nullptr;
+		}
+
+		std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
+		if (animatedTextureComponent) {
+			int program = animatedTextureComponent->_program;
+			targetEntity->removeComponent<AnimatedTextureComponent>();
+			std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
+			textureComponent->initialize(program);
+			targetEntity->addComponent(textureComponent);
+		}
 	}
 
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
@@ -75,11 +87,12 @@ public:
 		}
 	}
 
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
 		if (!objectComponent)
-			return;
+			return 1;
+
 		auto program = objectComponent->_program;
 		if (!jsonFile["TextureComponent"].empty()) {
 			std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
@@ -110,8 +123,8 @@ public:
 			}
 			textureComponent->initialize(program);
 		}
+		return 0;
 	}
-
 };
 
 class ObjectComponentFunctor : public ComponentFunctor {
@@ -149,7 +162,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["objectSize"] = { objectComponent->_objectWidth, objectComponent->_objectHeight };
 	}
 
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
 		if (!objectComponent) {
@@ -159,17 +172,16 @@ class ObjectComponentFunctor : public ComponentFunctor {
 
 		Shader shader;
 		GLuint program;
-		if (jsonFile["TextureComponent"].empty())
-			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader_solid.fsh");
-		else
-			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-		int cameraSpeed = jsonFile["ObjectComponent"]["cameraCoefSpeed"];
+		program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+
+		float cameraSpeed = jsonFile["ObjectComponent"]["cameraCoefSpeed"];
 		float sceneX = jsonFile["ObjectComponent"]["sceneCoord"][0];
 		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
 		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
 		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
 		objectComponent->_cameraCoefSpeed = cameraSpeed;
+		return 0;
 	}
 };
 
@@ -196,10 +208,10 @@ class ClickInsideFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ClickInsideComponent"]["moveToByClick"] = clickInsideComponent->_moveToByClick;
 	}
 
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
 		if (jsonFile["ClickInsideComponent"].empty())
-			return;
+			return -1;
 
 		std::shared_ptr<ClickInsideComponent> clickInsideComponent = targetEntity->getComponent<ClickInsideComponent>();
 		if (!clickInsideComponent) {
@@ -209,6 +221,7 @@ class ClickInsideFunctor : public ComponentFunctor {
 
 		bool moveToByClick = jsonFile["ClickInsideComponent"]["moveToByClick"];
 		clickInsideComponent->initialize(moveToByClick);
+		return 0;
 	}
 };
 
@@ -239,10 +252,10 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["GroupEntitiesComponent"]["groupName"] = groupEntitiesComponent->_groupName;
 	}
 
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
 		if (jsonFile["GroupEntitiesComponent"].empty())
-			return;
+			return -1;
 
 		std::shared_ptr<GroupEntitiesComponent> groupEntitiesComponent = targetEntity->getComponent<GroupEntitiesComponent>();
 		if (!groupEntitiesComponent) {
@@ -253,6 +266,7 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 		uint32_t groupNumber = jsonFile["GroupEntitiesComponent"]["groupNumber"];
 		std::string groupName = jsonFile["GroupEntitiesComponent"]["groupName"];
 		groupEntitiesComponent->initialize(groupNumber, groupName);
+		return 0;
 	}
 };
 
@@ -279,10 +293,10 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["InteractionAddToEntityComponent"]["interactMember"] = interactionAddToEntityComponent->_interactionMember;
 	}
 
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
 		if (jsonFile["InteractionAddToEntityComponent"].empty())
-			return;
+			return -1;
 
 		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
 		if (!interactionAddToEntityComponent) {
@@ -292,6 +306,7 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 
 		InteractionMember interactionMember = jsonFile["InteractionAddToEntityComponent"]["interactMember"];
 		interactionAddToEntityComponent->initialize(interactionMember);
+		return 0;
 	}
 };
 
@@ -348,14 +363,14 @@ class MoveFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["MoveComponent"]["move"] = moveComponent->_move;
 	}
 
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
 		if (jsonFile["MoveComponent"].empty())
-			return;
+			return -1;
 
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
 		if (!objectComponent)
-			return;
+			return 1;
 		auto program = objectComponent->_program;
 
 		std::shared_ptr<MoveComponent> moveComponent = targetEntity->getComponent<MoveComponent>();
@@ -379,7 +394,7 @@ class MoveFunctor : public ComponentFunctor {
 			moveComponent->_rightClick = rightClick;
 			moveComponent->_move = move;
 		}
-
+		return 0;
 	}
 };
 
@@ -416,14 +431,14 @@ class CameraFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["CameraComponent"]["move"] = cameraComponent->_move;
 	}
 
-	void deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
 		int entityID = targetEntity->_index;
 		if (jsonFile["CameraComponent"].empty())
-			return;
+			return -1;
 
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
 		if (!objectComponent)
-			return;
+			return 1;
 		auto program = objectComponent->_program;
 
 		std::shared_ptr<CameraComponent> cameraComponent = targetEntity->getComponent<CameraComponent>();
@@ -441,7 +456,7 @@ class CameraFunctor : public ComponentFunctor {
 		cameraComponent->_rightClick = rightClick;
 		cameraComponent->_move = move;
 		
-
+		return 0;
 	}
 };
 

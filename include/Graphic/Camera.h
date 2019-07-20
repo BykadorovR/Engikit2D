@@ -29,6 +29,7 @@ public:
 
 	int _cameraSpeed;
 	bool _move = false;
+	float _cameraX, _cameraY;
 	std::tuple<float, float> _leftClick;
 	std::tuple<float, float> _rightClick;
 	std::tuple<float, float> _coords;

@@ -152,8 +152,15 @@ void Texture::setTextureID(int textureID) {
 }
 
 std::shared_ptr<Texture> TextureManager::getTexture(int textureID) {
-	textureList[textureID]->getAtlas()->initializeAtlas();
-	return textureList[textureID];
+	for (auto &item : textureList) {
+		if (item->getTextureID() == textureID) {
+			item->getAtlas()->initializeAtlas();
+			return item;
+		}
+	}
+	return nullptr;
+	//textureList[textureID]->getAtlas()->initializeAtlas();
+	//return textureList[textureID];
 }
 
 std::vector<std::shared_ptr<Texture> > TextureManager::getTextureList() {

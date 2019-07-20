@@ -50,6 +50,7 @@ class TextureComponent : public Component {
 public:
 	void initialize(int textureID, GLuint program) {
 		_componentID = 1;
+		_solid = 0;
 		_texture = TextureManager::instance()->getTexture(textureID);
 		_program = program;
 		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
@@ -69,13 +70,14 @@ public:
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
 		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
-
+		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
 		_textureObject = _texture->getAtlas()->getTexureObjectID();
 
 	}
 
 	void initialize(std::shared_ptr<Texture> texture, GLuint program) {
 		_componentID = 1;
+		_solid = 0;
 		_texture = texture;
 		_program = program;
 		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
@@ -95,17 +97,20 @@ public:
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
 		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
-
+		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
 		_textureObject = texture->getAtlas()->getTexureObjectID();
 
 	}
 
 	void initialize(GLuint program) {
 		_componentID = 1;
+		_solid = 1;
 		_texture = nullptr;
 		_program = program;
+		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
 	}
 
+	int _solid = 1;
 	//
 	Buffer _buffer;
 	std::shared_ptr<Texture> _texture;
@@ -117,10 +122,11 @@ public:
 	GLint _uTextureUnitLocation;
 	GLint _uAdjustXLocation;
 	GLint _uAdjustYLocation;
-
+	GLint _uSolidLocation;
 	//
 	std::string _aTextureCoordinatesString = "a_TextureCoordinates";
 	std::string _uTextureUnitString = "u_TextureUnit";
+	std::string _uSolidString = "u_Solid";
 	std::string _uAdjustX = "u_AdjustX";
 	std::string _uAdjustY = "u_AdjustY";
 

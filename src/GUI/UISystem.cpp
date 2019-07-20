@@ -3,8 +3,8 @@
 #include "GUISave.h"
 
 std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<ClickClickMoveComponent> clickClickMoveComponent) {
-	int currentClickX = std::get<0>(clickClickMoveComponent->_currentClick);
-	int currentClickY = std::get<1>(clickClickMoveComponent->_currentClick);
+	float currentClickX = std::get<0>(clickClickMoveComponent->_currentClick);
+	float currentClickY = std::get<1>(clickClickMoveComponent->_currentClick);
 	std::tuple<std::tuple<int, int>, ClickCount> clickedInside = { {0, 0}, ClickCount::NO };
 
 	//first click
@@ -18,8 +18,8 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(
 		return clickedInside;
 	}
 
-	int previousClickX = std::get<0>(clickClickMoveComponent->_previousClick);
-	int previousClickY = std::get<1>(clickClickMoveComponent->_previousClick);
+	float previousClickX = std::get<0>(clickClickMoveComponent->_previousClick);
+	float previousClickY = std::get<1>(clickClickMoveComponent->_previousClick);
 
 	if (clickClickMoveComponent->_clickFlag && previousClickX && previousClickY) {
 		clickClickMoveComponent->_previousClick = { 0, 0 };
@@ -34,8 +34,8 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(
 
 void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<MoveComponent> moveComponent) {
 	float speed = moveComponent->_speed;
-	int clickX = std::get<0>(moveComponent->_leftClick);
-	int clickY = std::get<1>(moveComponent->_leftClick);
+	float clickX = std::get<0>(moveComponent->_leftClick);
+	float clickY = std::get<1>(moveComponent->_leftClick);
 	if (!clickX || !clickY)
 		return;
 	if (moveComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
@@ -43,8 +43,8 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 		return;
 
 	moveComponent->_move = true;
-	int objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
-	int objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
+	float objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
+	float objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
 	float angle = atan2(clickY - objectY, clickX - objectX);
 	float stepX = cos(angle) * speed;
 	float stepY = sin(angle) * speed;
@@ -58,8 +58,8 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 
 void CameraSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<CameraComponent> cameraComponent) {
 	float speed = cameraComponent->_cameraSpeed;
-	int clickX = std::get<0>(cameraComponent->_leftClick);
-	int clickY = std::get<1>(cameraComponent->_leftClick);
+	float clickX = std::get<0>(cameraComponent->_leftClick) - cameraComponent->_cameraX;
+	float clickY = std::get<1>(cameraComponent->_leftClick) - cameraComponent->_cameraY;
 	if (!clickX || !clickY)
 		return;
 	if (cameraComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
@@ -67,8 +67,8 @@ void CameraSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, 
 		return;
 
 	cameraComponent->_move = true;
-	int objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
-	int objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
+	float objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
+	float objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
 	float angle = atan2(clickY - objectY, clickX - objectX);
 	float stepX = cos(angle) * speed;
 	float stepY = sin(angle) * speed;
@@ -78,6 +78,10 @@ void CameraSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, 
 	else {
 		cameraComponent->_move = false;
 		cameraComponent->_coords = { 0, 0 };
+		cameraComponent->_cameraX = 0;
+		cameraComponent->_cameraY = 0;
+		cameraComponent->_leftClick = { 0, 0 };
+		cameraComponent->_rightClick = { 0, 0 };
 	}
 }
 
@@ -411,8 +415,18 @@ void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::
 					targetEntity = entityManager->create();
 					targetEntity->_index = id;
 				}
+
+				std::vector<std::shared_ptr<ComponentFunctor> > repeat;
+				//TODO: REDO IN NORMAL WAY
 				for (auto functor : componentFunctors) {
-					functor.second->deserializeFunctor(targetEntity, itID.value());
+					int sts = functor.second->deserializeFunctor(targetEntity, itID.value());
+					if (sts == 1) {
+						repeat.push_back(functor.second);
+					}
+				}
+				//
+				for (auto functor : repeat) {
+					functor->deserializeFunctor(targetEntity, itID.value());
 				}
 			}
 		}

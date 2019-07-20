@@ -62,7 +62,7 @@ void on_surface_changed() {
 	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [](std::tuple<int, int> coords) -> std::shared_ptr<Entity> {
 		shared_ptr<Entity> sprite;
 		Shader shader;
-		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader_solid.fsh");
+		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 		sprite = world.createEntity();
 		float speed;
 		std::cout << "Speed coef from camera speed for this object" << std::endl;
