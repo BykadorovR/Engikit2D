@@ -44,6 +44,7 @@ void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, object->_textureObject);
 	glUniform1i(object->_uTextureUnitLocation, 0);
+	glUniform1i(object->_uSolidLocation, object->_solid);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	if (object->_currentAnimateTile < object->_tilesOrder.size()) {
@@ -64,7 +65,7 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Mo
 	Matrix2D matrix;
 	matrix.translate(adjustX, adjustY);
 	object->_transform = object->_transform * matrix;
-	glUniformMatrix4fv(move->_uMatrixLocation, 1, false, move->_result.getData());
+	glUniformMatrix4fv(move->_uMatrixLocation, 1, false, object->_transform.getData());
 	object->_sceneX += adjustX;
 	object->_sceneY += adjustY;
 	//TODO: ISSUE!! ORDER DEPENDENCIES BETWEEN CAMERA AND TRANSFORM. CAMERA USES _coords VAR TOO
@@ -72,11 +73,11 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Mo
 }
 
 void cameraUpdateRest(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
-	Matrix2D move;
 	float x = -std::get<0>(coords) * object->_cameraCoefSpeed;
 	float y = -std::get<1>(coords) * object->_cameraCoefSpeed;
-	move.translate(x, y);
-	object->_camera = object->_camera * move;
+	Matrix2D matrix;
+	matrix.translate(x, y);
+	object->_camera = object->_camera * matrix;
 	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
 	object->_sceneX += x;
 	object->_sceneY += y;

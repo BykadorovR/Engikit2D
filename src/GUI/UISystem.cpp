@@ -53,6 +53,8 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 	} else {
 		moveComponent->_move = false;
 		moveComponent->_coords = { 0, 0 };
+		moveComponent->_leftClick = { 0, 0 };
+		moveComponent->_rightClick = { 0, 0 };
 	}
 }
 
@@ -439,11 +441,13 @@ void SaveLoadSystem::saveTextures(std::shared_ptr<GUISave> fileSave) {
 	//width height atlasID
 	//textures: path width height row column atlasID posXAtlas posYAtlas
 	//
-	for (auto &textureAtlas : textureManager->getAtlasList()) {
-		fileSave->_jsonFile["textureAtlas"] = { textureAtlas->getAtlasID(), textureAtlas->getWidth(), textureAtlas->getHeight() };
+	for (int i = 0; i < textureManager->getAtlasList().size(); i++) {
+		auto textureAtlas = textureManager->getAtlasList()[i];
+		fileSave->_jsonFile["textureAtlas"][std::to_string(i)] = { textureAtlas->getAtlasID(), textureAtlas->getWidth(), textureAtlas->getHeight() };
 	}
-	for (auto &texture : textureManager->getTextureList()) {
-		fileSave->_jsonFile["texture"] = { texture->getTextureID(), texture->getPath(), texture->getAtlas()->getAtlasID(), texture->getPosXAtlas(), texture->getPosYAtlas(),
+	for (int i = 0; i < textureManager->getTextureList().size(); i++) {
+		auto texture = textureManager->getTextureList()[i];
+		fileSave->_jsonFile["texture"][std::to_string(i)] = { texture->getTextureID(), texture->getPath(), texture->getAtlas()->getAtlasID(), texture->getPosXAtlas(), texture->getPosYAtlas(),
 										   texture->getRow(), texture->getColumn() };
 	}
 	fileSave->saveToFile();
@@ -453,13 +457,17 @@ void SaveLoadSystem::loadTextures(std::shared_ptr<GUISave> fileLoad) {
 	auto textureManager = TextureManager::instance();
 	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
 		if (it.key() == "textureAtlas") {
-			textureManager->loadAtlas(it.value()[0], it.value()[1], it.value()[2]);
+			for (auto itID = it.value().begin(); itID != it.value().end(); ++itID) {
+				textureManager->loadAtlas(itID.value()[0], itID.value()[1], itID.value()[2]);
+			}
 		}
 	}
 	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
 		if (it.key() == "texture") {
-			auto texture = textureManager->loadTexture(it.value()[1], it.value()[2], it.value()[3], it.value()[4], it.value()[6], it.value()[5]);
-			texture->setTextureID(it.value()[0]);
+			for (auto itID = it.value().begin(); itID != it.value().end(); ++itID) {
+				auto texture = textureManager->loadTexture(itID.value()[1], itID.value()[2], itID.value()[3], itID.value()[4], itID.value()[6], itID.value()[5]);
+				texture->setTextureID(itID.value()[0]);
+			}
 		}
 	}
 }

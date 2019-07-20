@@ -136,6 +136,7 @@ class AnimatedTextureComponent : public Component {
 public:
 	void initialize(int textureID, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
 		_componentID = 1;
+		_solid = 0;
 		_texture = TextureManager::instance()->getTexture(textureID);
 		_program = program;
 		_tilesLatency = tilesLatency;
@@ -159,11 +160,13 @@ public:
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
 		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
+		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
 		_textureObject = _texture->getAtlas()->getTexureObjectID();
 
 	}
 	void initialize(std::shared_ptr<Texture> texture, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
 		_componentID = 1;
+		_solid = 0;
 		_texture = texture;
 		_program = program;
 		_tilesLatency = tilesLatency;
@@ -187,16 +190,19 @@ public:
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
 		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
+		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
 		_textureObject = texture->getAtlas()->getTexureObjectID();
 
 	}
 
+	int _solid = 0;
 	float _widthTile;
 	float _heightTile;
 	int _currentAnimateTile = 0;
 	int _currentLatency = 0;
 	std::vector<int> _tilesOrder;
 	std::vector<int> _tilesLatency;
+
 	//
 	Buffer _buffer;
 	std::shared_ptr<Texture> _texture;
@@ -207,8 +213,9 @@ public:
 	GLint _uTextureUnitLocation;
 	GLint _uAdjustXLocation;
 	GLint _uAdjustYLocation;
-
+	GLint _uSolidLocation;
 	//
+	std::string _uSolidString = "u_Solid";
 	std::string _aTextureCoordinatesString = "a_TextureCoordinates";
 	std::string _uTextureUnitString = "u_TextureUnit";
 	std::string _uAdjustX = "u_AdjustX";
@@ -223,11 +230,10 @@ enum MoveTypes {
 
 class MoveComponent : public Component, IMouseEvent {
 public:
-	void initialize(MoveTypes type, GLuint program, int speed) {
+	void initialize(MoveTypes type, GLuint program, float speed) {
 		_type = type;
 		_program = program;
 		_speed = speed;
-		_result.identity();
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
 		_leftClick = { 0, 0 };
 		_rightClick = { 0, 0 };
@@ -258,10 +264,9 @@ public:
 			MouseEvent::instance().unregisterComponent(this);
 	}
 
-	int _speed;
+	float _speed;
 	MoveTypes _type;
 	bool _move = false;
-	Matrix2D _result;
 	std::tuple<float, float> _leftClick;
 	std::tuple<float, float> _rightClick;
 	std::tuple<float, float> _coords;
