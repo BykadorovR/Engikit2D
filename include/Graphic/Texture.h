@@ -58,7 +58,7 @@ private:
 	int _posXAtlas, _posYAtlas;
 	int _width, _height;
 	int _row, _column;
-	int _textureID;
+	int _textureID = -1;
 };
 
 class TextureManager {

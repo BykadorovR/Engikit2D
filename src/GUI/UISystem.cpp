@@ -137,8 +137,9 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 	//first of all we should find GG
 	for (auto entity : entityManager->getEntities()) {
 		auto moveComponent = entity->getComponent<MoveComponent>();
+		auto cameraComponent = entity->getComponent<CameraComponent>();
 		//Can use existence of ClickMoveComponent also
-		if (moveComponent && moveComponent->_type == PlayerControlled)
+		if ((moveComponent && moveComponent->_type == PlayerControlled) || cameraComponent)
 			playerControlledEntities.push_back(entity);
 	}
 
@@ -397,18 +398,22 @@ void SaveLoadSystem::saveEntities(shared_ptr<EntityManager> entityManager, std::
 
 void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::shared_ptr<GUISave> fileLoad) {
 	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
-		std::shared_ptr<Entity> targetEntity = nullptr;
 		if (std::string("Entity") == it.key()) {
-			for (auto entity : entityManager->getEntities()) {
-				if (it.value()["ID"] == entity->_index)
-					targetEntity = entity;
-			}
-			if (targetEntity == nullptr) {
-				targetEntity = entityManager->create();
-				targetEntity->_index = it.value()["ID"];
-			}
-			for (auto functor : componentFunctors) {
-				functor.second->deserializeFunctor(targetEntity, it.value());
+			for (json::iterator itID = it.value().begin(); itID != it.value().end(); ++itID) {
+				std::shared_ptr<Entity> targetEntity = nullptr;
+				int id = atoi(itID.key().c_str());
+				for (auto entity : entityManager->getEntities()) {
+					//it's entity ID
+					if (id == entity->_index)
+						targetEntity = entity;
+				}
+				if (targetEntity == nullptr) {
+					targetEntity = entityManager->create();
+					targetEntity->_index = id;
+				}
+				for (auto functor : componentFunctors) {
+					functor.second->deserializeFunctor(targetEntity, itID.value());
+				}
 			}
 		}
 	}

@@ -9,8 +9,7 @@
 
 class ObjectComponent : public Component {
 public:
-	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, bool hud, GLuint program) {
-		_hud = hud;
+	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
 		_program = program;
 		_objectWidth = objectWidth;
 		_objectHeight = objectHeight;
@@ -32,10 +31,9 @@ public:
 		assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
-	bool _hud;
 	Matrix2D _transform;
 	Matrix2D _camera;
-	int _cameraCoefSpeed;
+	float _cameraCoefSpeed;
 	//
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;
@@ -100,6 +98,12 @@ public:
 
 		_textureObject = texture->getAtlas()->getTexureObjectID();
 
+	}
+
+	void initialize(GLuint program) {
+		_componentID = 1;
+		_texture = nullptr;
+		_program = program;
 	}
 
 	//

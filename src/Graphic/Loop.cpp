@@ -23,7 +23,7 @@ shared_ptr<Entity> createSprite(int x, int y, int width, int height, std::shared
 	Shader shader;
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	sprite = world.createEntity();
-	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, 0, program);
+	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
 	sprite->createComponent<TextureComponent>()->initialize(texture, program);
 	//sprite->createComponent<TransformComponent>()->initialize(program);
 	return sprite;
@@ -35,7 +35,7 @@ shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height,
 	Shader shader;
 	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	sprite = world.createEntity();
-	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, 0, program);
+	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
 	sprite->createComponent<AnimatedTextureComponent>()->initialize(texture, tiles, latency, program);
 	return sprite;
 }
@@ -59,15 +59,12 @@ void on_surface_changed() {
 	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	newSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	newSprite->createComponent<InteractionCreateEntityComponent>()->initialize();
-	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [textureRaw](std::tuple<int, int> coords) -> std::shared_ptr<Entity> {
+	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [](std::tuple<int, int> coords) -> std::shared_ptr<Entity> {
 		shared_ptr<Entity> sprite;
 		Shader shader;
-		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader_solid.fsh");
 		sprite = world.createEntity();
-		bool hud;
-		std::cout << "Is it HUD? (0 or 1)" << std::endl;
-		std::cin >> hud;
-		int speed;
+		float speed;
 		std::cout << "Speed coef from camera speed for this object" << std::endl;
 		std::cin >> speed;
 		int objectWidth, objectHeight;
@@ -75,12 +72,12 @@ void on_surface_changed() {
 		std::cin >> objectWidth >> objectHeight;
 
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		objectComponent->initialize(std::get<0>(coords), std::get<1>(coords), objectWidth, objectHeight, hud, program);
+		objectComponent->initialize(std::get<0>(coords), std::get<1>(coords), objectWidth, objectHeight, program);
 		objectComponent->_cameraCoefSpeed = speed;
 		sprite->addComponent(objectComponent);
 
 		//TODO: path to texture?
-		sprite->createComponent<TextureComponent>()->initialize(textureRaw, program);
+		sprite->createComponent<TextureComponent>()->initialize(program);
 		sprite->createComponent<ClickInsideComponent>()->initialize(false);
 		int groupID = 0;
 		std::cout << "Enter the group ID" << std::endl;
