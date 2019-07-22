@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Image.h"
 #include <map>
+#include <memory>
 
 using namespace std;
 
