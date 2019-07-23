@@ -8,5 +8,6 @@ public:
 	float* getBuffer();
 private:
 	GLuint vboObject;
+	GLuint vaoObject;
 	float* _buffer;
 };

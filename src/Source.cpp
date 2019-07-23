@@ -26,17 +26,13 @@ int main(int argc, char **argv) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Мы не хотим старый OpenGL
 
 	GLFWwindow* mainWindow;
-	GLFWwindow* controlWindow;
+
 	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", NULL, NULL);
 	if (mainWindow == NULL) {
 		glfwTerminate();
 		return -1;
 	}
-	controlWindow = glfwCreateWindow(resolution.first, resolution.second, "Control window", NULL, NULL);
-	if (controlWindow == NULL) {
-		glfwTerminate();
-		return -1;
-	}
+
 	glfwMakeContextCurrent(mainWindow);
 
 	glewExperimental = true;
@@ -49,7 +45,6 @@ int main(int argc, char **argv) {
 	}
 
 	glfwSetMouseButtonCallback(mainWindow, mousePress);
-	glfwSetMouseButtonCallback(controlWindow, mousePress);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

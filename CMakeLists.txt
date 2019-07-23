@@ -73,6 +73,7 @@ add_dependencies(game glew glfw libpng)
 
 #add folders with gmock headers to "include" section in VS test project
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)
+target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/json/include)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/include)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libpng)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/)

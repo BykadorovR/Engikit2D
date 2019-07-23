@@ -12,6 +12,9 @@ int Buffer::bindVBO(float* data, GLsizeiptr size, GLenum usage) {
 	glBindBuffer(GL_ARRAY_BUFFER, vboObject);
 	glBufferData(GL_ARRAY_BUFFER, size, (GLvoid*) data, usage);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glGenVertexArrays(1, &vaoObject);
+	glBindVertexArray(vaoObject);
 	return TW_OK;
 }
 
