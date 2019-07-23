@@ -10,7 +10,8 @@ void MouseEvent::registerComponent(IMouseEvent* listener) {
 }
 
 void MouseEvent::unregisterComponent(IMouseEvent* listener) {
-	_listeners.erase(std::remove(_listeners.begin(), _listeners.end(), listener), _listeners.end());
+	if (listener && _listeners.size() > 0)
+		_listeners.erase(std::remove(_listeners.begin(), _listeners.end(), listener), _listeners.end());
 }
 
 void MouseEvent::mousePress(GLFWwindow* window, int button, int action, int mods) {
