@@ -21,12 +21,12 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); // Мы хотим использовать OpenGL 3.3
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Мы не хотим старый OpenGL
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //Core profile deprecate all fixed function API calls
 
 	GLFWwindow* mainWindow;
-
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", NULL, NULL);
 	if (mainWindow == NULL) {
 		glfwTerminate();
