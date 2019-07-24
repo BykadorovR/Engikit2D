@@ -60,10 +60,14 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 
 void CameraSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<CameraComponent> cameraComponent) {
 	float speed = cameraComponent->_cameraSpeed;
-	float clickX = std::get<0>(cameraComponent->_leftClick) - cameraComponent->_cameraX;
-	float clickY = std::get<1>(cameraComponent->_leftClick) - cameraComponent->_cameraY;
+	float clickX = std::get<0>(cameraComponent->_leftClick);
+	float clickY = std::get<1>(cameraComponent->_leftClick);
 	if (!clickX || !clickY)
 		return;
+
+	clickX -= cameraComponent->_cameraX;
+	clickY -= cameraComponent->_cameraY;
+
 	if (cameraComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
 		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight)
 		return;
@@ -179,6 +183,8 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 						cameraComponent->_coords = { 0, 0 };
 						cameraComponent->_leftClick = { 0, 0 };
 						cameraComponent->_rightClick = { 0, 0 };
+						cameraComponent->_cameraX = 0;
+						cameraComponent->_cameraY = 0;
 					}
 				}
 			}
@@ -212,6 +218,8 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 						cameraComponent->_coords = { 0, 0 };
 						cameraComponent->_leftClick = { 0, 0 };
 						cameraComponent->_rightClick = { 0, 0 };
+						cameraComponent->_cameraX = 0;
+						cameraComponent->_cameraY = 0;
 					}
 				}
 			}
@@ -230,6 +238,8 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 						cameraComponent->_coords = { 0, 0 };
 						cameraComponent->_leftClick = { 0, 0 };
 						cameraComponent->_rightClick = { 0, 0 };
+						cameraComponent->_cameraX = 0;
+						cameraComponent->_cameraY = 0;
 					}
 				}
 			}
