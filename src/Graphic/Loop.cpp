@@ -29,17 +29,6 @@ shared_ptr<Entity> createSprite(int x, int y, int width, int height, std::shared
 	return sprite;
 }
 
-shared_ptr<Entity> createAnimatedSprite(int x, int y, int width, int height,
-										std::vector<int> tiles, std::vector<int> latency, std::shared_ptr<Texture> texture) {
-	shared_ptr<Entity> sprite;
-	Shader shader;
-	auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-	sprite = world.createEntity();
-	sprite->createComponent<ObjectComponent>()->initialize(x, y, width, height, program);
-	sprite->createComponent<AnimatedTextureComponent>()->initialize(texture, tiles, latency, program);
-	return sprite;
-}
-
 shared_ptr<DrawSystem> drawSystem;
 shared_ptr<MouseSystem> mouseSystem;
 shared_ptr<InteractionAddToSystem> interactionAddToSystem;
@@ -78,7 +67,11 @@ void on_surface_changed() {
 
 		//TODO: path to texture?
 		sprite->createComponent<TextureComponent>()->initialize(program);
-		sprite->createComponent<ClickInsideComponent>()->initialize(false);
+		bool moveToByClick;
+		std::cout << "Move toward this object allowed?" << std::endl;
+		std::cin >> moveToByClick;
+		sprite->createComponent<ClickInsideComponent>()->initialize(moveToByClick);
+
 		int groupID = 0;
 		std::cout << "Enter the group ID" << std::endl;
 		std::cin >> groupID;
@@ -110,13 +103,6 @@ void on_surface_changed() {
 	loadSaveSprite->createComponent<ClickInsideComponent>()->initialize(false);
 	loadSaveSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 	loadSaveSprite->createComponent<SaveLoadComponent>()->initialize();
-
-	/*animatedSprite = createAnimatedSprite(100, 200, 200, 200, { 0, 1, 2, 1 }, { 17, 8, 17, 8 }, textureAnim);
-	animatedSprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
-	animatedSprite->createComponent<ClickInsideComponent>()->initialize();
-	animatedSprite->createComponent<GroupEntitiesComponent>()->initialize(1, "GG");
-	*/
-
 
 	drawSystem = world.createSystem<DrawSystem>();
 	mouseSystem = world.createSystem<MouseSystem>();

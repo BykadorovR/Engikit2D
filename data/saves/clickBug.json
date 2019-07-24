@@ -1,0 +1,62 @@
+{
+    "Entity": {
+        "4": {
+            "CameraComponent": {
+                "leftClick": [
+                    0.0,
+                    0.0
+                ],
+                "move": false,
+                "rightClick": [
+                    0.0,
+                    0.0
+                ],
+                "speed": 1
+            },
+            "ClickInsideComponent": {
+                "moveToByClick": false
+            },
+            "GroupEntitiesComponent": {
+                "groupName": "Sprite",
+                "groupNumber": 1
+            },
+            "InteractionAddToEntityComponent": {
+                "interactMember": 0
+            },
+            "ObjectComponent": {
+                "cameraCoefSpeed": 1.0,
+                "objectSize": [
+                    100,
+                    100
+                ],
+                "sceneCoord": [
+                    124.0,
+                    216.0
+                ]
+            }
+        },
+        "5": {
+            "ClickInsideComponent": {
+                "moveToByClick": false
+            },
+            "GroupEntitiesComponent": {
+                "groupName": "Sprite",
+                "groupNumber": 2
+            },
+            "InteractionAddToEntityComponent": {
+                "interactMember": 0
+            },
+            "ObjectComponent": {
+                "cameraCoefSpeed": 1.0,
+                "objectSize": [
+                    100,
+                    100
+                ],
+                "sceneCoord": [
+                    656.0,
+                    269.0
+                ]
+            }
+        }
+    }
+}
