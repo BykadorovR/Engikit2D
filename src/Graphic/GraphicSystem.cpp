@@ -15,6 +15,11 @@ void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 	glEnableVertexAttribArray(object->_aPositionLocation);
 }
 
+void textUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TextComponent> text) {
+
+}
+
+
 void textureUpdate(std::shared_ptr<TextureComponent> object) {
 	if (object->_texture != nullptr) {
 		//bind buffer and handle texture shader
@@ -138,7 +143,10 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 		if (transformTextureObject)
 			transformUpdate(vertexObject, transformTextureObject);
 
-		
+		auto textObject = entity->getComponent<TextComponent>();
+		if (textObject)
+			textUpdate(textObject);
+
 		auto textureObject = entity->getComponent<TextureComponent>();
 		if (textureObject)
 			textureUpdate(textureObject);

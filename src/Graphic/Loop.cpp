@@ -44,6 +44,8 @@ void on_surface_changed() {
 	atlas->initializeAtlas();
 	registerComponentFunctors();
 
+	TextComponent tc;
+
 	newSprite = createSprite(100, 0, 100, 100, textureRaw);
 	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
 	newSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
