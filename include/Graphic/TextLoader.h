@@ -17,7 +17,9 @@ struct Character {
 
 class TextLoader {
 public:
-	void bufferSymbols() {
+	void bufferSymbols(int symbolHeight) {
+		_symbolHeight = symbolHeight;
+
 		FT_Library ft;
 		if (FT_Init_FreeType(&ft))
 			std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
@@ -25,7 +27,7 @@ public:
 		FT_Face face;
 		if (FT_New_Face(ft, "../data/fonts/arial.ttf", 0, &face))
 			std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-		FT_Set_Pixel_Sizes(face, 0, 48);
+		FT_Set_Pixel_Sizes(face, 0, symbolHeight);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
 		for (GLubyte c = 0; c < 128; c++)
@@ -87,21 +89,30 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 		glBindVertexArray(_VAO);
 
+		int allignHeight = 0;
+		for (std::string::const_iterator c = text.begin(); c != text.end(); c++)
+		{
+			Character ch = _characters[*c];
+			if (allignHeight < ch.size.second)
+				allignHeight = ch.size.second;
+		}
+
 		// Iterate through all characters
-		std::string::const_iterator c;
-		for (c = text.begin(); c != text.end(); c++)
+		for (std::string::const_iterator c = text.begin(); c != text.end(); c++)
 		{
 			Character ch = _characters[*c];
 
 			GLfloat xpos = x + ch.bearing.first * scale;
 			xpos /= (float) resolution.first;
-			GLfloat ypos = y - (ch.size.second - ch.bearing.second) * scale;
+			GLfloat ypos = y + (allignHeight + ch.size.second - ch.bearing.second) * scale;
+			ypos = (float) resolution.second - ypos;
 			ypos /= (float) resolution.second;
 
 			GLfloat w = ch.size.first * scale;
 			w /= (float) resolution.first;
 			GLfloat h = ch.size.second * scale;
 			h /= (float) resolution.second;
+			/*
 			// Update VBO for each character
 			GLfloat vertices[6][4] = {
 				{ xpos,     ypos + h,   0.0, 0.0 },
@@ -112,6 +123,18 @@ public:
 				{ xpos + w, ypos,       1.0, 1.0 },
 				{ xpos + w, ypos + h,   1.0, 0.0 }
 			};
+			*/
+			// Order of coordinates: X, Y
+			// 1   3
+			// | \ |
+			// 0   2
+			float vertices[4][4] = {
+									 { xpos,     ypos,     0.0, 1.0 },
+									 { xpos,     ypos + h, 0.0, 0.0 },
+									 { xpos + w, ypos,     1.0, 1.0 },
+									 { xpos + w, ypos + h, 1.0, 0.0 } 
+									 };
+			
 			// Render glyph texture over quad
 			glBindTexture(GL_TEXTURE_2D, ch.textureID);
 			// Update content of VBO memory
@@ -119,7 +142,8 @@ public:
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			// Render quad
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			//glDrawArrays(GL_TRIANGLES, 0, 6);
 			// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 			x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
 		}
@@ -129,5 +153,6 @@ public:
 
 	GLuint _VAO, _VBO;
 	GLuint _program;
+	int _symbolHeight;
 	std::map<GLchar, Character> _characters;
 };

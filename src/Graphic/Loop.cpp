@@ -46,7 +46,7 @@ void on_surface_changed() {
 	atlas->initializeAtlas();
 	registerComponentFunctors();
 
-	textLoader.bufferSymbols();
+	textLoader.bufferSymbols(48);
 	textLoader.initialize();
 
 	newSprite = createSprite(100, 0, 100, 100, textureRaw);
@@ -126,5 +126,6 @@ void on_draw_frame() {
 	interactionAddToSystem->update(world.getEntityManager());
 	saveLoadSystem->update(world.getEntityManager());
 
-	textLoader.render("Test", 300, 300, 1, { 0.5f, 0.8f, 0.2f });
+	textLoader.render("Test", 0, 0, 1, { 0, 0.8f, 0.2f });
+	textLoader.render("ASD", 0, 300, 1, { 0, 0.8f, 0.2f });
 }
