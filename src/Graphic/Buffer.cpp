@@ -22,6 +22,10 @@ GLuint Buffer::getVBOObject() {
 	return vboObject;
 }
 
+GLuint Buffer::getVAOObject() {
+	return vaoObject;
+}
+
 float* Buffer::getBuffer() {
 	return _buffer;
 }

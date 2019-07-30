@@ -8,6 +8,7 @@
 #include "UISystem.h"
 #include "Events.h"
 #include "ComponentFunctors.h"
+#include "TextLoader.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -36,6 +37,7 @@ shared_ptr<SaveLoadSystem> saveLoadSystem;
 shared_ptr<Entity> animatedSprite, staticSprite, newSprite, textureSprite, loadSaveSprite;
 shared_ptr<CameraSystem> cameraSystem;
 shared_ptr<MoveSystem> moveSystem;
+TextLoader textLoader;
 void on_surface_changed() {
 	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>(4096, 4096);
 	std::shared_ptr<Texture> textureRaw = std::make_shared<Texture>("../data/textures/air_hockey_surface.png", 0, 0, atlas);
@@ -44,7 +46,8 @@ void on_surface_changed() {
 	atlas->initializeAtlas();
 	registerComponentFunctors();
 
-	TextComponent tc;
+	textLoader.bufferSymbols();
+	textLoader.initialize();
 
 	newSprite = createSprite(100, 0, 100, 100, textureRaw);
 	newSprite->createComponent<ClickClickMoveComponent>()->initialize(false, false);
@@ -122,4 +125,6 @@ void on_draw_frame() {
 	drawSystem->update(world.getEntityManager());
 	interactionAddToSystem->update(world.getEntityManager());
 	saveLoadSystem->update(world.getEntityManager());
+
+	textLoader.render("Test", 300, 300, 1, { 0.5f, 0.8f, 0.2f });
 }

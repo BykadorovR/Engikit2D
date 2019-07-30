@@ -8,17 +8,14 @@
 void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 	glUseProgram(object->_program);
 
+	glBindVertexArray(object->_buffer.getVAOObject());
 	//bind buffer and handle vertex shader
 	glBindBuffer(GL_ARRAY_BUFFER, object->_buffer.getVBOObject());
 	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
 	glVertexAttribPointer(object->_aPositionLocation, POSITION_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(object->_aPositionLocation);
-}
-
-void textUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TextComponent> text) {
 
 }
-
 
 void textureUpdate(std::shared_ptr<TextureComponent> object) {
 	if (object->_texture != nullptr) {
@@ -36,6 +33,10 @@ void textureUpdate(std::shared_ptr<TextureComponent> object) {
 	}
 	glUniform1i(object->_uSolidLocation, object->_solid);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
@@ -77,7 +78,7 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Mo
 	move->_coords = { 0, 0 };
 }
 
-void cameraUpdateRest(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
+void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
 	float x = -std::get<0>(coords) * object->_cameraCoefSpeed;
 	float y = -std::get<1>(coords) * object->_cameraCoefSpeed;
 	Matrix2D matrix;
@@ -86,15 +87,6 @@ void cameraUpdateRest(std::shared_ptr<ObjectComponent> object, std::shared_ptr<C
 	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
 	object->_sceneX += x;
 	object->_sceneY += y;
-}
-
-void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
-	Matrix2D move;
-	float x = -std::get<0>(coords) * object->_cameraCoefSpeed;
-	float y = -std::get<1>(coords) * object->_cameraCoefSpeed;
-	move.translate(x, y);
-	object->_camera = object->_camera * move;
-	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
 }
 
 std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent>& cameraComponent, /*std::shared_ptr<ObjectComponent>& cameraObjectComponent,*/ std::shared_ptr<Entity>& camera) {
@@ -127,25 +119,16 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 		if (cameraComponent && entity == camera) {
 			cameraComponent->_cameraX += std::get<0>(coords);
 			cameraComponent->_cameraY += std::get<1>(coords);
-			//coords = { -std::get<0>(coords), -std::get<1>(coords) };
-
 		}
 		
 
 		if (cameraComponent && camera != entity) {
-			cameraUpdateRest(vertexObject, cameraComponent, coords);
-		} /*else if (cameraComponent && camera == entity) {
 			cameraUpdate(vertexObject, cameraComponent, coords);
 		}
-		*/
 
 		auto transformTextureObject = entity->getComponent<MoveComponent>();
 		if (transformTextureObject)
 			transformUpdate(vertexObject, transformTextureObject);
-
-		auto textObject = entity->getComponent<TextComponent>();
-		if (textObject)
-			textUpdate(textObject);
 
 		auto textureObject = entity->getComponent<TextureComponent>();
 		if (textureObject)
