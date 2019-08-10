@@ -1,5 +1,6 @@
 #include "GraphicSystem.h"
 #include "Camera.h"
+#include "TextLoader.h"
 //INFO: for now every object use OWN program, all of them use one shader, though. It's convinient enough in sense of 
 //programming (no needs to think about uniforms state) but can affect performance.
 //If any perf gaps, need to add vertexReset, transformReset, etc functions which will zero uniforms
@@ -65,6 +66,81 @@ void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
 	}
 }
 
+void textUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TextComponent> textComponent) {
+	float startX = object->_sceneX;
+	float startY = object->_sceneY;
+	float endX = object->_sceneX + object->_objectWidth;
+	float endY = object->_sceneY + object->_objectHeight;
+	float x = startX;
+	float y = startY;
+	glUseProgram(object->_program);
+	glUniform3f(glGetUniformLocation(object->_program, "textColor"), textComponent->_color[0], textComponent->_color[1], textComponent->_color[2]);
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(textComponent->_VAO);
+
+	int allignHeight = 0;
+	for (std::string::const_iterator c = textComponent->_text.begin(); c != textComponent->_text.end(); c++)
+	{
+		Character ch = textComponent->_loader->_characters[*c];
+		if (allignHeight < ch.size.second)
+			allignHeight = ch.size.second;
+	}
+
+	// Iterate through all characters
+	for (std::string::const_iterator c = textComponent->_text.begin(); c != textComponent->_text.end(); c++)
+	{
+		Character ch = textComponent->_loader->_characters[*c];
+
+		GLfloat xpos = x + ch.bearing.first *  textComponent->_scale;
+		xpos /= (float)resolution.first;
+		GLfloat ypos = y + (allignHeight + ch.size.second - ch.bearing.second) * textComponent->_scale;
+		ypos = (float)resolution.second - ypos;
+		ypos /= (float)resolution.second;
+
+		GLfloat w = ch.size.first * textComponent->_scale;
+		w /= (float)resolution.first;
+		GLfloat h = ch.size.second * textComponent->_scale;
+		h /= (float)resolution.second;
+		/*
+		// Update VBO for each character
+		GLfloat vertices[6][4] = {
+			{ xpos,     ypos + h,   0.0, 0.0 },
+			{ xpos,     ypos,       0.0, 1.0 },
+			{ xpos + w, ypos,       1.0, 1.0 },
+
+			{ xpos,     ypos + h,   0.0, 0.0 },
+			{ xpos + w, ypos,       1.0, 1.0 },
+			{ xpos + w, ypos + h,   1.0, 0.0 }
+		};
+		*/
+		// Order of coordinates: X, Y
+		// 1   3
+		// | \ |
+		// 0   2
+		float vertices[4][4] = {
+								 { xpos,     ypos,     0.0, 1.0 },
+								 { xpos,     ypos + h, 0.0, 0.0 },
+								 { xpos + w, ypos,     1.0, 1.0 },
+								 { xpos + w, ypos + h, 1.0, 0.0 }
+		};
+
+		// Render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.textureID);
+		// Update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, textComponent->_VBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// Render quad
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		x += (ch.advance >> 6) * textComponent->_scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+}
+
 void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<MoveComponent> move) {
 	float adjustX = std::get<0>(move->_coords);
 	float adjustY = std::get<1>(move->_coords);
@@ -113,8 +189,8 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 
 	for (auto entity : entityManager->getEntities()) {
 		auto vertexObject = entity->getComponent<ObjectComponent>();
-		assert(vertexObject);
-		vertexUpdate(vertexObject);
+		if (vertexObject)
+			vertexUpdate(vertexObject);
 
 		if (cameraComponent && entity == camera) {
 			cameraComponent->_cameraX += std::get<0>(coords);
@@ -125,6 +201,10 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 		if (cameraComponent && camera != entity) {
 			cameraUpdate(vertexObject, cameraComponent, coords);
 		}
+
+		auto textTextureObject = entity->getComponent<TextComponent>();
+		if (textTextureObject)
+			textUpdate(vertexObject, textTextureObject);
 
 		auto transformTextureObject = entity->getComponent<MoveComponent>();
 		if (transformTextureObject)

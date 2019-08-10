@@ -31,6 +31,15 @@ public:
 		assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
+
+	void initializeText(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
+		_program = program;
+		_objectWidth = objectWidth;
+		_objectHeight = objectHeight;
+		_sceneX = sceneX;
+		_sceneY = sceneY;
+	}
+
 	Matrix2D _transform;
 	Matrix2D _camera;
 	float _cameraCoefSpeed;
@@ -220,6 +229,33 @@ public:
 	std::string _uTextureUnitString = "u_TextureUnit";
 	std::string _uAdjustX = "u_AdjustX";
 	std::string _uAdjustY = "u_AdjustY";
+};
+
+class TextComponent : public Component {
+public:
+	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color) {
+		_loader = loader;
+		_text = text;
+		_scale = scale;
+		_color = color;
+		Shader shader;
+		glGenVertexArrays(1, &_VAO);
+		glGenBuffers(1, &_VBO);
+		glBindVertexArray(_VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, _VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	
+	std::string _text;
+	GLfloat _scale;
+	std::vector<float> _color;
+	GLuint _VAO, _VBO;
+	GLuint _program;
+	std::shared_ptr<TextLoader> _loader;
 };
 
 enum MoveTypes {

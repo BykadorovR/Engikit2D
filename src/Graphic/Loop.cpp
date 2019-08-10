@@ -125,7 +125,4 @@ void on_draw_frame() {
 	drawSystem->update(world.getEntityManager());
 	interactionAddToSystem->update(world.getEntityManager());
 	saveLoadSystem->update(world.getEntityManager());
-
-	textLoader.render("Test", 0, 0, 1, { 0, 0.8f, 0.2f });
-	textLoader.render("ASD", 0, 300, 1, { 0, 0.8f, 0.2f });
 }
