@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "Matrix.h"
 #include "Events.h"
+#include "TextLoader.h"
 
 class ObjectComponent : public Component {
 public:
@@ -238,7 +239,6 @@ public:
 		_text = text;
 		_scale = scale;
 		_color = color;
-		Shader shader;
 		glGenVertexArrays(1, &_VAO);
 		glGenBuffers(1, &_VBO);
 		glBindVertexArray(_VAO);

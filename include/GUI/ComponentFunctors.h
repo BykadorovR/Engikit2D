@@ -5,10 +5,11 @@
 #include "Texture.h"
 #include "Camera.h"
 #include <sstream>
-
+#include "TextLoader.h"
+#include <string>
 class ComponentFunctor {
 public:
-	virtual std::shared_ptr<Component> createFunctor() = 0;
+	virtual std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) = 0;
 	virtual void removeFunctor(std::shared_ptr<Entity> targetEntity) = 0;
 	virtual void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) = 0;
 	virtual int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) = 0;
@@ -19,15 +20,26 @@ extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFuncto
 class TextureComponentFunctor : public ComponentFunctor {
 public:
 	//TODO: How to use atlas and textures dynamically
-	std::shared_ptr<Component> createFunctor() {
-		Shader shader;
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
+		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
 		int textureID;
 		std::cout << "Enter texture ID" << std::endl;
 		std::cin >> textureID;
 		GLuint programID;
-		std::cout << "Enter program ID" << std::endl;
-		std::cin >> programID;
-
+		if (textComponent) {
+			targetEntity->removeComponent<TextComponent>();
+			std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+			Shader shader;
+			GLuint program;
+			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+			objectComponent->initialize(objectComponent->_sceneX, objectComponent->_sceneY, objectComponent->_objectWidth, objectComponent->_objectHeight, program);
+			programID = program;
+		}
+		else {
+			std::cout << "Enter program ID" << std::endl;
+			std::cin >> programID;
+		}
+		
 		auto targetTexture = TextureManager::instance()->getTexture(textureID);
 		if (targetTexture->getRow() > 1 || targetTexture->getColumn() > 1) {
 			std::shared_ptr<AnimatedTextureComponent> textureComponent(new AnimatedTextureComponent());
@@ -115,7 +127,8 @@ public:
 
 			animatedTextureComponent->initialize(textureID, tilesOrder, tilesLatency, program);
 		}
-		else {
+		else if (jsonFile["TextComponent"].empty())
+		{
 			std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
 			if (!textureComponent) {
 				textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
@@ -129,7 +142,7 @@ public:
 
 class ObjectComponentFunctor : public ComponentFunctor {
 	//this component can't be added to Entity, so it's just a stub
-	std::shared_ptr<Component> createFunctor() {
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
 		int sceneX, sceneY, objectWidth, objectHeight;
 		GLuint program;
@@ -170,24 +183,101 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			targetEntity->addComponent(objectComponent);
 		}
 
-		Shader shader;
-		GLuint program;
-		program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-
 		float cameraSpeed = jsonFile["ObjectComponent"]["cameraCoefSpeed"];
 		float sceneX = jsonFile["ObjectComponent"]["sceneCoord"][0];
 		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
 		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
-		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
 		objectComponent->_cameraCoefSpeed = cameraSpeed;
+		Shader shader;
+		GLuint program;
+		if (jsonFile["TextComponent"].empty()) {
+			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+			objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
+		}
+		else {
+			program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
+			objectComponent->initializeText(sceneX, sceneY, objectWidth, objectHeight, program);
+		}
+
+		return 0;
+	}
+};
+
+class TextComponentFunctor : public ComponentFunctor {
+	//this component can't be added to Entity, so it's just a stub
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		Shader shader;
+		GLuint program;
+		program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
+		objectComponent->_program = program;
+
+		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+		if (textureComponent)
+			targetEntity->removeComponent<TextureComponent>();
+
+		std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
+		if (animatedTextureComponent)
+			targetEntity->removeComponent<AnimatedTextureComponent>();
+
+		std::shared_ptr<TextComponent> textComponent(new TextComponent());
+		std::shared_ptr<TextLoader> textLoader = std::make_shared<TextLoader>();
+		textLoader->bufferSymbols(48);
+		std::string text;
+		std::cout << "Enter text to display:" << std::endl;
+		cin.ignore();
+		std::getline(cin, text);
+		float scale;
+		std::cout << "Enter scale:" << std::endl;
+		std::cin >> scale;
+		std::vector<float> color;
+		color.resize(3);
+		std::cout << "Enter color (r, g, b):" << std::endl;
+		std::cin >> color[0] >> color[1] >> color[2];
+		textComponent->initialize(textLoader, text, scale, color);
+		return textComponent;
+	}
+
+	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
+		targetEntity->removeComponent<TextComponent>();
+	}
+	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
+		int entityID = targetEntity->_index;
+		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
+		if (!textComponent)
+			return;
+
+		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["text"] = textComponent->_text;
+		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["scale"] = textComponent->_scale;
+		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["color"] = textComponent->_color;
+		
+	}
+
+	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
+		if (jsonFile["TextComponent"].empty())
+			return -1;
+
+		int entityID = targetEntity->_index;
+		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
+		if (!textComponent) {
+			textComponent = std::shared_ptr<TextComponent>(new TextComponent());
+			targetEntity->addComponent(textComponent);
+		}
+
+		std::shared_ptr<TextLoader> loader = std::make_shared<TextLoader>();
+		loader->bufferSymbols(48);
+		std::string text = jsonFile["TextComponent"]["text"];
+		float scale = jsonFile["TextComponent"]["scale"];
+		std::vector<float> color = jsonFile["TextComponent"]["color"];
+		textComponent->initialize(loader, text, scale, color);
 		return 0;
 	}
 };
 
 class ClickInsideFunctor : public ComponentFunctor {
 	//this component can't be added to Entity, so it's just a stub
-	std::shared_ptr<Component> createFunctor() {
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ClickInsideComponent> clickComponent(new ClickInsideComponent());
 		bool moveToByClick;
 		std::cout << "Move toward this object allowed?" << std::endl;
@@ -227,7 +317,7 @@ class ClickInsideFunctor : public ComponentFunctor {
 
 class GroupEntitiesFunctor : public ComponentFunctor {
 	//this component can't be added to Entity, so it's just a stub
-	std::shared_ptr<Component> createFunctor() {
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<GroupEntitiesComponent> groupEntitiesComponent(new GroupEntitiesComponent());
 		uint32_t groupNumber;
 		std::string groupName;
@@ -272,7 +362,7 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 
 class InteractionAddToEntityFunctor : public ComponentFunctor {
 	//this component can't be added to Entity, so it's just a stub
-	std::shared_ptr<Component> createFunctor() {
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent(new InteractionAddToEntityComponent());
 		bool interactionMember;
 		std::cout << "Object = 0, Subject = 1" << std::endl;
@@ -311,7 +401,7 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 };
 
 class MoveFunctor : public ComponentFunctor {
-	std::shared_ptr<Component> createFunctor() {
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<MoveComponent> moveComponent(new MoveComponent());
 		MoveTypes moveType;
 		int moveTypeInt;
@@ -399,7 +489,7 @@ class MoveFunctor : public ComponentFunctor {
 };
 
 class CameraFunctor : public ComponentFunctor {
-	std::shared_ptr<Component> createFunctor() {
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<CameraComponent> cameraComponent(new CameraComponent());
 		int entityID;
 		std::cout << "Enter entityID:" << std::endl;

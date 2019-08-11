@@ -9,5 +9,6 @@ void registerComponentFunctors() {
 	componentFunctors["MoveComponent"] = make_shared<MoveFunctor>();
 	componentFunctors["CameraComponent"] = make_shared<CameraFunctor>();
 	componentFunctors["TextureComponent"] = make_shared<TextureComponentFunctor>();
+	componentFunctors["TextComponent"] = make_shared<TextComponentFunctor>();
 	componentFunctors["ObjectComponent"] = make_shared<ObjectComponentFunctor>();
 }

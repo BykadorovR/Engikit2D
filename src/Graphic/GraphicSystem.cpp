@@ -78,6 +78,7 @@ void textUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TextCom
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(textComponent->_VAO);
 
+	//the tallest char
 	int allignHeight = 0;
 	for (std::string::const_iterator c = textComponent->_text.begin(); c != textComponent->_text.end(); c++)
 	{
@@ -86,20 +87,32 @@ void textUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TextCom
 			allignHeight = ch.size.second;
 	}
 
+	bool allignY = false;
+	int yAllign = 0;
 	// Iterate through all characters
 	for (std::string::const_iterator c = textComponent->_text.begin(); c != textComponent->_text.end(); c++)
 	{
 		Character ch = textComponent->_loader->_characters[*c];
+		GLfloat w = ch.size.first * textComponent->_scale;
+		GLfloat h = ch.size.second * textComponent->_scale;
+		GLfloat ypos = 0;
+		GLfloat xpos = 0;
+		xpos = x + ch.bearing.first *  textComponent->_scale;
+		if (xpos + w >= endX) {
+			yAllign += allignHeight;
+			x = startX;
+			xpos = x + ch.bearing.first *  textComponent->_scale;
+		}
 
-		GLfloat xpos = x + ch.bearing.first *  textComponent->_scale;
 		xpos /= (float)resolution.first;
-		GLfloat ypos = y + (allignHeight + ch.size.second - ch.bearing.second) * textComponent->_scale;
+		ypos = y + (allignHeight + yAllign + ch.size.second - ch.bearing.second) * textComponent->_scale;
+		if (ypos >= endY)
+			break;
 		ypos = (float)resolution.second - ypos;
 		ypos /= (float)resolution.second;
 
-		GLfloat w = ch.size.first * textComponent->_scale;
+		
 		w /= (float)resolution.first;
-		GLfloat h = ch.size.second * textComponent->_scale;
 		h /= (float)resolution.second;
 		/*
 		// Update VBO for each character

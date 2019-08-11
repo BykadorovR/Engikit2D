@@ -374,7 +374,7 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 				std::string key;
 				std::cin >> key;
 
-				std::shared_ptr<Component> addedComponent = componentFunctors[key]->createFunctor();
+				std::shared_ptr<Component> addedComponent = componentFunctors[key]->createFunctor(objectEntity);
 				objectEntity->addComponent(addedComponent);
 				break;
 			}
