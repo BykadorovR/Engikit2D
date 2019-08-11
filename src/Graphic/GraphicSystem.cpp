@@ -46,7 +46,10 @@ void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
 	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
 	glVertexAttribPointer(object->_aTextureCoordinatesLocation, TEXTURE_COORDINATES_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(object->_aTextureCoordinatesLocation);
-	glUniform1f(object->_uAdjustXLocation, object->_widthTile * object->_tilesOrder[(object->_currentAnimateTile)]);
+	float width = object->_widthTile * (object->_tilesOrder[(object->_currentAnimateTile)] % object->_texture->getColumn());
+	glUniform1f(object->_uAdjustXLocation, width);
+	float height = object->_heightTile * (object->_tilesOrder[(object->_currentAnimateTile)] / object->_texture->getColumn());
+	glUniform1f(object->_uAdjustYLocation, height);
 	//bind texture and handle fragment shader
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, object->_textureObject);
