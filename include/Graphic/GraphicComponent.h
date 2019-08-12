@@ -262,14 +262,18 @@ public:
 			else {
 				unsigned char c = (unsigned char)character;
 				if (mode == GLFW_MOD_SHIFT) {
-					if (islower(c))
-						c = toupper(c);
+					if (character != GLFW_KEY_LEFT_SHIFT) {
+						if (islower(c))
+							c = toupper(c);
+						_text += c;
+					}
 				}
 				else {
-					if (isupper(c))
+					if (isupper(c)) 
 						c = tolower(c);
+					_text += c;
 				}
-				_text += c;
+				
 			}
 
 		}
