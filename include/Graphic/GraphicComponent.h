@@ -232,13 +232,14 @@ public:
 	std::string _uAdjustY = "u_AdjustY";
 };
 
-class TextComponent : public Component {
+class TextComponent : public Component, IKeyboardEvent {
 public:
-	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color) {
+	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color, int type) {
 		_loader = loader;
 		_text = text;
 		_scale = scale;
 		_color = color;
+		_type = type;
 		glGenVertexArrays(1, &_VAO);
 		glGenBuffers(1, &_VBO);
 		glBindVertexArray(_VAO);
@@ -248,8 +249,37 @@ public:
 		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+		KeyboardEvent::instance().registerComponent(this);
 	}
 	
+	void keyboardPressed(int character, int action, int mode) {
+		if (!_focus)
+			return;
+		if (action == 1) {
+			if (character == GLFW_KEY_BACKSPACE) {
+				_text = _text.substr(0, _text.size() - 1);
+			}
+			else {
+				unsigned char c = (unsigned char)character;
+				if (mode == GLFW_MOD_SHIFT) {
+					if (islower(c))
+						c = toupper(c);
+				}
+				else {
+					if (isupper(c))
+						c = tolower(c);
+				}
+				_text += c;
+			}
+
+		}
+	}
+
+	~TextComponent() {
+		KeyboardEvent::instance().unregisterComponent(this);
+	}
+	int _type;
+	bool _focus;
 	std::string _text;
 	GLfloat _scale;
 	std::vector<float> _color;

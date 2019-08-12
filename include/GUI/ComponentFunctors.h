@@ -235,7 +235,11 @@ class TextComponentFunctor : public ComponentFunctor {
 		color.resize(3);
 		std::cout << "Enter color (r, g, b):" << std::endl;
 		std::cin >> color[0] >> color[1] >> color[2];
-		textComponent->initialize(textLoader, text, scale, color);
+		int type;
+		std::cout << "Enter type: label(0), edit text(1)" << std::endl;
+		std::cin >> type;
+
+		textComponent->initialize(textLoader, text, scale, color, type);
 		return textComponent;
 	}
 
@@ -251,6 +255,7 @@ class TextComponentFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["text"] = textComponent->_text;
 		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["scale"] = textComponent->_scale;
 		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["color"] = textComponent->_color;
+		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["type"] = textComponent->_type;
 		
 	}
 
@@ -270,7 +275,8 @@ class TextComponentFunctor : public ComponentFunctor {
 		std::string text = jsonFile["TextComponent"]["text"];
 		float scale = jsonFile["TextComponent"]["scale"];
 		std::vector<float> color = jsonFile["TextComponent"]["color"];
-		textComponent->initialize(loader, text, scale, color);
+		int type = jsonFile["TextComponent"]["type"];
+		textComponent->initialize(loader, text, scale, color, type);
 		return 0;
 	}
 };

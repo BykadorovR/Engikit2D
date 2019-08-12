@@ -134,6 +134,7 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickInside(std
 	//We should handle click inside action only once per click, so reset coords of click after first handle
 	clickInsideComponent->_leftClick = { 0, 0 };
 	clickInsideComponent->_rightClick = { 0, 0 };
+	std::get<1>(clickedInside) = ClickCount::FIRST;
 
 	return clickedInside;
 }
@@ -161,12 +162,18 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 		auto interactionComponent = entity->getComponent<InteractionAddToEntityComponent>();
 		auto textureManagerComponent = entity->getComponent<TextureManagerComponent>();
 		auto saveLoadComponent = entity->getComponent<SaveLoadComponent>();
+		auto textComponent = entity->getComponent<TextComponent>();
 
 		if (objectComponent && clickInsideComponent && groupComponent) {			
-			int clickedInside = std::get<1>(processClickInside(objectComponent, clickInsideComponent, groupComponent));
+			std::tuple<std::tuple<int, int>, int> click = (processClickInside(objectComponent, clickInsideComponent, groupComponent));
+			bool clickedInside = (std::get<0>(std::get<0>(click)) != 0 || std::get<1>(std::get<0>(click)) != 0) ? true : false;
 			if (clickedInside) {
 				std::cout << "Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber 
 					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl;
+			}
+			else if (std::get<1>(click) != ClickCount::NO) {
+				if (textComponent)
+					textComponent->_focus = false;
 			}
 			if (clickedInside && clickInsideComponent->_moveToByClick == false) {
 				for (auto playerEntity : playerControlledEntities) {
@@ -188,6 +195,8 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 					}
 				}
 			}
+			if (textComponent && clickedInside && textComponent->_type == 1)
+				textComponent->_focus = true;
 			if (interactionComponent && clickedInside)
 				interactionComponent->_interactReady = true;
 			if (textureManagerComponent && clickedInside)

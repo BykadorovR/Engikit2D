@@ -5,6 +5,8 @@
 
 //These methods are needed cause we should send callback to glut but we can't use classes' methods
 void mousePress(GLFWwindow* window, int button, int action, int mods);
+void keyboardPress(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 
 //Interface that should be inherited by classes that want handle mouse events
 class IMouseEvent {
@@ -13,6 +15,27 @@ public:
 	virtual void mouseClickDownRight(int x, int y) = 0;
 };
 
+class IKeyboardEvent {
+public:
+	virtual void keyboardPressed(int character, int action, int mode) = 0;
+};
+
+//Singleton
+class KeyboardEvent {
+private:
+
+	std::vector<IKeyboardEvent* > _listeners;
+public:
+	static KeyboardEvent& instance() {
+		static KeyboardEvent object;
+		return object;
+	}
+
+	void registerComponent(IKeyboardEvent* listener);
+	void unregisterComponent(IKeyboardEvent* listener);
+
+	void keyboardPress(GLFWwindow* window, int key, int scancode, int action, int mods);
+};
 
 //Singleton
 class MouseEvent {
