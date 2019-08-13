@@ -1,5 +1,6 @@
 #include "Events.h"
 #include <algorithm>
+#include "Common.h"
 
 void mousePress(GLFWwindow* window, int button, int action, int mods) {
 	MouseEvent::instance().mousePress(window, button, action, mods);
@@ -36,24 +37,24 @@ void MouseEvent::unregisterComponent(IMouseEvent* listener) {
 void MouseEvent::mousePress(GLFWwindow* window, int button, int action, int mods) {
 	switch (button) {
 	case GLFW_MOUSE_BUTTON_LEFT:
-		std::cout << "Left ";
+		OUT_STREAM("Left ");
 		if (action == GLFW_PRESS) {
 			double x, y;
 			//getting cursor position
 			glfwGetCursorPos(window, &x, &y);
-			std::cout << "Down " << x << " " << y << std::endl;
+			OUT_STREAM("Down " << x << " " << y << std::endl);
 			for (auto listener : _listeners) {
 				listener->mouseClickDownLeft(x, y);
 			}
 		}
 	break;
 	case GLFW_MOUSE_BUTTON_RIGHT:
-		std::cout << "Right ";
+		OUT_STREAM("Right ");
 		if (action == GLFW_PRESS) {
 			double x, y;
 			//getting cursor position
 			glfwGetCursorPos(window, &x, &y);
-			std::cout << "Down " << x << " " << y << std::endl;
+			OUT_STREAM("Down " << x << " " << y << std::endl);
 			for (auto listener : _listeners) {
 				listener->mouseClickDownRight(x, y);
 			}

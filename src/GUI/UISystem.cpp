@@ -168,8 +168,8 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			std::tuple<std::tuple<int, int>, int> click = (processClickInside(objectComponent, clickInsideComponent, groupComponent));
 			bool clickedInside = (std::get<0>(std::get<0>(click)) != 0 || std::get<1>(std::get<0>(click)) != 0) ? true : false;
 			if (clickedInside) {
-				std::cout << "Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber 
-					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl;
+				OUT_STREAM("Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber
+					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl);
 			}
 			else if (std::get<1>(click) != ClickCount::NO) {
 				if (textComponent)

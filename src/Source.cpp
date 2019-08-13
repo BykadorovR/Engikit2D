@@ -22,7 +22,6 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	FreeConsole();
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -30,8 +29,7 @@ int main(int argc, char **argv) {
 
 	GLFWwindow* mainWindow;
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", glfwGetPrimaryMonitor(), NULL);
-	if (mainWindow == NULL) {
+	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", glfwGetPrimaryMonitor(), NULL);	if (mainWindow == NULL) {
 		glfwTerminate();
 		return -1;
 	}
@@ -64,6 +62,5 @@ int main(int argc, char **argv) {
 	}
 
 	glfwDestroyWindow(mainWindow);
-	glfwTerminate();
-	return 0;
+	glfwTerminate();	return 0;
 }

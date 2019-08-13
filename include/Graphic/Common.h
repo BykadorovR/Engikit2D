@@ -5,10 +5,7 @@
 #include <iostream>
 #include "World.h"
 const std::pair<int, int> resolution(1920, 1080);
-
-static World world;
-
-enum ErrorCodes {
+static World world;enum ErrorCodes {
 	TW_OK = 0,
 	TW_ERROR = 1
 };
@@ -19,6 +16,13 @@ enum ErrorCodes {
 		std::cout << __FILE__ << " " << __FUNCTION__ << " " << __LINE__ << "\n" << std::flush; \
 		return status; \
 	} \
+
+#define OUT_STREAM( s ) \
+{ \
+   std::ostringstream os_; \
+   os_ << s; \
+   OutputDebugString( os_.str().c_str() ); \
+}
 
 std::string rawFileContent(const char* relativePath);
 
