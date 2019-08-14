@@ -146,7 +146,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
 		TextHelper helper;
 		TextCallback callback;
-		callback.setValue(&objectComponent->_sceneX, TextConversion::FLOAT);
+		callback.setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
 		/*
 		int sceneX, sceneY, objectWidth, objectHeight;
 		GLuint program;

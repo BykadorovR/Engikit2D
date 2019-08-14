@@ -17,6 +17,7 @@ static void error_callback(int error, const char* description)
 
 //need to separate to cpp and h due to a lot of dependencies between classes
 int main(int argc, char **argv) {
+	FreeConsole();
 	if (!glfwInit())
 	{
 		return -1;
@@ -29,7 +30,7 @@ int main(int argc, char **argv) {
 
 	GLFWwindow* mainWindow;
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", glfwGetPrimaryMonitor(), NULL);	if (mainWindow == NULL) {
+	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", NULL /*glfwGetPrimaryMonitor()*/, NULL);	if (mainWindow == NULL) {
 		glfwTerminate();
 		return -1;
 	}
@@ -62,5 +63,6 @@ int main(int argc, char **argv) {
 	}
 
 	glfwDestroyWindow(mainWindow);
-	glfwTerminate();	return 0;
+	glfwTerminate();	
+	return 0;
 }

@@ -4,8 +4,12 @@
 #include <map>
 #include <iostream>
 #include "World.h"
+#include <sstream>
+#include "Windows.h"
 const std::pair<int, int> resolution(1920, 1080);
-static World world;enum ErrorCodes {
+static World world;
+
+enum ErrorCodes {
 	TW_OK = 0,
 	TW_ERROR = 1
 };

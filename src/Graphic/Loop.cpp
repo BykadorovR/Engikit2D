@@ -49,6 +49,14 @@ void on_surface_changed() {
 	newSprite->createComponent<InteractionCreateEntityComponent>()->initialize();
 	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [](std::tuple<int, int> coords) -> std::shared_ptr<Entity> {
 		shared_ptr<Entity> sprite;
+		sprite = world.createEntity();
+		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
+		TextHelper helper;
+		std::shared_ptr<TextCallback> callback = std::make_shared<TextCallback>();
+		callback->setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
+		helper.getValue(callback, &world);
+		sprite->addComponent(objectComponent);
+		/*shared_ptr<Entity> sprite;
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 		sprite = world.createEntity();
@@ -79,9 +87,9 @@ void on_surface_changed() {
 		std::cin >> groupName;
 		sprite->createComponent<GroupEntitiesComponent>()->initialize(groupID, groupName);
 		sprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
+		*/
 		
-		
-		return sprite;
+		return nullptr;
 	};
 	newSprite->getComponent<InteractionCreateEntityComponent>()->_removeFunctor = [](int entityID) -> void {
 		world.unregisterEntity(entityID);

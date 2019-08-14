@@ -7,6 +7,32 @@
 #include "Matrix.h"
 #include "Events.h"
 #include "TextLoader.h"
+#include "TextHelper.h"
+
+enum TextConversion {
+	MY_FLOAT = 0,
+	MY_INT = 1,
+	MY_STRING = 2
+};
+
+class TextCallback {
+public:
+	void setValue(float* valueF, TextConversion conversion);
+	void setValue(int* valueI, TextConversion conversion);
+	void setValue(std::string* valueS, TextConversion conversion);
+	void callToSet(std::string value);
+
+	float* _valueF;
+	std::string* _valueS;
+	int* _valueI;
+	TextConversion _conversion;
+};
+
+class TextHelper {
+public:
+	void getValue(std::shared_ptr<TextCallback> callback, World* world);
+};
+
 
 class ObjectComponent : public Component {
 public:
@@ -289,19 +315,18 @@ public:
 	}
 
 	void setCallback(std::shared_ptr<TextCallback> callback) {
-		_callback.push_back(callback);
+		_callback = callback;
 	}
 
 	void setFocus(bool focus) {
 		if (focus == false && _focus == true) {
-			for (auto &callback : _callback) {
-				callback->callToSet(_text);
-			}
+			if (_callback)
+				_callback->callToSet(_text);
 		}
 		_focus = focus;
 	}
 
-	std::vector<std::shared_ptr<TextCallback> > _callback;
+	std::shared_ptr<TextCallback> _callback;
 	TextType _type;
 	bool _focus;
 	std::string _text;
@@ -364,71 +389,4 @@ public:
 	GLint _uMatrixLocation;
 	//
 	std::string _uMatrix = "u_Matrix";
-};
-
-
-enum TextConversion {
-	FLOAT = 0,
-	INT = 1,
-	STRING = 2
-};
-
-class TextCallback {
-public:
-	void setValue(float* valueF, TextConversion conversion) {
-		_valueF = valueF;
-		_conversion = conversion;
-	}
-
-	void setValue(int* valueI, TextConversion conversion) {
-		_valueI = valueI;
-		_conversion = conversion;
-	}
-
-	void setValue(std::string* valueS, TextConversion conversion) {
-		_valueS = valueS;
-		_conversion = conversion;
-	}
-
-	void callToSet(std::string value) {
-		switch (_conversion) {
-		case FLOAT:
-			*_valueF = std::stof(value);
-			break;
-		case INT:
-			*_valueI = std::stoi(value);
-			break;
-		case STRING:
-			*_valueS = value;
-			break;
-		}
-	}
-
-	float* _valueF;
-	std::string* _valueS;
-	int* _valueI;
-	TextConversion _conversion;
-};
-
-class TextHelper {
-public:
-	void getValue(std::shared_ptr<TextCallback> callback) {
-		shared_ptr<Entity> sprite;
-		sprite = world.createEntity();
-		Shader shader;
-		GLuint program;
-		program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		objectComponent->initialize(1000, 400, 100, 100, program);
-		objectComponent->_cameraCoefSpeed = 0;
-		sprite->addComponent(objectComponent);
-		std::shared_ptr<TextComponent> textComponent(new TextComponent());
-		std::shared_ptr<TextLoader> textLoader = std::make_shared<TextLoader>();
-		textLoader->bufferSymbols(48);
-		textComponent->initialize(textLoader, "Enter", 1, { 1, 0, 0 }, TextType::EDIT);
-		textComponent->setCallback(callback);
-
-		sprite->createComponent<ClickInsideComponent>()->initialize(false);
-		sprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
-	}
 };
