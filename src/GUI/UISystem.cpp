@@ -318,7 +318,7 @@ void InteractionAddToSystem::processCreateEntity(shared_ptr<EntityManager> entit
 		if (!interactionComponent)
 			continue;
 		if (interactionComponent->_interactReady) {
-			int action = 0;
+			/*int action = 0;
 			std::cout << "Enter the 1 to delete or 2 to create Entity, 0 to do nothing" << std::endl;
 			std::cin >> action;
 			switch (action) {
@@ -333,6 +333,8 @@ void InteractionAddToSystem::processCreateEntity(shared_ptr<EntityManager> entit
 				case 2:
 					interactionComponent->_createFunctor(interactionComponent->creationCoords);
 				break;
+			*/
+			interactionComponent->_createFunctor(interactionComponent->creationCoords);
 			}
 			interactionComponent->_interactReady = false;
 		}

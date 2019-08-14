@@ -9,6 +9,7 @@
 #include "Common.h"
 #include "Events.h"
 
+#include "Windows.h"
 static void error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error: %s\n", description);
@@ -21,13 +22,15 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
+	FreeConsole();
+
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //Core profile deprecate all fixed function API calls
 
 	GLFWwindow* mainWindow;
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", NULL, NULL);
+	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", glfwGetPrimaryMonitor(), NULL);
 	if (mainWindow == NULL) {
 		glfwTerminate();
 		return -1;
@@ -60,5 +63,7 @@ int main(int argc, char **argv) {
 		glfwPollEvents();
 	}
 
+	glfwDestroyWindow(mainWindow);
+	glfwTerminate();
 	return 0;
 }

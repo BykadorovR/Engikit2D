@@ -72,3 +72,4 @@ public:
 	int _symbolHeight;
 	std::map<GLchar, Character> _characters;
 };
+

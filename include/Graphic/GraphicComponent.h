@@ -41,6 +41,26 @@ public:
 		_sceneY = sceneY;
 	}
 
+	void setSceneX(std::string value) {
+		_sceneX = std::stof(value);
+	}
+
+	void setSceneY(std::string value) {
+		_sceneY = std::stof(value);
+	}
+
+	void setWidth(std::string value) {
+		_objectWidth = std::stoi(value);
+	}
+
+	void setHeight(std::string value) {
+		_objectHeight = std::stoi(value);
+	}
+
+	void setCameraCoefSpeed(std::string value) {
+		_cameraCoefSpeed = std::stof(value);
+	}
+
 	Matrix2D _transform;
 	Matrix2D _camera;
 	float _cameraCoefSpeed;

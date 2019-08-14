@@ -3,7 +3,7 @@
 #include <utility>
 #include <map>
 #include <iostream>
-const std::pair<int, int> resolution(720, 480);
+const std::pair<int, int> resolution(1920, 1080);
 
 enum ErrorCodes {
 	TW_OK = 0,
