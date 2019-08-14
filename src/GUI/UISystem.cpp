@@ -173,7 +173,7 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			}
 			else if (std::get<1>(click) != ClickCount::NO) {
 				if (textComponent)
-					textComponent->_focus = false;
+					textComponent->setFocus(false);
 			}
 			if (clickedInside && clickInsideComponent->_moveToByClick == false) {
 				for (auto playerEntity : playerControlledEntities) {
@@ -196,7 +196,7 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 				}
 			}
 			if (textComponent && clickedInside && textComponent->_type == 1)
-				textComponent->_focus = true;
+				textComponent->setFocus(true);
 			if (interactionComponent && clickedInside)
 				interactionComponent->_interactReady = true;
 			if (textureManagerComponent && clickedInside)
@@ -333,9 +333,9 @@ void InteractionAddToSystem::processCreateEntity(shared_ptr<EntityManager> entit
 				case 2:
 					interactionComponent->_createFunctor(interactionComponent->creationCoords);
 				break;
+			}
 			*/
 			interactionComponent->_createFunctor(interactionComponent->creationCoords);
-			}
 			interactionComponent->_interactReady = false;
 		}
 	}

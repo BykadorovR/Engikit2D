@@ -144,6 +144,10 @@ class ObjectComponentFunctor : public ComponentFunctor {
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
+		TextHelper helper;
+		TextCallback callback;
+		callback.setValue(&objectComponent->_sceneX, TextConversion::FLOAT);
+		/*
 		int sceneX, sceneY, objectWidth, objectHeight;
 		GLuint program;
 		std::cout << "Enter x and y of object on scene:" << std::endl;
@@ -157,7 +161,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		std::cin >> speed;
 		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
 		objectComponent->_cameraCoefSpeed = speed;
-
+		*/
 		return objectComponent;
 	}
 
@@ -239,7 +243,7 @@ class TextComponentFunctor : public ComponentFunctor {
 		std::cout << "Enter type: label(0), edit text(1)" << std::endl;
 		std::cin >> type;
 
-		textComponent->initialize(textLoader, text, scale, color, type);
+		textComponent->initialize(textLoader, text, scale, color, (TextType) type);
 		return textComponent;
 	}
 
@@ -276,7 +280,7 @@ class TextComponentFunctor : public ComponentFunctor {
 		float scale = jsonFile["TextComponent"]["scale"];
 		std::vector<float> color = jsonFile["TextComponent"]["color"];
 		int type = jsonFile["TextComponent"]["type"];
-		textComponent->initialize(loader, text, scale, color, type);
+		textComponent->initialize(loader, text, scale, color, (TextType) type);
 		return 0;
 	}
 };

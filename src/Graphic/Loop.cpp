@@ -17,8 +17,6 @@ void on_surface_created() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-World world;
-
 shared_ptr<Entity> createSprite(int x, int y, int width, int height, std::shared_ptr<Texture> texture) {
 	shared_ptr<Entity> sprite;
 	Shader shader;

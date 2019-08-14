@@ -3,7 +3,10 @@
 #include <utility>
 #include <map>
 #include <iostream>
+#include "World.h"
 const std::pair<int, int> resolution(1920, 1080);
+
+static World world;
 
 enum ErrorCodes {
 	TW_OK = 0,
