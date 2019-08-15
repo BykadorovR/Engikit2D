@@ -6,6 +6,9 @@
 #include "Texture.h"
 #include "nlohmann\json.hpp"
 #include "GUISave.h"
+//#include "TextHelper.h"
+
+class ITextEvent;
 
 using json = nlohmann::json;
 
@@ -16,6 +19,7 @@ public:
 	bool _rightClickFlag = false;
 	bool _leftClickFlag = false;
 	bool _moveToByClick = false;
+	std::pair<std::shared_ptr<ITextEvent>, std::shared_ptr<Entity> > _event;
 
 	void initialize(bool moveToByClick = false) {
 		MouseEvent::instance().registerComponent(this);

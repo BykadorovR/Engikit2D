@@ -49,47 +49,31 @@ void on_surface_changed() {
 	newSprite->createComponent<InteractionCreateEntityComponent>()->initialize();
 	newSprite->getComponent<InteractionCreateEntityComponent>()->_createFunctor = [](std::tuple<int, int> coords) -> std::shared_ptr<Entity> {
 		shared_ptr<Entity> sprite;
-		sprite = world.createEntity();
-		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		TextHelper helper;
-		std::shared_ptr<TextCallback> callback = std::make_shared<TextCallback>();
-		callback->setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
-		helper.getValue(callback, &world);
-		sprite->addComponent(objectComponent);
-		/*shared_ptr<Entity> sprite;
 		Shader shader;
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 		sprite = world.createEntity();
-		float speed;
-		std::cout << "Speed coef from camera speed for this object" << std::endl;
-		std::cin >> speed;
-		int objectWidth, objectHeight;
-		std::cout << "Enter width and height of object:" << std::endl;
-		std::cin >> objectWidth >> objectHeight;
-
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		objectComponent->initialize(std::get<0>(coords), std::get<1>(coords), objectWidth, objectHeight, program);
-		objectComponent->_cameraCoefSpeed = speed;
+		objectComponent->initialize(std::get<0>(coords), std::get<1>(coords), 100, 100, program);
+		objectComponent->_cameraCoefSpeed = 1;
 		sprite->addComponent(objectComponent);
 
 		//TODO: path to texture?
 		sprite->createComponent<TextureComponent>()->initialize(program);
-		bool moveToByClick;
-		std::cout << "Move toward this object allowed?" << std::endl;
-		std::cin >> moveToByClick;
-		sprite->createComponent<ClickInsideComponent>()->initialize(moveToByClick);
+		bool moveToByClick = true;
+		std::shared_ptr<ClickInsideComponent> clickInsideComponent(new ClickInsideComponent());
+		clickInsideComponent->initialize(moveToByClick);
+		std::shared_ptr<ComponentTextEvent> textEvent = std::make_shared<ComponentTextEvent>();
+		clickInsideComponent->_event = std::make_pair(textEvent, sprite);
+		sprite->addComponent(clickInsideComponent);
+		
 
-		int groupID = 0;
-		std::cout << "Enter the group ID" << std::endl;
-		std::cin >> groupID;
-		std::string groupName;
-		std::cout << "Enter the group name" << std::endl;
-		std::cin >> groupName;
+
+
+		int groupID = 1;
+		std::string groupName = "Default";
 		sprite->createComponent<GroupEntitiesComponent>()->initialize(groupID, groupName);
 		sprite->createComponent<InteractionAddToEntityComponent>()->initialize(InteractionMember::OBJECT);
-		*/
-		
-		return nullptr;
+		return sprite;
 	};
 	newSprite->getComponent<InteractionCreateEntityComponent>()->_removeFunctor = [](int entityID) -> void {
 		world.unregisterEntity(entityID);

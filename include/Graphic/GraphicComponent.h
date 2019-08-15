@@ -30,6 +30,7 @@ public:
 
 class TextHelper {
 public:
+	shared_ptr<Entity> createClickableTextLabel(std::string text, World* world);
 	void getValue(std::shared_ptr<TextCallback> callback, World* world);
 };
 

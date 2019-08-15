@@ -7,8 +7,11 @@
 #include <sstream>
 #include "TextLoader.h"
 #include <string>
-class ComponentFunctor {
+#include "TextHelper.h"
+
+class ComponentFunctor : public ITextEvent {
 public:
+	virtual void configureFunctor(std::shared_ptr<Entity> targetEntity) = 0;
 	virtual std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) = 0;
 	virtual void removeFunctor(std::shared_ptr<Entity> targetEntity) = 0;
 	virtual void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) = 0;
@@ -19,6 +22,9 @@ extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFuncto
 
 class TextureComponentFunctor : public ComponentFunctor {
 public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+
+	}
 	//TODO: How to use atlas and textures dynamically
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
@@ -141,6 +147,14 @@ public:
 };
 
 class ObjectComponentFunctor : public ComponentFunctor {
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		TextHelper helper;
+		std::shared_ptr<TextCallback> callback = std::make_shared<TextCallback>();
+		callback->setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
+		helper.getValue(callback, &world);
+	}
+
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
@@ -209,6 +223,9 @@ class ObjectComponentFunctor : public ComponentFunctor {
 };
 
 class TextComponentFunctor : public ComponentFunctor {
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+
+	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
@@ -286,6 +303,9 @@ class TextComponentFunctor : public ComponentFunctor {
 };
 
 class ClickInsideFunctor : public ComponentFunctor {
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+
+	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ClickInsideComponent> clickComponent(new ClickInsideComponent());
@@ -326,6 +346,9 @@ class ClickInsideFunctor : public ComponentFunctor {
 };
 
 class GroupEntitiesFunctor : public ComponentFunctor {
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+
+	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<GroupEntitiesComponent> groupEntitiesComponent(new GroupEntitiesComponent());
@@ -371,6 +394,9 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 };
 
 class InteractionAddToEntityFunctor : public ComponentFunctor {
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+
+	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent(new InteractionAddToEntityComponent());
@@ -411,6 +437,9 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 };
 
 class MoveFunctor : public ComponentFunctor {
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+
+	}
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<MoveComponent> moveComponent(new MoveComponent());
 		MoveTypes moveType;
@@ -499,6 +528,9 @@ class MoveFunctor : public ComponentFunctor {
 };
 
 class CameraFunctor : public ComponentFunctor {
+	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+
+	}
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<CameraComponent> cameraComponent(new CameraComponent());
 		int entityID;

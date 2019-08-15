@@ -53,3 +53,4 @@ public:
 
 	void mousePress(GLFWwindow* window, int button, int action, int mods);
 };
+

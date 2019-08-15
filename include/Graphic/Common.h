@@ -6,8 +6,11 @@
 #include "World.h"
 #include <sstream>
 #include "Windows.h"
+#include "Entity.h"
+
 const std::pair<int, int> resolution(1920, 1080);
 static World world;
+static Entity currentSprite;
 
 enum ErrorCodes {
 	TW_OK = 0,
