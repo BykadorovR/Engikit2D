@@ -9,6 +9,20 @@
 void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 	glUseProgram(object->_program);
 
+	float objectWidthN = (float)object->_objectWidth / (float)resolution.first;
+	float objectHeightN = (float)object->_objectHeight / (float)resolution.second;
+	float startX = (float)(object->_sceneX) / (float)resolution.first;
+	float startY = (float)(resolution.second - object->_sceneY) / (float)resolution.second;
+	// Order of coordinates: X, Y
+	// 0   2
+	// | / |
+	// 1   3
+	float vertexData[] = { startX,                startY,
+						   startX,                startY - objectHeightN,
+						   startX + objectWidthN, startY,
+						   startX + objectWidthN, startY - objectHeightN };
+	assert(object->_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
+
 	glBindVertexArray(object->_buffer.getVAOObject());
 	//bind buffer and handle vertex shader
 	glBindBuffer(GL_ARRAY_BUFFER, object->_buffer.getVBOObject());

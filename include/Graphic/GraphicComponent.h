@@ -30,8 +30,8 @@ public:
 
 class TextHelper {
 public:
-	shared_ptr<Entity> createText(std::string text, World* world, bool edit);
-	void getValue(std::shared_ptr<TextCallback> callback, World* world);
+	shared_ptr<Entity> createText(std::string text, bool edit);
+	void getValue(std::shared_ptr<TextCallback> callback);
 };
 
 

@@ -4,6 +4,8 @@
 #include <iostream>
 #include "assert.h"
 
+World world;
+
 std::string rawFileContent(const char* relativePath) {
 	std::string content;
 	std::ifstream fileStream(relativePath, std::ios::binary);

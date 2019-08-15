@@ -152,7 +152,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		TextHelper helper;
 		std::shared_ptr<TextCallback> callback = std::make_shared<TextCallback>();
 		callback->setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
-		helper.getValue(callback, &world);
+		helper.getValue(callback);
 	}
 
 	//this component can't be added to Entity, so it's just a stub

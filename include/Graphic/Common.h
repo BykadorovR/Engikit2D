@@ -9,7 +9,7 @@
 #include "Entity.h"
 
 const std::pair<int, int> resolution(1920, 1080);
-static World world;
+extern World world;
 static Entity currentSprite;
 
 enum ErrorCodes {
