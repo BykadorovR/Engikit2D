@@ -33,25 +33,25 @@ void TextCallback::callToSet(std::string value) {
 }
 
 void TextHelper::getValue(std::shared_ptr<TextCallback> callback, World* world) {
-	shared_ptr<Entity> sprite = createClickableTextLabel("Enter", world);
+	shared_ptr<Entity> sprite = createText("Enter", world, true);
 	std::shared_ptr<TextComponent> textComponent = sprite->getComponent<TextComponent>();
 	textComponent->setCallback(callback);
 }
 
-shared_ptr<Entity> TextHelper::createClickableTextLabel(std::string text, World* world) {
+shared_ptr<Entity> TextHelper::createText(std::string text, World* world, bool edit) {
 	shared_ptr<Entity> sprite;
 	sprite = world->createEntity();
 	Shader shader;
 	GLuint program;
 	program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
 	std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-	objectComponent->initialize(200, 200, 100, 100, program);
+	objectComponent->initialize(500, 400, 100, 100, program);
 	objectComponent->_cameraCoefSpeed = 0;
 	sprite->addComponent(objectComponent);
 	std::shared_ptr<TextComponent> textComponent(new TextComponent());
 	std::shared_ptr<TextLoader> textLoader = std::make_shared<TextLoader>();
 	textLoader->bufferSymbols(48);
-	textComponent->initialize(textLoader, text, 1, { 1, 0, 0 }, TextType::EDIT);
+	textComponent->initialize(textLoader, text, 1, { 1, 0, 0 }, edit ? TextType::EDIT : TextType::LABEL);
 	sprite->addComponent(textComponent);
 	sprite->createComponent<ClickInsideComponent>()->initialize(false);
 	sprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Default");
@@ -61,7 +61,7 @@ shared_ptr<Entity> TextHelper::createClickableTextLabel(std::string text, World*
 //should create clickable component labels + bind events from ComponentFunctors for each component for ClickInside
 void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	TextHelper helper;
-	auto objectEntity = helper.createClickableTextLabel("ObjectComponent", &world);
+	auto objectEntity = helper.createText("ObjectComponent", &world, false);
 	std::shared_ptr<ClickInsideComponent> clickInsideComponent = objectEntity->getComponent<ClickInsideComponent>();
 	clickInsideComponent->_event = std::make_pair(componentFunctors["ObjectComponent"], targetEntity);
 }
