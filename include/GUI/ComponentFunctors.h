@@ -149,33 +149,16 @@ public:
 class ObjectComponentFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
-		TextHelper helper;
 		std::shared_ptr<TextCallback> callback = std::make_shared<TextCallback>();
 		callback->setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
-		helper.getValue(callback);
+		TextHelper::instance()->getValue(callback);
 	}
 
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		TextHelper helper;
 		TextCallback callback;
 		callback.setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
-		/*
-		int sceneX, sceneY, objectWidth, objectHeight;
-		GLuint program;
-		std::cout << "Enter x and y of object on scene:" << std::endl;
-		std::cin >> sceneX >> sceneY;
-		std::cout << "Enter width and height of object:" << std::endl;
-		std::cin >> objectWidth >> objectHeight;
-		std::cout << "Enter programID (use the same as in current object):" << std::endl;
-		std::cin >> program;
-		float speed;
-		std::cout << "Speed coef from camera speed for this object" << std::endl;
-		std::cin >> speed;
-		objectComponent->initialize(sceneX, sceneY, objectWidth, objectHeight, program);
-		objectComponent->_cameraCoefSpeed = speed;
-		*/
 		return objectComponent;
 	}
 
