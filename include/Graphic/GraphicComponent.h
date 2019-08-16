@@ -33,13 +33,14 @@ public:
 	static TextHelper* instance();
 	std::shared_ptr<Entity> createText(std::string text, bool edit = false);
 	void attachText(std::shared_ptr<Entity> entity);
-	void detachText(std::shared_ptr<Entity> entity);
+	bool detachText(std::shared_ptr<Entity> entity);
 	void getValue(std::shared_ptr<TextCallback> callback);
+	std::vector<std::shared_ptr<Entity> > _buffer;
 private:
 	TextHelper();
 
 	int _bufferSize = 5;
-	std::vector<std::shared_ptr<Entity> > _buffer;
+
 };
 
 

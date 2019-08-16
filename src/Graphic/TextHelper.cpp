@@ -34,8 +34,8 @@ void TextCallback::callToSet(std::string value) {
 
 void TextHelper::getValue(std::shared_ptr<TextCallback> callback) {
 	shared_ptr<Entity> sprite = nullptr;
-	for (auto elem : _buffer) {
-		if (elem.use_count() == 1) {
+	for (auto &elem : _buffer) {
+		if (elem.use_count() <= 2) {
 			sprite = elem;
 			break;
 		}
@@ -44,7 +44,10 @@ void TextHelper::getValue(std::shared_ptr<TextCallback> callback) {
 		sprite = createText("Enter", true);
 
 	std::shared_ptr<TextComponent> textComponent = sprite->getComponent<TextComponent>();
+	textComponent->_text = "Enter";
+	textComponent->_type = TextType::EDIT;
 	textComponent->setCallback(callback);
+	TextHelper::instance()->attachText(sprite);
 }
 
 TextHelper* TextHelper::instance() {
@@ -56,8 +59,6 @@ TextHelper::TextHelper() {
 	//need to create some amount of text objects to use
 	for (int i = 0; i < _bufferSize; i++) {
 		auto sprite = createText("");
-		attachText(sprite);
-		_buffer.push_back(sprite);
 	}
 }
 
@@ -65,8 +66,8 @@ void TextHelper::attachText(std::shared_ptr<Entity> entity) {
 	world.registerEntity(entity);
 }
 
-void TextHelper::detachText(std::shared_ptr<Entity> entity) {
-	world.unregisterEntity(entity);
+bool TextHelper::detachText(std::shared_ptr<Entity> entity) {
+	return world.unregisterEntity(entity);
 }
 
 shared_ptr<Entity> TextHelper::createText(std::string text, bool edit) {
@@ -87,7 +88,7 @@ shared_ptr<Entity> TextHelper::createText(std::string text, bool edit) {
 		GLuint program;
 		program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		objectComponent->initialize(rand() % 1000, rand() % 1000 + 300, 100, 100, program);
+		objectComponent->initialize(1500, 300, 100, 100, program);
 		objectComponent->_cameraCoefSpeed = 0;
 		sprite->addComponent(objectComponent);
 		std::shared_ptr<TextComponent> textComponent(new TextComponent());
@@ -97,6 +98,7 @@ shared_ptr<Entity> TextHelper::createText(std::string text, bool edit) {
 		sprite->addComponent(textComponent);
 		sprite->createComponent<ClickInsideComponent>()->initialize(false);
 		sprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Default");
+		_buffer.push_back(sprite);
 	}
 
 	std::shared_ptr<TextComponent> textComponent = sprite->getComponent<TextComponent>();
@@ -109,6 +111,7 @@ shared_ptr<Entity> TextHelper::createText(std::string text, bool edit) {
 //should create clickable component labels + bind events from ComponentFunctors for each component for ClickInside
 void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	auto objectEntity = TextHelper::instance()->createText("ObjectComponent", false);
+	TextHelper::instance()->attachText(objectEntity);
 	std::shared_ptr<ClickInsideComponent> clickInsideComponent = objectEntity->getComponent<ClickInsideComponent>();
 	clickInsideComponent->_event = std::make_pair(componentFunctors["ObjectComponent"], targetEntity);
 }

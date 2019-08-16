@@ -170,8 +170,13 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			if (clickedInside) {
 				OUT_STREAM("Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber
 					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl);
-				if (clickInsideComponent->_event.first)
+				if (clickInsideComponent->_event.first) {
+					for (auto &instance : TextHelper::instance()->_buffer) {
+						if (instance != clickInsideComponent->_event.second)
+							TextHelper::instance()->detachText(instance);
+					}
 					clickInsideComponent->_event.first->configureFunctor(clickInsideComponent->_event.second);
+				}
 			}
 			else if (std::get<1>(click) != ClickCount::NO) {
 				if (textComponent)
