@@ -167,15 +167,21 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 		if (objectComponent && clickInsideComponent && groupComponent) {			
 			std::tuple<std::tuple<int, int>, int> click = (processClickInside(objectComponent, clickInsideComponent, groupComponent));
 			bool clickedInside = (std::get<0>(std::get<0>(click)) != 0 || std::get<1>(std::get<0>(click)) != 0) ? true : false;
+			if (textComponent && clickedInside && textComponent->_type == TextType::EDIT) {
+				textComponent->setFocus(true);
+				//let's clear the text to avoid backspace
+				textComponent->_text = "";
+			}
 			if (clickedInside) {
 				OUT_STREAM("Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber
 					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl);
 				if (clickInsideComponent->_event.first) {
-					for (auto &instance : TextHelper::instance()->_buffer) {
-						if (instance != clickInsideComponent->_event.second)
+					if (!textComponent || textComponent->_type == TextType::LABEL) {
+						for (auto &instance : TextHelper::instance()->_buffer) {
 							TextHelper::instance()->detachText(instance);
+						}
+						clickInsideComponent->_event.first->configureFunctor(clickInsideComponent->_event.second);
 					}
-					clickInsideComponent->_event.first->configureFunctor(clickInsideComponent->_event.second);
 				}
 			}
 			else if (std::get<1>(click) != ClickCount::NO) {
@@ -202,8 +208,7 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 					}
 				}
 			}
-			if (textComponent && clickedInside && textComponent->_type == 1)
-				textComponent->setFocus(true);
+
 			if (interactionComponent && clickedInside)
 				interactionComponent->_interactReady = true;
 			if (textureManagerComponent && clickedInside)
@@ -283,6 +288,17 @@ void InteractionAddToSystem::processManageTextures(shared_ptr<EntityManager> ent
 		if (!textureManagerComponent)
 			continue;
 		if (textureManagerComponent->_interactReady) {
+			//TODO: path to texture?
+			int index = 0;
+			int height = 50;
+			int width = 200;
+			auto entity = TextHelper::instance()->createText("Texture list", 1500, 300 + height * index++, width, height, 0.4, false);
+			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+			std::shared_ptr<TextureLoadEvent> functor = std::make_shared<TextureLoadEvent>();
+			clickInsideComponent->_event = std::make_pair(functor, nullptr);
+			TextHelper::instance()->attachText(entity);
+
+			/*
 			int action = 0;
 			std::cout << "Enter the 1 to get Textures list or 2 to add Texture, 0 to do nothing" << std::endl;
 			std::cin >> action;
@@ -312,6 +328,7 @@ void InteractionAddToSystem::processManageTextures(shared_ptr<EntityManager> ent
 				}
 				break;
 			}
+			*/
 			textureManagerComponent->_interactReady = false;
 		}
 	}

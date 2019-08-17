@@ -52,6 +52,14 @@ public:
 		return systemManager;
 	}
 
+	bool isEntityAttached(std::shared_ptr<Entity> entity) {
+		for (auto &attached : entityManager->getEntities()) {
+			if (entity == attached)
+				return true;
+		}
+		return false;
+	}
+
 private:
 	shared_ptr<EntityManager> entityManager; //Reference to entityManager (to be able delete entity ID)
 	shared_ptr<SystemManager> systemManager;

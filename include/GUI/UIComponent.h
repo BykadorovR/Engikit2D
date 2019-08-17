@@ -147,17 +147,6 @@ class TextureManagerComponent : public Component {
 public:
 	bool _interactReady = false;
 	std::string _textureName;
-	
-	void initialize() {
-
-	}
-
-	void serialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
-	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
-	}
-
 };
 
 class SaveLoadComponent : public Component {

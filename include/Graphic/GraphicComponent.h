@@ -17,9 +17,9 @@ enum TextConversion {
 
 class TextCallback {
 public:
-	void setValue(float* valueF, TextConversion conversion);
-	void setValue(int* valueI, TextConversion conversion);
-	void setValue(std::string* valueS, TextConversion conversion);
+	void setValue(float* valueF);
+	void setValue(int* valueI);
+	void setValue(std::string* valueS);
 	void callToSet(std::string value);
 
 	float* _valueF;
@@ -31,10 +31,10 @@ public:
 class TextHelper {
 public:
 	static TextHelper* instance();
-	std::shared_ptr<Entity> createText(std::string text, bool edit = false);
+	std::shared_ptr<Entity> createText(std::string text, int x, int y, int width, int height, float scale, bool edit = false);
 	void attachText(std::shared_ptr<Entity> entity);
 	bool detachText(std::shared_ptr<Entity> entity);
-	void getValue(std::shared_ptr<TextCallback> callback);
+	void getValue(std::shared_ptr<TextCallback> callback, std::string text, int x, int y, int width, int height, float scale);
 	std::vector<std::shared_ptr<Entity> > _buffer;
 private:
 	TextHelper();
@@ -47,6 +47,7 @@ private:
 class ObjectComponent : public Component {
 public:
 	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
+		_componentName = "ObjectComponent";
 		_program = program;
 		_objectWidth = objectWidth;
 		_objectHeight = objectHeight;
@@ -70,6 +71,7 @@ public:
 	}
 
 	void initializeText(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
+		_componentName = "ObjectComponent";
 		_program = program;
 		_objectWidth = objectWidth;
 		_objectHeight = objectHeight;
@@ -95,7 +97,7 @@ public:
 class TextureComponent : public Component {
 public:
 	void initialize(int textureID, GLuint program) {
-		_componentID = 1;
+		_componentName = "TextureComponent";
 		_solid = 0;
 		_texture = TextureManager::instance()->getTexture(textureID);
 		_program = program;
@@ -122,7 +124,7 @@ public:
 	}
 
 	void initialize(std::shared_ptr<Texture> texture, GLuint program) {
-		_componentID = 1;
+		_componentName = "TextureComponent";
 		_solid = 0;
 		_texture = texture;
 		_program = program;
@@ -149,7 +151,7 @@ public:
 	}
 
 	void initialize(GLuint program) {
-		_componentID = 1;
+		_componentName = "TextureComponent";
 		_solid = 1;
 		_texture = nullptr;
 		_program = program;
@@ -181,7 +183,7 @@ public:
 class AnimatedTextureComponent : public Component {
 public:
 	void initialize(int textureID, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
-		_componentID = 1;
+		_componentName = "TextureComponent";
 		_solid = 0;
 		_texture = TextureManager::instance()->getTexture(textureID);
 		_program = program;
@@ -211,7 +213,7 @@ public:
 
 	}
 	void initialize(std::shared_ptr<Texture> texture, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
-		_componentID = 1;
+		_componentName = "TextureComponent";
 		_solid = 0;
 		_texture = texture;
 		_program = program;
@@ -278,6 +280,7 @@ public:
 	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color, TextType type) {
 		_loader = loader;
 		_text = text;
+		_textBack = text;
 		_scale = scale;
 		_color = color;
 		_type = type;
@@ -332,6 +335,8 @@ public:
 		if (focus == false && _focus == true) {
 			if (_callback)
 				_callback->callToSet(_text);
+			//need to restore label back
+			_text = _textBack;
 		}
 		_focus = focus;
 	}
@@ -340,6 +345,7 @@ public:
 	TextType _type;
 	bool _focus;
 	std::string _text;
+	std::string _textBack;
 	GLfloat _scale;
 	std::vector<float> _color;
 	GLuint _VAO, _VBO;

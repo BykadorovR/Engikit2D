@@ -65,9 +65,6 @@ void on_surface_changed() {
 		std::shared_ptr<ComponentTextEvent> textEvent = std::make_shared<ComponentTextEvent>();
 		clickInsideComponent->_event = std::make_pair(textEvent, sprite);
 		sprite->addComponent(clickInsideComponent);
-		
-
-
 
 		int groupID = 1;
 		std::string groupName = "Default";
@@ -88,7 +85,7 @@ void on_surface_changed() {
 	textureSprite = createSprite(300, 0, 100, 100, textureRaw);
 	textureSprite->createComponent<ClickInsideComponent>()->initialize(false);
 	textureSprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
-	textureSprite->createComponent<TextureManagerComponent>()->initialize();
+	textureSprite->createComponent<TextureManagerComponent>();
 
 	loadSaveSprite = createSprite(400, 0, 100, 100, textureRaw);
 	loadSaveSprite->createComponent<ClickInsideComponent>()->initialize(false);

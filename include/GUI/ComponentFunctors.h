@@ -148,17 +148,32 @@ public:
 
 class ObjectComponentFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		int width = 200;
+		int height = 50;
+		int x = 1500;
+		int y = 300;
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
-		std::shared_ptr<TextCallback> callback = std::make_shared<TextCallback>();
-		callback->setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
-		TextHelper::instance()->getValue(callback);
+		std::shared_ptr<TextCallback> callbackX = std::make_shared<TextCallback>();
+		callbackX->setValue(&objectComponent->_sceneX);
+		TextHelper::instance()->getValue(callbackX, "sceneX", x, y, width, height, 0.4f);
+		std::shared_ptr<TextCallback> callbackY = std::make_shared<TextCallback>();
+		callbackY->setValue(&objectComponent->_sceneY);
+		TextHelper::instance()->getValue(callbackY, "sceneY", x, y + height * 1, width, height, 0.4f);
+		std::shared_ptr<TextCallback> callbackWidth = std::make_shared<TextCallback>();
+		callbackWidth->setValue(&objectComponent->_objectWidth);
+		TextHelper::instance()->getValue(callbackWidth, "Width", x, y + height * 2, width, height, 0.4f);
+		std::shared_ptr<TextCallback> callbackHeight = std::make_shared<TextCallback>();
+		callbackHeight->setValue(&objectComponent->_objectHeight);
+		TextHelper::instance()->getValue(callbackHeight, "Height", x, y + height * 3, width, height, 0.4f);
+		std::shared_ptr<TextCallback> callbackCameraSpeed = std::make_shared<TextCallback>();
+		callbackCameraSpeed->setValue(&objectComponent->_cameraCoefSpeed);
+		TextHelper::instance()->getValue(callbackCameraSpeed, "CameraCoefSpeed", x, y + height * 4, width, height, 0.4f);
+		
 	}
 
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		TextCallback callback;
-		callback.setValue(&objectComponent->_sceneX, TextConversion::MY_FLOAT);
 		return objectComponent;
 	}
 

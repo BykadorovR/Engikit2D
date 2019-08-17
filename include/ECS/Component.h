@@ -7,6 +7,6 @@ Needed to store user created components in container
 */
 class Component {
 public:
-	int _componentID = 0;
+	std::string _componentName = "Component";
 	virtual ~Component() = default;
 };
