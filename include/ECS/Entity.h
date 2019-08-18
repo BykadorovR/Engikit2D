@@ -64,6 +64,10 @@ public:
 		return false;
 	}
 
+	void clearAllComponents() {
+		components.clear();
+	}
+
 	std::vector<shared_ptr<Component> > getComponents() {
 		return components;
 	}

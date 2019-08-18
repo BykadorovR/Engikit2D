@@ -141,7 +141,7 @@ void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 	}
 }
 
-void TextureLoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+void TextureListEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
 	int height = 50;
 	int width = 400;
@@ -149,10 +149,97 @@ void TextureLoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	if (TextureManager::instance()->getTextureList().size() == 0) {
 		auto entity = TextHelper::instance()->createText("Texture list is empty", 1500, 300 + height * index++, width, height, 0.4, false);
 		TextHelper::instance()->attachText(entity);
+		return;
 	}
 
-	/*for (auto &texture : TextureManager::instance()->getTextureList()) {
-		auto entity = TextHelper::instance()->createText(component->_componentName, 1500, 300 + height * index++, width, height, 0.4, false);
+	for (auto &texture : TextureManager::instance()->getTextureList()) {
+		auto entity = TextHelper::instance()->createText(texture->getPath(), 1500, 300 + height * index++, width, height, 0.4, false);
+		TextHelper::instance()->attachText(entity);
+		entity = TextHelper::instance()->createText("ID: " + std::to_string(texture->getTextureID()) + " Size " + std::to_string(texture->getWidth()) + "x" + std::to_string(texture->getHeight()), 
+			1500, 300 + height * index++, width, height, 0.2, false);
+		TextHelper::instance()->attachText(entity);
+		entity = TextHelper::instance()->createText("Atlas ID: " + std::to_string(texture->getAtlas()->getAtlasID()) + " Atlas pos " + std::to_string(texture->getPosXAtlas()) + "x" + std::to_string(texture->getPosYAtlas()),
+			1500, 300 + height * index++, width, height, 0.2, false);
+		TextHelper::instance()->attachText(entity);
 	}
-	*/
+	
+}
+
+
+void TextureLoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	int index = 0;
+	int height = 50;
+	int width = 400;
+	int x = 1500;
+	int y = 300;
+
+	std::shared_ptr<TextureAcceptLoadEvent> accept = std::make_shared<TextureAcceptLoadEvent>();
+
+	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
+	path->setValue(&accept->_fullPath);
+	TextHelper::instance()->getValue(path, "File name", x, y, width, height, 0.4f);
+
+	std::shared_ptr<TextCallback> atlas = std::make_shared<TextCallback>();
+	atlas->setValue(&accept->_atlasID);
+	TextHelper::instance()->getValue(atlas, "Atlas ID", x, y + height * 1, width, height, 0.4f);
+
+	std::shared_ptr<TextCallback> callbackX = std::make_shared<TextCallback>();
+	callbackX->setValue(&accept->_objectX);
+	TextHelper::instance()->getValue(callbackX, "x in atlas", x, y + height * 2, width, height, 0.4f);
+
+	std::shared_ptr<TextCallback> callbackY = std::make_shared<TextCallback>();
+	callbackY->setValue(&accept->_objectY);
+	TextHelper::instance()->getValue(callbackY, "y in atlas", x, y + height * 3, width, height, 0.4f);
+
+	std::shared_ptr<TextCallback> callbackType = std::make_shared<TextCallback>();
+	callbackType->setValue(&accept->_type);
+	TextHelper::instance()->getValue(callbackType, "Texture/Animated texture (0, 1)", x, y + height * 4, width, height, 0.4f);
+
+	std::shared_ptr<TextCallback> callbackTileX = std::make_shared<TextCallback>();
+	callbackTileX->setValue(&accept->_tileX);
+	TextHelper::instance()->getValue(callbackTileX, "Tile x number", x, y + height * 5, width, height, 0.4f);
+
+	std::shared_ptr<TextCallback> callbackTileY = std::make_shared<TextCallback>();
+	callbackTileY->setValue(&accept->_tileY);
+	TextHelper::instance()->getValue(callbackTileY, "Tile y number", x, y + height * 6, width, height, 0.4f);
+
+	auto entity = TextHelper::instance()->createText("Submit", x, y + height * 7, width, height, 0.4, false);
+	std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+	clickInsideComponent->_event = std::make_pair(accept, targetEntity);
+	TextHelper::instance()->attachText(entity);
+}
+
+void TextureAcceptLoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	if (_type == 0)
+		TextureManager::instance()->loadTexture(std::string("../data/textures/") + _fullPath, _atlasID, _objectX, _objectY);
+	else if (_type == 1)
+		TextureManager::instance()->loadTexture(std::string("../data/textures/") + _fullPath, _atlasID, _objectX, _objectY, _tileX, _tileY);
+}
+
+void SaveEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	int index = 0;
+	int height = 50;
+	int width = 400;
+	int x = 1500;
+	int y = 300;
+
+	auto saveLoadComponent = targetEntity->getComponent<SaveLoadComponent>();
+	saveLoadComponent->_mode = 0;
+	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
+	path->setValue(&saveLoadComponent->_path);
+	TextHelper::instance()->getValue(path, "File name", x, y, width, height, 0.4f);
+}
+
+void LoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	int index = 0;
+	int height = 50;
+	int width = 400;
+	int x = 1500;
+	int y = 300;
+
+	auto saveLoadComponent = targetEntity->getComponent<SaveLoadComponent>();
+	saveLoadComponent->_mode = 1;
+	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
+	path->setValue(&saveLoadComponent->_path);
+	TextHelper::instance()->getValue(path, "File name", x, y, width, height, 0.4f);
 }

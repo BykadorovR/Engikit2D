@@ -13,9 +13,37 @@ public:
 
 };
 
-class TextureLoadEvent : public ITextEvent {
+class TextureListEvent : public ITextEvent {
 public:
 	//should create clickable component labels + bind events from ComponentFunctors for each component for ClickInside
 	void configureFunctor(std::shared_ptr<Entity> targetEntity);
 
+};
+
+class TextureLoadEvent : public ITextEvent {
+public:
+	//should create clickable component labels + bind events from ComponentFunctors for each component for ClickInside
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+};
+
+class TextureAcceptLoadEvent : public ITextEvent {
+public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+	std::string _fullPath;
+	int _atlasID;
+	int _objectX;
+	int _objectY;
+	int _type;
+	int _tileX;
+	int _tileY;
+};
+
+class SaveEvent : public ITextEvent {
+public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+};
+
+class LoadEvent : public ITextEvent {
+public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
 };

@@ -175,11 +175,14 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			if (clickedInside) {
 				OUT_STREAM("Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber
 					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl);
+				
+				if (!textComponent || textComponent->_type == TextType::LABEL)
+					for (auto &instance : TextHelper::instance()->_buffer) {
+						TextHelper::instance()->detachText(instance);
+					}
 				if (clickInsideComponent->_event.first) {
+					//to prohibit edit text trigger events which were inhereted from previously attached sprites
 					if (!textComponent || textComponent->_type == TextType::LABEL) {
-						for (auto &instance : TextHelper::instance()->_buffer) {
-							TextHelper::instance()->detachText(instance);
-						}
 						clickInsideComponent->_event.first->configureFunctor(clickInsideComponent->_event.second);
 					}
 				}
@@ -294,41 +297,18 @@ void InteractionAddToSystem::processManageTextures(shared_ptr<EntityManager> ent
 			int width = 200;
 			auto entity = TextHelper::instance()->createText("Texture list", 1500, 300 + height * index++, width, height, 0.4, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
-			std::shared_ptr<TextureLoadEvent> functor = std::make_shared<TextureLoadEvent>();
+			std::shared_ptr<TextureListEvent> functor = std::make_shared<TextureListEvent>();
 			clickInsideComponent->_event = std::make_pair(functor, nullptr);
 			TextHelper::instance()->attachText(entity);
 
-			/*
-			int action = 0;
-			std::cout << "Enter the 1 to get Textures list or 2 to add Texture, 0 to do nothing" << std::endl;
-			std::cin >> action;
-			switch (action) {
-			case 0:
-				break;
-			case 1:
-				TextureManager::instance()->printTextures();
-				break;
-			case 2:
-				std::string fullPath;
-				std::cout << "Enter full path to image" << std::endl;
-				std::cin >> fullPath;
-				int atlasID, x, y;
-				std::cout << "Enter atlas ID, position x, y in atlas" << std::endl;
-				std::cin >> atlasID >> x >> y;
-				int textureMode;
-				std::cout << "Enter 1 if Texture, 2 if AnimatedTexture" << std::endl;
-				std::cin >> textureMode;
-				if (textureMode == 1) {
-					TextureManager::instance()->loadTexture(fullPath, atlasID, x, y);
-				} else if (textureMode == 2) {
-					int tileX, tileY;
-					std::cout << "Enter x tiles number and y tiles number" << std::endl;
-					std::cin >> tileX >> tileY;
-					TextureManager::instance()->loadTexture(fullPath, atlasID, x, y, tileX, tileY);
-				}
-				break;
-			}
-			*/
+			entity = TextHelper::instance()->createText("Add texture", 1500, 300 + height * index++, width, height, 0.4, false);
+			clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+			std::shared_ptr<TextureLoadEvent> functorLoad = std::make_shared<TextureLoadEvent>();
+			clickInsideComponent->_event = std::make_pair(functorLoad, nullptr);
+			TextHelper::instance()->attachText(entity);
+
+
+
 			textureManagerComponent->_interactReady = false;
 		}
 	}
@@ -455,8 +435,11 @@ void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::
 				int id = atoi(itID.key().c_str());
 				for (auto entity : entityManager->getEntities()) {
 					//it's entity ID
-					if (id == entity->_index)
+					if (id == entity->_index) {
 						targetEntity = entity;
+						//we need clear this entity before using it (so we don't need anything what can be in this "occupied" entity)
+						targetEntity->clearAllComponents();
+					}
 				}
 				if (targetEntity == nullptr) {
 					targetEntity = entityManager->create();
@@ -519,33 +502,44 @@ void SaveLoadSystem::loadTextures(std::shared_ptr<GUISave> fileLoad) {
 
 void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
 	std::string fileName;
-	int mode = 2;
 	//find save sprite and check interaction component is ready
-	for (auto entity : entityManager->getEntities()) {
-		auto saveLoadComponent = entity->getComponent<SaveLoadComponent>();
-		if (saveLoadComponent && saveLoadComponent->_interactReady) {
-			std::cout << "Enter 0 to save scene to file, 1 to load scene from file, 2 to do nothing" << std::endl;
-			std::cin >> mode;
-			if (mode == 2) {
-				saveLoadComponent->_interactReady = false;
-				return;
+	for (auto targetEntity : entityManager->getEntities()) {
+		auto saveLoadComponent = targetEntity->getComponent<SaveLoadComponent>();
+		if (saveLoadComponent) {
+			if (saveLoadComponent->_mode == 0 && saveLoadComponent->_path != "") {
+				saveLoadComponent->_mode = 2;
+				std::shared_ptr<GUISave> saveFile = std::make_shared<GUISave>(saveLoadComponent->_path);
+				//First of all need to save texture atlases and textures
+				saveTextures(saveFile);
+				saveEntities(entityManager, saveFile);
+				saveLoadComponent->_path = "";
 			}
-			std::cout << "Enter filename" << std::endl;
-			std::cin >> fileName;
+			if (saveLoadComponent->_mode == 1 && saveLoadComponent->_path != "") {
+				saveLoadComponent->_mode = 2;
+				std::shared_ptr<GUISave> loadFile = make_shared<GUISave>(saveLoadComponent->_path);
+				loadFile->loadFile();
+				loadTextures(loadFile);
+				loadEntities(entityManager, loadFile);
+				saveLoadComponent->_path = "";
+			}
+		}
+		if (saveLoadComponent && saveLoadComponent->_interactReady) {
+			int index = 0;
+			int height = 50;
+			int width = 200;
+			auto entity = TextHelper::instance()->createText("Save scene", 1500, 300 + height * index++, width, height, 0.4, false);
+			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+			std::shared_ptr<SaveEvent> functor = std::make_shared<SaveEvent>();
+			clickInsideComponent->_event = std::make_pair(functor, targetEntity);
+			TextHelper::instance()->attachText(entity);
+
+			entity = TextHelper::instance()->createText("Load scene", 1500, 300 + height * index++, width, height, 0.4, false);
+			clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+			std::shared_ptr<LoadEvent> functorLoad = std::make_shared<LoadEvent>();
+			clickInsideComponent->_event = std::make_pair(functorLoad, targetEntity);
+			TextHelper::instance()->attachText(entity);
 			saveLoadComponent->_interactReady = false;
 		}
 	}
 
-	if (mode == 0) {
-		std::shared_ptr<GUISave> saveFile = std::make_shared<GUISave>(fileName);
-		//First of all need to save texture atlases and textures
-		saveTextures(saveFile);
-		saveEntities(entityManager, saveFile);
-	}
-	if (mode == 1) {
-		std::shared_ptr<GUISave> loadFile = make_shared<GUISave>(fileName);
-		loadFile->loadFile();
-		loadTextures(loadFile);
-		loadEntities(entityManager, loadFile);
-	}
 }

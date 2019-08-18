@@ -161,4 +161,7 @@ public:
 
 	void deserialize(int entityID, std::shared_ptr<GUISave> save) {
 	}
+
+	int _mode = 2;
+	std::string _path = "";
 };

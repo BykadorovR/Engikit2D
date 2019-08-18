@@ -215,7 +215,6 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
 			objectComponent->initializeText(sceneX, sceneY, objectWidth, objectHeight, program);
 		}
-
 		return 0;
 	}
 };
@@ -324,6 +323,7 @@ class ClickInsideFunctor : public ComponentFunctor {
 			return;
 
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ClickInsideComponent"]["moveToByClick"] = clickInsideComponent->_moveToByClick;
+		save->_jsonFile["Entity"][std::to_string(entityID)]["ClickInsideComponent"]["event"] = clickInsideComponent->_event.first ? true : false;
 	}
 
 	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
@@ -339,6 +339,14 @@ class ClickInsideFunctor : public ComponentFunctor {
 
 		bool moveToByClick = jsonFile["ClickInsideComponent"]["moveToByClick"];
 		clickInsideComponent->initialize(moveToByClick);
+
+		bool event = jsonFile["ClickInsideComponent"]["event"];
+		if (event) {
+			std::shared_ptr<ComponentTextEvent> textEvent = std::make_shared<ComponentTextEvent>();
+			clickInsideComponent->_event = std::make_pair(textEvent, targetEntity);
+			targetEntity->addComponent(clickInsideComponent);
+		}
+
 		return 0;
 	}
 };
