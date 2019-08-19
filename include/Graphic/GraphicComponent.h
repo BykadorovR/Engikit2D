@@ -278,6 +278,7 @@ enum TextType {
 class TextComponent : public Component, IKeyboardEvent {
 public:
 	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color, TextType type) {
+		_componentName = "TextComponent";
 		_loader = loader;
 		_text = text;
 		_textBack = text;
@@ -361,6 +362,7 @@ enum MoveTypes {
 class MoveComponent : public Component, IMouseEvent {
 public:
 	void initialize(MoveTypes type, GLuint program, float speed) {
+		_componentName = "MoveComponent";
 		_type = type;
 		_program = program;
 		_speed = speed;
@@ -374,6 +376,7 @@ public:
 	}
 
 	void initialize(MoveTypes type, GLuint program, int speed, std::tuple<float, float> endPoint) {
+		_componentName = "MoveComponent";
 		this->initialize(type, program, speed);
 		_leftClick = endPoint;
 	}

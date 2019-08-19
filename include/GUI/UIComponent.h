@@ -22,6 +22,7 @@ public:
 	std::pair<std::shared_ptr<ITextEvent>, std::shared_ptr<Entity> > _event;
 
 	void initialize(bool moveToByClick = false) {
+		_componentName = "ClickInsideComponent";
 		MouseEvent::instance().registerComponent(this);
 		_moveToByClick = moveToByClick;
 	}
@@ -52,6 +53,7 @@ public:
 	std::string _groupName;
 
 	void initialize(uint32_t groupNumber, std::string groupName) {
+		_componentName = "GroupEntitiesComponent";
 		_groupNumber = groupNumber;
 		_groupName = groupName;
 	}
@@ -74,6 +76,7 @@ public:
 
 
 	void initialize(bool moveToByClickFirst = false, bool moveToByClickSecond = false) {
+		_componentName = "ClickClickMoveComponent";
 		MouseEvent::instance().registerComponent(this);
 		_moveToByClickFirst = moveToByClickFirst;
 		_moveToByClickSecond = moveToByClickSecond;
@@ -112,6 +115,7 @@ public:
 	std::function<void(std::shared_ptr<Entity>)> _removeFunctor;
 
 	void initialize(InteractionMember interactionMember) {
+		_componentName = "InteractionAddToEntityComponent";
 		_interactionMember = interactionMember;
 	}
 
