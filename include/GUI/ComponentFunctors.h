@@ -539,7 +539,7 @@ class CameraFunctor : public ComponentFunctor {
 	}
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<CameraComponent> cameraComponent(new CameraComponent());
-		int entityID;
+		/*int entityID;
 		std::cout << "Enter entityID:" << std::endl;
 		std::cin >> entityID;
 		int programID;
@@ -550,6 +550,7 @@ class CameraFunctor : public ComponentFunctor {
 		std::cin >> speed;
 
 		cameraComponent->initialize(entityID, speed, programID);
+		*/
 		return cameraComponent;
 	}
 

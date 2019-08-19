@@ -154,6 +154,8 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			playerControlledEntities.push_back(entity);
 	}
 
+	bool skipNextClickInside = false;
+
 	//handle all components except ClickMoveComponent
 	for (auto entity : entityManager->getEntities()) {
 		auto objectComponent = entity->getComponent<ObjectComponent>();
@@ -164,18 +166,19 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 		auto saveLoadComponent = entity->getComponent<SaveLoadComponent>();
 		auto textComponent = entity->getComponent<TextComponent>();
 
-		if (objectComponent && clickInsideComponent && groupComponent) {			
+		if (objectComponent && clickInsideComponent && groupComponent) {
 			std::tuple<std::tuple<int, int>, int> click = (processClickInside(objectComponent, clickInsideComponent, groupComponent));
 			bool clickedInside = (std::get<0>(std::get<0>(click)) != 0 || std::get<1>(std::get<0>(click)) != 0) ? true : false;
+			//workaround to avoid clicking to sprite and triggering event in case of clickclickmove second click
 			if (textComponent && clickedInside && textComponent->_type == TextType::EDIT) {
 				textComponent->setFocus(true);
 				//let's clear the text to avoid backspace
 				textComponent->_text = "";
 			}
-			if (clickedInside) {
+			if (clickedInside && !skipNextClickInside) {
 				OUT_STREAM("Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber
-					      << " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl);
-				
+					<< " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl);
+
 				if (!textComponent || textComponent->_type == TextType::LABEL)
 					for (auto &instance : TextHelper::instance()->_buffer) {
 						TextHelper::instance()->detachText(instance);
@@ -211,7 +214,6 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 					}
 				}
 			}
-
 			if (interactionComponent && clickedInside)
 				interactionComponent->_interactReady = true;
 			if (textureManagerComponent && clickedInside)
@@ -228,6 +230,10 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 			int clickedInside = std::get<1>(clickedInsideTuple);
 
 			if (clickClickMoveComponent->_moveToByClickFirst == false && clickedInside == ClickCount::FIRST) {
+				if (!textComponent || textComponent->_type == TextType::LABEL)
+					for (auto &instance : TextHelper::instance()->_buffer) {
+						TextHelper::instance()->detachText(instance);
+					}
 				for (auto playerEntity : playerControlledEntities) {
 					auto moveComponent = playerEntity->getComponent<MoveComponent>();
 					if (moveComponent) {
@@ -248,6 +254,11 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 				}
 			}
 			if (clickClickMoveComponent->_moveToByClickSecond == false && clickedInside == ClickCount::SECOND) {
+				skipNextClickInside = true;
+				if (!textComponent || textComponent->_type == TextType::LABEL)
+					for (auto &instance : TextHelper::instance()->_buffer) {
+						TextHelper::instance()->detachText(instance);
+					}
 				for (auto playerEntity : playerControlledEntities) {
 					auto moveComponent = playerEntity->getComponent<MoveComponent>();
 					if (moveComponent) {
@@ -361,15 +372,13 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 		int height = 50;
 		int index = 0;
 		for (auto &functors : componentFunctors) {
-			if (index < 3) {
-				std::string name = functors.first;
-				auto entity = TextHelper::instance()->createText(name, 1500, 300 + height * index++, width, height, 0.4, false);
-				std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
-				std::shared_ptr<AddComponentEvent> functor = std::make_shared<AddComponentEvent>();
-				functor->_name = name;
-				clickInsideComponent->_event = std::make_pair(functor, entity);
-				TextHelper::instance()->attachText(entity);
-			}
+			std::string name = functors.first;
+			auto entity = TextHelper::instance()->createText(name, 1500, 300 + height * index++, width, height, 0.4, false);
+			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+			std::shared_ptr<AddComponentEvent> functor = std::make_shared<AddComponentEvent>();
+			functor->_name = name;
+			clickInsideComponent->_event = std::make_pair(functor, objectEntity);
+			TextHelper::instance()->attachText(entity);
 		}
 
 		/*

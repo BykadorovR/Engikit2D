@@ -5,6 +5,9 @@
 
 class CameraComponent : public Component, IMouseEvent {
 public:
+	CameraComponent() {
+		_componentName = "CameraComponent";
+	}
 	void initialize(int entityID, int cameraSpeed, GLuint program) {
 		_entityID = entityID;
 		_cameraSpeed = cameraSpeed;
