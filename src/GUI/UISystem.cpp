@@ -307,8 +307,6 @@ void InteractionAddToSystem::processManageTextures(shared_ptr<EntityManager> ent
 			clickInsideComponent->_event = std::make_pair(functorLoad, nullptr);
 			TextHelper::instance()->attachText(entity);
 
-
-
 			textureManagerComponent->_interactReady = false;
 		}
 	}
@@ -359,10 +357,22 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 		}
 	}
 	if (objectEntity && subjectEntity) {
-		int action = 0;
-		std::cout << "Enter the 1 to delete or 2 to add Component, 0 to do nothing" << std::endl;
-		std::cin >> action;
+		int width = 400;
+		int height = 50;
+		int index = 0;
+		for (auto &functors : componentFunctors) {
+			if (index < 3) {
+				std::string name = functors.first;
+				auto entity = TextHelper::instance()->createText(name, 1500, 300 + height * index++, width, height, 0.4, false);
+				std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+				std::shared_ptr<AddComponentEvent> functor = std::make_shared<AddComponentEvent>();
+				functor->_name = name;
+				clickInsideComponent->_event = std::make_pair(functor, entity);
+				TextHelper::instance()->attachText(entity);
+			}
+		}
 
+		/*
 		auto interactionComponentSubject = subjectEntity->getComponent<InteractionAddToEntityComponent>();
 
 		switch (action) {
@@ -394,7 +404,9 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 				break;
 			}
 		}
+		*/
 	}
+	
 
 	//We should handle only if BOTH entities subject and object are ready for interaction
 	if (objectEntity) {

@@ -243,3 +243,8 @@ void LoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	path->setValue(&saveLoadComponent->_path);
 	TextHelper::instance()->getValue(path, "File name", x, y, width, height, 0.4f);
 }
+
+void AddComponentEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	std::shared_ptr<Component> addedComponent = componentFunctors[_name]->createFunctor(targetEntity);
+	targetEntity->addComponent(addedComponent);
+}

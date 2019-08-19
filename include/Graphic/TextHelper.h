@@ -47,3 +47,11 @@ class LoadEvent : public ITextEvent {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity);
 };
+
+class AddComponentEvent : public ITextEvent {
+public:
+	std::string _name;
+	//should create clickable component labels + bind events from ComponentFunctors for each component for ClickInside
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+
+};
