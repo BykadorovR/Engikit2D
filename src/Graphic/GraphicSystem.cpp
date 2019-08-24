@@ -33,27 +33,20 @@ void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 }
 
 void textureUpdate(std::shared_ptr<TextureComponent> object) {
-	if (object->_textureID != -1) {
-		auto targetTexture = TextureManager::instance()->getTexture(object->_textureID);
-		float posXInAtlasN = (float)targetTexture->getX() / (float)targetTexture->getAtlas()->getWidth();
-		float posYInAtlasN = (float)targetTexture->getY() / (float)targetTexture->getAtlas()->getHeight();
-		float widthTile = (float)targetTexture->getWidth() / (float)targetTexture->getColumn() / (float)targetTexture->getAtlas()->getWidth();
-		float heightTile = (float)targetTexture->getHeight() / (float)targetTexture->getRow() / (float)targetTexture->getAtlas()->getHeight();
-		// Order of coordinates: S, T
-		// 0   2
-		// | / |
-		// 1   3
-		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
-								posXInAtlasN,                 posYInAtlasN + heightTile,
-								posXInAtlasN + widthTile, posYInAtlasN,
-								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
-		assert(object->_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
+	
+	if (object->_textureID != -1 || object->_texture != nullptr) {
+		std::shared_ptr<Texture> targetTexture;
+		if (object->_texture != nullptr)
+			targetTexture = object->_texture;
+		else 
+			targetTexture = TextureManager::instance()->getTexture(object->_textureID);
+			
 		//bind buffer and handle texture shader
 		glBindBuffer(GL_ARRAY_BUFFER, object->_buffer.getVBOObject());
 		//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
 		glVertexAttribPointer(object->_aTextureCoordinatesLocation, TEXTURE_COORDINATES_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(object->_aTextureCoordinatesLocation);
-
+		
 		if (object->_tilesOrder.size() > 0 && object->_tilesLatency.size() > 0) {
 			float width = object->_widthTile * (object->_tilesOrder[(object->_currentAnimateTile)] % object->_texture->getColumn());
 			glUniform1f(object->_uAdjustXLocation, width);
@@ -70,6 +63,7 @@ void textureUpdate(std::shared_ptr<TextureComponent> object) {
 		glBindTexture(GL_TEXTURE_2D, object->_textureObject);
 		glUniform1i(object->_uTextureUnitLocation, 0);
 	}
+	
 	glUniform1i(object->_uSolidLocation, object->_solid);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

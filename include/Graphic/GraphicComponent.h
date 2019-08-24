@@ -21,7 +21,7 @@ public:
 	void setValue(float* valueF);
 	void setValue(int* valueI);
 	void setValue(std::string* valueS);
-	void setValue(int** valueT);
+	void setValue(std::vector<int>* valueT);
 	void callToSet(std::string value);
 
 	float* _valueF;
@@ -133,6 +133,7 @@ public:
 		_solid = 0;
 		_texture = texture;
 		_program = program;
+
 		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
 		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
 		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();

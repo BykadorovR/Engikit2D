@@ -18,8 +18,9 @@ void TextCallback::setValue(std::string* valueS) {
 	_conversion = MY_STRING;
 }
 
-void TextCallback::setValue(int** valueT) {
-	_valueT = valueT;
+void TextCallback::setValue(std::vector<int>* valueT) {
+	int* temp = valueT->data();
+	_valueT = &temp;
 }
 
 void TextCallback::callToSet(std::string value) {

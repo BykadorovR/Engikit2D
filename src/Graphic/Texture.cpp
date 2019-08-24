@@ -89,8 +89,8 @@ Texture::Texture(std::string path, int posXAtlas, int posYAtlas, std::shared_ptr
 	_posXAtlas = posXAtlas;
 	_posYAtlas = posYAtlas;
 	_atlas = atlas;
-	_row = 0;
-	_column = 0;
+	_row = 1;
+	_column = 1;
 	//
 	_imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
 	_imageLoader->loadPNG(&path[0]);

@@ -58,7 +58,8 @@ private:
 	std::string _path;
 	int _posXAtlas, _posYAtlas;
 	int _width, _height;
-	int _row, _column;
+	int _row = 1;
+	int _column = 1;
 	int _textureID = -1;
 };
 
