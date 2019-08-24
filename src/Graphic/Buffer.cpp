@@ -8,7 +8,6 @@ int Buffer::bindVBO(float* data, GLsizeiptr size, GLenum usage) {
 	_buffer = data;
 	glGenBuffers(1, &vboObject);
 	CHECK_STATUS(vboObject == 0);
-	CHECK_STATUS(data == NULL);
 	glBindBuffer(GL_ARRAY_BUFFER, vboObject);
 	glBufferData(GL_ARRAY_BUFFER, size, (GLvoid*) data, usage);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -59,19 +59,7 @@ public:
 		_sceneX = sceneX;
 		_sceneY = sceneY;
 
-		float objectWidthN = (float)_objectWidth / (float)resolution.first;
-		float objectHeightN = (float)_objectHeight / (float)resolution.second;
-		float startX = (float)(_sceneX) / (float)resolution.first;
-		float startY = (float)(resolution.second - _sceneY) / (float)resolution.second;
-		// Order of coordinates: X, Y
-		// 0   2
-		// | / |
-		// 1   3
-		float vertexData[] = { startX,                startY,
-							   startX,                startY - objectHeightN,
-							   startX + objectWidthN, startY,
-							   startX + objectWidthN, startY - objectHeightN };
-		assert(_buffer.bindVBO(vertexData, sizeof(vertexData), GL_STATIC_DRAW) == TW_OK);
+		assert(_buffer.bindVBO(nullptr, sizeof(float) * 4 * 2, GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
 	}
 
@@ -105,21 +93,8 @@ public:
 		_solid = 0;
 		_texture = TextureManager::instance()->getTexture(textureID);
 		_program = program;
-		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
-		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
-		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();
-		_widthTile = widthTile;
-		float heightTile = (float)_texture->getHeight() / (float)_texture->getRow() / (float)_texture->getAtlas()->getHeight();
-		_heightTile = heightTile;
-		// Order of coordinates: S, T
-		// 0   2
-		// | / |
-		// 1   3
-		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
-								posXInAtlasN,                 posYInAtlasN + heightTile,
-								posXInAtlasN + widthTile, posYInAtlasN,
-								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
-		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
+
+		assert(_buffer.bindVBO(nullptr, 4 * 2 * sizeof(float), GL_DYNAMIC_DRAW) == TW_OK);
 		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
@@ -133,22 +108,8 @@ public:
 		_solid = 0;
 		_texture = texture;
 		_program = program;
-
-		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
-		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
-		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();
-		_widthTile = widthTile;
-		float heightTile = (float)_texture->getHeight() / (float)_texture->getRow() / (float)_texture->getAtlas()->getHeight();
-		_heightTile = heightTile;
-		// Order of coordinates: S, T
-		// 0   2
-		// | / |
-		// 1   3
-		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
-								posXInAtlasN,                 posYInAtlasN + heightTile,
-								posXInAtlasN + widthTile, posYInAtlasN,
-								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
-		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
+		assert(_buffer.bindVBO(nullptr, 4 * 2 * sizeof(float), GL_DYNAMIC_DRAW) == TW_OK);
+		
 		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
 		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
@@ -212,7 +173,7 @@ public:
 		glGenBuffers(1, &_VBO);
 		glBindVertexArray(_VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 4, NULL, GL_DYNAMIC_DRAW);
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);

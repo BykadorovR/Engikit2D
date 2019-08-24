@@ -7,8 +7,9 @@ public:
 	GLuint getVBOObject();
 	GLuint getVAOObject();
 	float* getBuffer();
-private:
+	float* _buffer;
 	GLuint vboObject;
 	GLuint vaoObject;
-	float* _buffer;
+
+	
 };
