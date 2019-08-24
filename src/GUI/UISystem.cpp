@@ -176,6 +176,7 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 				textComponent->_text = "";
 			}
 			if (clickedInside && !skipNextClickInside) {
+				//avoid click through several objects
 				OUT_STREAM("Clicked inside: entityID " << entity->_index << " group " << groupComponent->_groupNumber
 					<< " " << groupComponent->_groupName << " programID " << objectComponent->_program << std::endl);
 
@@ -454,6 +455,7 @@ void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::
 			for (json::iterator itID = it.value().begin(); itID != it.value().end(); ++itID) {
 				std::shared_ptr<Entity> targetEntity = nullptr;
 				int id = atoi(itID.key().c_str());
+				/*
 				for (auto entity : entityManager->getEntities()) {
 					//it's entity ID
 					if (id == entity->_index) {
@@ -462,9 +464,10 @@ void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::
 						targetEntity->clearAllComponents();
 					}
 				}
+				*/
 				if (targetEntity == nullptr) {
 					targetEntity = entityManager->create();
-					targetEntity->_index = id;
+					//targetEntity->_index = id;
 				}
 
 				std::vector<std::shared_ptr<ComponentFunctor> > repeat;

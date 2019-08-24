@@ -38,6 +38,14 @@ public:
 	int _tileY;
 };
 
+class TextureChangeEvent : public ITextEvent {
+public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+	std::vector<int> _latency;
+	std::vector<int> _order;
+	int _id;
+};
+
 class SaveEvent : public ITextEvent {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity);

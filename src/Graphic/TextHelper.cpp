@@ -2,6 +2,7 @@
 #include "UIComponent.h"
 #include "TextHelper.h"
 #include "ComponentFunctors.h"
+#include "Events.h"
 
 void TextCallback::setValue(float* valueF) {
 	_valueF = valueF;
@@ -19,8 +20,8 @@ void TextCallback::setValue(std::string* valueS) {
 }
 
 void TextCallback::setValue(std::vector<int>* valueT) {
-	int* temp = valueT->data();
-	_valueT = &temp;
+	_valueT = valueT;
+	_conversion = MY_TUPLE;
 }
 
 void TextCallback::callToSet(std::string value) {
@@ -34,23 +35,12 @@ void TextCallback::callToSet(std::string value) {
 	case MY_STRING:
 		*_valueS = value;
 		break;
-	case MY_TUPLE:;
-
-		std::istringstream is(value);
-		int n;
-		int size = 0;
-		while (is >> n) {
-			size++;
-		}
-
-		int* temp = new int[size];
+	case MY_TUPLE:
 		std::istringstream is1(value);
-		int i = 0;
+		int n;
 		while (is1 >> n) {
-			temp[i++] = n;
+			_valueT->push_back(n);
 		}
-
-		_valueT = &temp;
 	}
 }
 
@@ -87,10 +77,6 @@ TextHelper* TextHelper::instance() {
 }
 
 TextHelper::TextHelper() {
-	//need to create some amount of text objects to use
-	for (int i = 0; i < _bufferSize; i++) {
-		auto sprite = createText("", 0, 0, 200, 50, 0.4, false);
-	}
 }
 
 void TextHelper::attachText(std::shared_ptr<Entity> entity) {
@@ -102,6 +88,10 @@ bool TextHelper::detachText(std::shared_ptr<Entity> entity) {
 	std::shared_ptr<TextComponent> textComponent = entity->getComponent<TextComponent>();
 	if (textComponent)
 		textComponent->_focus = false;
+
+	std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+	clickInsideComponent->_leftClick = { 0, 0 };
+	clickInsideComponent->_rightClick = { 0, 0 };
 	return world.unregisterEntity(entity);
 }
 
@@ -120,6 +110,8 @@ shared_ptr<Entity> TextHelper::createText(std::string text, int x, int y, int wi
 			objectComponent->_sceneY = y;
 			objectComponent->_objectWidth = width;
 			objectComponent->_objectHeight = height;
+
+
 			break;
 		}
 	}
@@ -139,7 +131,7 @@ shared_ptr<Entity> TextHelper::createText(std::string text, int x, int y, int wi
 		textComponent->initialize(textLoader, text, scale, { 1, 0, 0 }, edit ? TextType::EDIT : TextType::LABEL);
 		sprite->addComponent(textComponent);
 		sprite->createComponent<ClickInsideComponent>()->initialize(false);
-		sprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Default");
+		sprite->createComponent<GroupEntitiesComponent>()->initialize(0, "Engine");
 		_buffer.push_back(sprite);
 	}
 
@@ -154,6 +146,7 @@ void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 	int width = 200;
 
 	for (auto &component : targetEntity->getComponents()) {
+		//default component name (not initialized)
 		if (component->_componentName != "Component") {
 			auto entity = TextHelper::instance()->createText(component->_componentName, 1500, 300 + height * index++, width, height, 0.4, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
@@ -178,10 +171,10 @@ void TextureListEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 		auto entity = TextHelper::instance()->createText(texture->getPath(), 1500, 300 + height * index++, width, height, 0.4, false);
 		TextHelper::instance()->attachText(entity);
 		entity = TextHelper::instance()->createText("ID: " + std::to_string(texture->getTextureID()) + " Size " + std::to_string(texture->getWidth()) + "x" + std::to_string(texture->getHeight()), 
-			1500, 300 + height * index++, width, height, 0.2, false);
+			1500, 300 + height * index++, width, height, 0.4, false);
 		TextHelper::instance()->attachText(entity);
 		entity = TextHelper::instance()->createText("Atlas ID: " + std::to_string(texture->getAtlas()->getAtlasID()) + " Atlas pos " + std::to_string(texture->getPosXAtlas()) + "x" + std::to_string(texture->getPosYAtlas()),
-			1500, 300 + height * index++, width, height, 0.2, false);
+			1500, 300 + height * index++, width, height, 0.4, false);
 		TextHelper::instance()->attachText(entity);
 	}
 	
@@ -236,6 +229,16 @@ void TextureAcceptLoadEvent::configureFunctor(std::shared_ptr<Entity> targetEnti
 		TextureManager::instance()->loadTexture(std::string("../data/textures/") + _fullPath, _atlasID, _objectX, _objectY);
 	else if (_type == 1)
 		TextureManager::instance()->loadTexture(std::string("../data/textures/") + _fullPath, _atlasID, _objectX, _objectY, _tileX, _tileY);
+}
+
+void TextureChangeEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
+	std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+	textureComponent->initialize(_id, objectComponent->_program);
+	if (_latency.size() > 0)
+		textureComponent->_tilesLatency = _latency;
+	if (_order.size() > 0)
+		textureComponent->_tilesOrder = _order;
 }
 
 void SaveEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {

@@ -39,15 +39,22 @@ public:
 			textureComponent->_program = program;
 		}
 
-		
-		std::shared_ptr<TextCallback> callbackTextureID = std::make_shared<TextCallback>();
-		callbackTextureID->setValue(&textureComponent->_textureID);
-		
-		std::shared_ptr<TextCallback> callbackTextureOrder = std::make_shared<TextCallback>();
-		callbackTextureOrder->setValue(&textureComponent->_tilesOrder);
+		int index = 1;
+		std::shared_ptr<TextureChangeEvent> accept = std::make_shared<TextureChangeEvent>();
 
+		std::shared_ptr<TextCallback> callbackTextureID = std::make_shared<TextCallback>();
+		callbackTextureID->setValue(&accept->_id);
+		TextHelper::instance()->getValue(callbackTextureID, "textureID", x, y + height * index++, width, height, 0.4f);
+		std::shared_ptr<TextCallback> callbackTextureOrder = std::make_shared<TextCallback>();
+		callbackTextureOrder->setValue(&accept->_order);
+		TextHelper::instance()->getValue(callbackTextureOrder, "texture order", x, y + height * index++, width, height, 0.4f);
 		std::shared_ptr<TextCallback> callbackTextureLatency = std::make_shared<TextCallback>();
-		callbackTextureLatency->setValue(&textureComponent->_tilesLatency);
+		callbackTextureLatency->setValue(&accept->_latency);
+		TextHelper::instance()->getValue(callbackTextureLatency, "texture latency", x, y + height * index++, width, height, 0.4f);
+		auto entity = TextHelper::instance()->createText("Submit", x, y + height * index++, width, height, 0.4, false);
+		std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+		clickInsideComponent->_event = std::make_pair(accept, targetEntity);
+		TextHelper::instance()->attachText(entity);
 	}
 	//TODO: How to use atlas and textures dynamically
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
@@ -69,10 +76,10 @@ public:
 		if (textureComponent && textureComponent->_texture != nullptr) {
 			save->_jsonFile["Entity"][std::to_string(entityID)]["TextureComponent"]["textureID"] = textureComponent->_texture->getTextureID();
 		}
-		if (textureComponent->_tilesOrder.size() != 0)
+		if (textureComponent && textureComponent->_tilesOrder.size() != 0)
 			save->_jsonFile["Entity"][std::to_string(entityID)]["TextureComponent"]["tilesOrder"] = textureComponent->_tilesOrder;
 		
-		if (textureComponent->_tilesLatency.size() != 0)
+		if (textureComponent && textureComponent->_tilesLatency.size() != 0)
 			save->_jsonFile["Entity"][std::to_string(entityID)]["TextureComponent"]["tilesLatency"] = textureComponent->_tilesLatency;
 	}
 
@@ -233,6 +240,10 @@ class TextComponentFunctor : public ComponentFunctor {
 		int entityID = targetEntity->_index;
 		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
 		if (!textComponent)
+			return;
+
+		std::shared_ptr<GroupEntitiesComponent> groupComponent = targetEntity->getComponent<GroupEntitiesComponent>();
+		if (!groupComponent)
 			return;
 
 		save->_jsonFile["Entity"][std::to_string(entityID)]["TextComponent"]["text"] = textComponent->_text;

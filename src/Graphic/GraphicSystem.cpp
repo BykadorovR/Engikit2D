@@ -34,13 +34,9 @@ void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 
 void textureUpdate(std::shared_ptr<TextureComponent> object) {
 	if (object->_textureID != -1 || object->_texture != nullptr) {
-		
 		std::shared_ptr<Texture> targetTexture;
-		if (object->_texture != nullptr)
-			targetTexture = object->_texture;
-		else 
-			targetTexture = TextureManager::instance()->getTexture(object->_textureID);
-		
+		targetTexture = object->_texture;
+		object->_textureObject = targetTexture->getAtlas()->getTexureObjectID();
 		float posXInAtlasN = (float)targetTexture->getX() / (float)targetTexture->getAtlas()->getWidth();
 		float posYInAtlasN = (float)targetTexture->getY() / (float)targetTexture->getAtlas()->getHeight();
 		float widthTile = (float)targetTexture->getWidth() / (float)targetTexture->getColumn() / (float)targetTexture->getAtlas()->getWidth();

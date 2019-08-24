@@ -27,7 +27,7 @@ public:
 	float* _valueF;
 	std::string* _valueS;
 	int* _valueI;
-	int** _valueT;
+	std::vector<int>* _valueT;
 	TextConversion _conversion;
 };
 
@@ -88,8 +88,10 @@ public:
 
 class TextureComponent : public Component {
 public:
-	void initialize(int textureID, GLuint program) {
+	TextureComponent() {
 		_componentName = "TextureComponent";
+	}
+	void initialize(int textureID, GLuint program) {
 		_solid = 0;
 		_texture = TextureManager::instance()->getTexture(textureID);
 		_program = program;
@@ -161,8 +163,10 @@ enum TextType {
 
 class TextComponent : public Component, IKeyboardEvent {
 public:
-	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color, TextType type) {
+	TextComponent() {
 		_componentName = "TextComponent";
+	}
+	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color, TextType type) {
 		_loader = loader;
 		_text = text;
 		_textBack = text;
