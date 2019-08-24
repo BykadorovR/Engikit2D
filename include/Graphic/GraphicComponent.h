@@ -12,7 +12,8 @@
 enum TextConversion {
 	MY_FLOAT = 0,
 	MY_INT = 1,
-	MY_STRING = 2
+	MY_STRING = 2,
+	MY_TUPLE
 };
 
 class TextCallback {
@@ -20,11 +21,13 @@ public:
 	void setValue(float* valueF);
 	void setValue(int* valueI);
 	void setValue(std::string* valueS);
+	void setValue(int** valueT);
 	void callToSet(std::string value);
 
 	float* _valueF;
 	std::string* _valueS;
 	int* _valueI;
+	int** _valueT;
 	TextConversion _conversion;
 };
 
@@ -46,8 +49,10 @@ private:
 
 class ObjectComponent : public Component {
 public:
-	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
+	ObjectComponent() {
 		_componentName = "ObjectComponent";
+	}
+	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
 		_program = program;
 		_objectWidth = objectWidth;
 		_objectHeight = objectHeight;
@@ -71,7 +76,6 @@ public:
 	}
 
 	void initializeText(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
-		_componentName = "ObjectComponent";
 		_program = program;
 		_objectWidth = objectWidth;
 		_objectHeight = objectHeight;
@@ -103,16 +107,18 @@ public:
 		_program = program;
 		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
 		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
-		float textureWidthN = (float)_texture->getWidth() / (float)_texture->getAtlas()->getWidth();
-		float textureHeightN = (float)_texture->getHeight() / (float)_texture->getAtlas()->getHeight();
+		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();
+		_widthTile = widthTile;
+		float heightTile = (float)_texture->getHeight() / (float)_texture->getRow() / (float)_texture->getAtlas()->getHeight();
+		_heightTile = heightTile;
 		// Order of coordinates: S, T
 		// 0   2
 		// | / |
 		// 1   3
 		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
-								posXInAtlasN,                 posYInAtlasN + textureHeightN,
-								posXInAtlasN + textureWidthN, posYInAtlasN,
-								posXInAtlasN + textureWidthN, posYInAtlasN + textureHeightN };
+								posXInAtlasN,                 posYInAtlasN + heightTile,
+								posXInAtlasN + widthTile, posYInAtlasN,
+								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
 		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
 		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
@@ -122,7 +128,6 @@ public:
 		_textureObject = _texture->getAtlas()->getTexureObjectID();
 
 	}
-
 	void initialize(std::shared_ptr<Texture> texture, GLuint program) {
 		_componentName = "TextureComponent";
 		_solid = 0;
@@ -130,16 +135,18 @@ public:
 		_program = program;
 		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
 		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
-		float textureWidthN = (float)_texture->getWidth() / (float)_texture->getAtlas()->getWidth();
-		float textureHeightN = (float)_texture->getHeight() / (float)_texture->getAtlas()->getHeight();
+		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();
+		_widthTile = widthTile;
+		float heightTile = (float)_texture->getHeight() / (float)_texture->getRow() / (float)_texture->getAtlas()->getHeight();
+		_heightTile = heightTile;
 		// Order of coordinates: S, T
 		// 0   2
 		// | / |
 		// 1   3
 		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
-								posXInAtlasN,                 posYInAtlasN + textureHeightN,
-								posXInAtlasN + textureWidthN, posYInAtlasN,
-								posXInAtlasN + textureWidthN, posYInAtlasN + textureHeightN };
+								posXInAtlasN,                 posYInAtlasN + heightTile,
+								posXInAtlasN + widthTile, posYInAtlasN,
+								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
 		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
 		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
 		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
@@ -151,99 +158,14 @@ public:
 	}
 
 	void initialize(GLuint program) {
-		_componentName = "TextureComponent";
 		_solid = 1;
 		_texture = nullptr;
 		_program = program;
 		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
 	}
 
-	int _solid = 1;
-	//
-	Buffer _buffer;
-	std::shared_ptr<Texture> _texture;
-	//
-	GLuint _program;
-	//atlas ID
-	GLuint _textureObject;
-	GLint _aTextureCoordinatesLocation;
-	GLint _uTextureUnitLocation;
-	GLint _uAdjustXLocation;
-	GLint _uAdjustYLocation;
-	GLint _uSolidLocation;
-	//
-	std::string _aTextureCoordinatesString = "a_TextureCoordinates";
-	std::string _uTextureUnitString = "u_TextureUnit";
-	std::string _uSolidString = "u_Solid";
-	std::string _uAdjustX = "u_AdjustX";
-	std::string _uAdjustY = "u_AdjustY";
-
-};
-
-class AnimatedTextureComponent : public Component {
-public:
-	void initialize(int textureID, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
-		_componentName = "TextureComponent";
-		_solid = 0;
-		_texture = TextureManager::instance()->getTexture(textureID);
-		_program = program;
-		_tilesLatency = tilesLatency;
-		_tilesOrder = tilesOrder;
-		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
-		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
-		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();
-		_widthTile = widthTile;
-		float heightTile = (float)_texture->getHeight() / (float)_texture->getRow() / (float)_texture->getAtlas()->getHeight();
-		_heightTile = heightTile;
-		// Order of coordinates: S, T
-		// 0   2
-		// | / |
-		// 1   3
-		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
-								posXInAtlasN,                 posYInAtlasN + heightTile,
-								posXInAtlasN + widthTile, posYInAtlasN,
-								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
-		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
-		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
-		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
-		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
-		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
-		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
-		_textureObject = _texture->getAtlas()->getTexureObjectID();
-
-	}
-	void initialize(std::shared_ptr<Texture> texture, std::vector<int> tilesOrder, std::vector<int> tilesLatency, GLuint program) {
-		_componentName = "TextureComponent";
-		_solid = 0;
-		_texture = texture;
-		_program = program;
-		_tilesLatency = tilesLatency;
-		_tilesOrder = tilesOrder;
-		float posXInAtlasN = (float)_texture->getX() / (float)_texture->getAtlas()->getWidth();
-		float posYInAtlasN = (float)_texture->getY() / (float)_texture->getAtlas()->getHeight();
-		float widthTile = (float)_texture->getWidth() / (float)_texture->getColumn() / (float)_texture->getAtlas()->getWidth();
-		_widthTile = widthTile;
-		float heightTile = (float)_texture->getHeight() / (float)_texture->getRow() / (float)_texture->getAtlas()->getHeight();
-		_heightTile = heightTile;
-		// Order of coordinates: S, T
-		// 0   2
-		// | / |
-		// 1   3
-		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
-								posXInAtlasN,                 posYInAtlasN + heightTile,
-								posXInAtlasN + widthTile, posYInAtlasN,
-								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
-		assert(_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
-		_aTextureCoordinatesLocation = glGetAttribLocation(_program, _aTextureCoordinatesString.c_str());
-		_uTextureUnitLocation = glGetUniformLocation(_program, _uTextureUnitString.c_str());
-		_uAdjustXLocation = glGetUniformLocation(_program, _uAdjustX.c_str());
-		_uAdjustYLocation = glGetUniformLocation(_program, _uAdjustY.c_str());
-		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
-		_textureObject = texture->getAtlas()->getTexureObjectID();
-
-	}
-
 	int _solid = 0;
+	int _textureID = -1;
 	float _widthTile;
 	float _heightTile;
 	int _currentAnimateTile = 0;

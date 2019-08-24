@@ -23,15 +23,12 @@ extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFuncto
 class TextureComponentFunctor : public ComponentFunctor {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-
-	}
-	//TODO: How to use atlas and textures dynamically
-	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
+		int width = 200;
+		int height = 50;
+		int x = 1500;
+		int y = 300;
 		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
-		int textureID;
-		std::cout << "Enter texture ID" << std::endl;
-		std::cin >> textureID;
-		GLuint programID;
+		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
 		if (textComponent) {
 			targetEntity->removeComponent<TextComponent>();
 			std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
@@ -39,37 +36,22 @@ public:
 			GLuint program;
 			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 			objectComponent->initialize(objectComponent->_sceneX, objectComponent->_sceneY, objectComponent->_objectWidth, objectComponent->_objectHeight, program);
-			programID = program;
+			textureComponent->_program = program;
 		}
-		else {
-			std::cout << "Enter program ID" << std::endl;
-			std::cin >> programID;
-		}
+
 		
-		auto targetTexture = TextureManager::instance()->getTexture(textureID);
-		if (targetTexture->getRow() > 1 || targetTexture->getColumn() > 1) {
-			std::shared_ptr<AnimatedTextureComponent> textureComponent(new AnimatedTextureComponent());
-			std::vector<int> tilesOrder, tilesLatency;
-			std::string line;
+		std::shared_ptr<TextCallback> callbackTextureID = std::make_shared<TextCallback>();
+		callbackTextureID->setValue(&textureComponent->_textureID);
+		
+		std::shared_ptr<TextCallback> callbackTextureOrder = std::make_shared<TextCallback>();
+		callbackTextureOrder->setValue(&textureComponent->_tilesOrder);
 
-			while (tilesOrder.size() == 0 || tilesOrder.size() != tilesLatency.size()) {
-				tilesOrder.clear();
-				tilesLatency.clear();
-				std::cout << "Enter order for tiles (separated by spaces, enter -1 in the end)" << std::endl;
-				int input;
-				while ((cin >> input) && input != -1)
-					tilesOrder.push_back(input);
-
-				std::cout << "Enter latency for tiles (separated by spaces, enter -1 in the end)" << std::endl;
-				while ((cin >> input) && input != -1)
-					tilesLatency.push_back(input);
-			}
-			textureComponent->initialize(targetTexture, tilesOrder, tilesLatency, programID);
-			return textureComponent;
-		}
-	
+		std::shared_ptr<TextCallback> callbackTextureLatency = std::make_shared<TextCallback>();
+		callbackTextureLatency->setValue(&textureComponent->_tilesLatency);
+	}
+	//TODO: How to use atlas and textures dynamically
+	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
-		textureComponent->initialize(targetTexture, programID);
 		return textureComponent;
 	}
 
@@ -79,15 +61,6 @@ public:
 			textureComponent->_solid = 1;
 			textureComponent->_texture = nullptr;
 		}
-
-		std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
-		if (animatedTextureComponent) {
-			int program = animatedTextureComponent->_program;
-			targetEntity->removeComponent<AnimatedTextureComponent>();
-			std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
-			textureComponent->initialize(program);
-			targetEntity->addComponent(textureComponent);
-		}
 	}
 
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
@@ -96,13 +69,11 @@ public:
 		if (textureComponent && textureComponent->_texture != nullptr) {
 			save->_jsonFile["Entity"][std::to_string(entityID)]["TextureComponent"]["textureID"] = textureComponent->_texture->getTextureID();
 		}
-
-		std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
-		if (animatedTextureComponent) {
-			save->_jsonFile["Entity"][std::to_string(entityID)]["AnimatedTextureComponent"]["textureID"] = animatedTextureComponent->_texture->getTextureID();
-			save->_jsonFile["Entity"][std::to_string(entityID)]["AnimatedTextureComponent"]["tilesOrder"] = animatedTextureComponent->_tilesOrder;
-			save->_jsonFile["Entity"][std::to_string(entityID)]["AnimatedTextureComponent"]["tilesLatency"] = animatedTextureComponent->_tilesLatency;
-		}
+		if (textureComponent->_tilesOrder.size() != 0)
+			save->_jsonFile["Entity"][std::to_string(entityID)]["TextureComponent"]["tilesOrder"] = textureComponent->_tilesOrder;
+		
+		if (textureComponent->_tilesLatency.size() != 0)
+			save->_jsonFile["Entity"][std::to_string(entityID)]["TextureComponent"]["tilesLatency"] = textureComponent->_tilesLatency;
 	}
 
 	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
@@ -118,20 +89,18 @@ public:
 				textureComponent = std::shared_ptr<TextureComponent>(new TextureComponent());
 				targetEntity->addComponent(textureComponent);
 			}
+			
 			int textureID = jsonFile["TextureComponent"]["textureID"];
-
 			textureComponent->initialize(textureID, program);
-		} else if (!jsonFile["AnimatedTextureComponent"].empty()) {
-			std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
-			if (!animatedTextureComponent) {
-				animatedTextureComponent = std::shared_ptr<AnimatedTextureComponent>(new AnimatedTextureComponent());
-				targetEntity->addComponent(animatedTextureComponent);
+			
+			if (!jsonFile["TextureComponent"]["tilesOrder"].empty()) {
+				std::vector<int> tilesOrder = jsonFile["TextureComponent"]["tilesOrder"];
+				textureComponent->_tilesOrder = tilesOrder;
 			}
-			int textureID = jsonFile["AnimatedTextureComponent"]["textureID"];
-			std::vector<int> tilesOrder = jsonFile["AnimatedTextureComponent"]["tilesOrder"];
-			std::vector<int> tilesLatency = jsonFile["AnimatedTextureComponent"]["tilesLatency"];
-
-			animatedTextureComponent->initialize(textureID, tilesOrder, tilesLatency, program);
+			if (!jsonFile["TextureComponent"]["tilesLatency"].empty()) {
+				std::vector<int> tilesLatency = jsonFile["TextureComponent"]["tilesLatency"];
+				textureComponent->_tilesLatency = tilesLatency;
+			}
 		}
 		else if (jsonFile["TextComponent"].empty())
 		{
@@ -234,10 +203,6 @@ class TextComponentFunctor : public ComponentFunctor {
 		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
 		if (textureComponent)
 			targetEntity->removeComponent<TextureComponent>();
-
-		std::shared_ptr<AnimatedTextureComponent> animatedTextureComponent = targetEntity->getComponent<AnimatedTextureComponent>();
-		if (animatedTextureComponent)
-			targetEntity->removeComponent<AnimatedTextureComponent>();
 
 		std::shared_ptr<TextComponent> textComponent(new TextComponent());
 		std::shared_ptr<TextLoader> textLoader = std::make_shared<TextLoader>();

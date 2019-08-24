@@ -18,6 +18,10 @@ void TextCallback::setValue(std::string* valueS) {
 	_conversion = MY_STRING;
 }
 
+void TextCallback::setValue(int** valueT) {
+	_valueT = valueT;
+}
+
 void TextCallback::callToSet(std::string value) {
 	switch (_conversion) {
 	case MY_FLOAT:
@@ -29,6 +33,23 @@ void TextCallback::callToSet(std::string value) {
 	case MY_STRING:
 		*_valueS = value;
 		break;
+	case MY_TUPLE:;
+
+		std::istringstream is(value);
+		int n;
+		int size = 0;
+		while (is >> n) {
+			size++;
+		}
+
+		int* temp = new int[size];
+		std::istringstream is1(value);
+		int i = 0;
+		while (is1 >> n) {
+			temp[i++] = n;
+		}
+
+		_valueT = &temp;
 	}
 }
 

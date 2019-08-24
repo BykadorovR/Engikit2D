@@ -33,13 +33,37 @@ void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 }
 
 void textureUpdate(std::shared_ptr<TextureComponent> object) {
-	if (object->_texture != nullptr) {
+	if (object->_textureID != -1) {
+		auto targetTexture = TextureManager::instance()->getTexture(object->_textureID);
+		float posXInAtlasN = (float)targetTexture->getX() / (float)targetTexture->getAtlas()->getWidth();
+		float posYInAtlasN = (float)targetTexture->getY() / (float)targetTexture->getAtlas()->getHeight();
+		float widthTile = (float)targetTexture->getWidth() / (float)targetTexture->getColumn() / (float)targetTexture->getAtlas()->getWidth();
+		float heightTile = (float)targetTexture->getHeight() / (float)targetTexture->getRow() / (float)targetTexture->getAtlas()->getHeight();
+		// Order of coordinates: S, T
+		// 0   2
+		// | / |
+		// 1   3
+		float textureData[] = { posXInAtlasN,                 posYInAtlasN,
+								posXInAtlasN,                 posYInAtlasN + heightTile,
+								posXInAtlasN + widthTile, posYInAtlasN,
+								posXInAtlasN + widthTile, posYInAtlasN + heightTile };
+		assert(object->_buffer.bindVBO(textureData, sizeof(textureData), GL_STATIC_DRAW) == TW_OK);
 		//bind buffer and handle texture shader
 		glBindBuffer(GL_ARRAY_BUFFER, object->_buffer.getVBOObject());
 		//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
 		glVertexAttribPointer(object->_aTextureCoordinatesLocation, TEXTURE_COORDINATES_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(object->_aTextureCoordinatesLocation);
-		glUniform1f(object->_uAdjustXLocation, 0);
+
+		if (object->_tilesOrder.size() > 0 && object->_tilesLatency.size() > 0) {
+			float width = object->_widthTile * (object->_tilesOrder[(object->_currentAnimateTile)] % object->_texture->getColumn());
+			glUniform1f(object->_uAdjustXLocation, width);
+			float height = object->_heightTile * (object->_tilesOrder[(object->_currentAnimateTile)] / object->_texture->getColumn());
+			glUniform1f(object->_uAdjustYLocation, height);
+		}
+		else {
+			glUniform1f(object->_uAdjustXLocation, 0);
+			glUniform1f(object->_uAdjustYLocation, 0);
+		}
 		//bind texture and handle fragment shader
 		//we can use multiple textures, but we use only one, do it active and send textureUnitLocation = 0 to shader
 		glActiveTexture(GL_TEXTURE0);
@@ -52,33 +76,17 @@ void textureUpdate(std::shared_ptr<TextureComponent> object) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-}
 
-void animatedTextureUpdate(std::shared_ptr<AnimatedTextureComponent> object) {
-	//bind buffer and handle texture shader
-	glBindBuffer(GL_ARRAY_BUFFER, object->_buffer.getVBOObject());
-	//index, size, type, normalized, stride, offset in GL_ARRAY_BUFFER target
-	glVertexAttribPointer(object->_aTextureCoordinatesLocation, TEXTURE_COORDINATES_COMPONENT_COUNT, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(object->_aTextureCoordinatesLocation);
-	float width = object->_widthTile * (object->_tilesOrder[(object->_currentAnimateTile)] % object->_texture->getColumn());
-	glUniform1f(object->_uAdjustXLocation, width);
-	float height = object->_heightTile * (object->_tilesOrder[(object->_currentAnimateTile)] / object->_texture->getColumn());
-	glUniform1f(object->_uAdjustYLocation, height);
-	//bind texture and handle fragment shader
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, object->_textureObject);
-	glUniform1i(object->_uTextureUnitLocation, 0);
-	glUniform1i(object->_uSolidLocation, object->_solid);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	if (object->_currentAnimateTile < object->_tilesOrder.size()) {
-		if (object->_currentLatency < object->_tilesLatency[object->_currentAnimateTile])
-			object->_currentLatency++;
-		else {
-			object->_currentLatency = 0;
-			object->_currentAnimateTile++;
-			if (object->_currentAnimateTile == object->_tilesOrder.size())
-				object->_currentAnimateTile = 0;
+	if (object->_tilesOrder.size() > 0 && object->_tilesLatency.size() > 0) {
+		if (object->_currentAnimateTile < object->_tilesOrder.size()) {
+			if (object->_currentLatency < object->_tilesLatency[object->_currentAnimateTile])
+				object->_currentLatency++;
+			else {
+				object->_currentLatency = 0;
+				object->_currentAnimateTile++;
+				if (object->_currentAnimateTile == object->_tilesOrder.size())
+					object->_currentAnimateTile = 0;
+			}
 		}
 	}
 }
@@ -243,9 +251,5 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 		auto textureObject = entity->getComponent<TextureComponent>();
 		if (textureObject)
 			textureUpdate(textureObject);
-		
-		auto animatedTextureObject = entity->getComponent<AnimatedTextureComponent>();
-		if (animatedTextureObject)
-			animatedTextureUpdate(animatedTextureObject);
 	}
 }

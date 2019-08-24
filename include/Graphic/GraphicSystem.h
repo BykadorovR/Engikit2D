@@ -25,11 +25,3 @@ public:
 	// Called every game update
 	void update(shared_ptr<EntityManager> entityManager);
 };
-
-class AnimatedTextureSystem : public System {
-private:
-	void draw(std::shared_ptr<AnimatedTextureComponent> object);
-public:
-	// Called every game update
-	void update(shared_ptr<EntityManager> entityManager);
-};
