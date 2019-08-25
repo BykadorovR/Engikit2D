@@ -45,9 +45,9 @@ public:
 	bool detachText(std::shared_ptr<Entity> entity);
 	void getValue(std::shared_ptr<TextCallback> callback, std::string text, int x, int y, int width, int height, float scale);
 	std::vector<std::shared_ptr<Entity> > _buffer;
-	int _defaultX = 1500;
-	int _defaultY = 100;
-	int _defaultWidth = 400;
+	int _defaultX = resolution.first - resolution.first / 5;
+	int _defaultY = resolution.second / 10;
+	int _defaultWidth = resolution.first / 5;
 	int _defaultHeight = 30;
 	float _defaultSize = 0.3;
 
