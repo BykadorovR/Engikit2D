@@ -54,9 +54,9 @@ void textureUpdate(std::shared_ptr<TextureComponent> object) {
 		glUniform1i(object->_uSolidLocation, object->_solid);
 		glUniform1i(object->_uTextureUnitLocation, 0);
 		if (object->_tilesOrder.size() > 0 && object->_tilesLatency.size() > 0) {
-			float width = object->_widthTile * (object->_tilesOrder[(object->_currentAnimateTile)] % object->_texture->getColumn());
+			float width = object->_widthTile * ((int) (object->_tilesOrder[(object->_currentAnimateTile)]) % object->_texture->getColumn());
 			glUniform1f(object->_uAdjustXLocation, width);
-			float height = object->_heightTile * (object->_tilesOrder[(object->_currentAnimateTile)] / object->_texture->getColumn());
+			float height = object->_heightTile * (int) (object->_tilesOrder[(object->_currentAnimateTile)] / object->_texture->getColumn());
 			glUniform1f(object->_uAdjustYLocation, height);
 		}
 		else {

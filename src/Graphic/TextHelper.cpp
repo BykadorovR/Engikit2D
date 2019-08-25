@@ -15,11 +15,11 @@ void TextCallback::setValue(int* valueI) {
 }
 
 void TextCallback::setValue(std::string* valueS) {
-	_valueS = valueS;
+	_valueS.push_back(valueS);
 	_conversion = MY_STRING;
 }
 
-void TextCallback::setValue(std::vector<int>* valueT) {
+void TextCallback::setValue(std::vector<float>* valueT) {
 	_valueT = valueT;
 	_conversion = MY_TUPLE;
 }
@@ -33,11 +33,14 @@ void TextCallback::callToSet(std::string value) {
 		*_valueI = std::stoi(value);
 		break;
 	case MY_STRING:
-		*_valueS = value;
+		for (auto &text : _valueS) {
+			*text = value;
+		}
 		break;
 	case MY_TUPLE:
+		_valueT->clear();
 		std::istringstream is1(value);
-		int n;
+		float n;
 		while (is1 >> n) {
 			_valueT->push_back(n);
 		}
@@ -142,13 +145,16 @@ shared_ptr<Entity> TextHelper::createText(std::string text, int x, int y, int wi
 void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	//Need take all attached components and print them
 	int index = 0;
-	int height = 50;
-	int width = 200;
+	int x = TextHelper::instance()->_defaultX;
+	int y = TextHelper::instance()->_defaultY;
+	int height = TextHelper::instance()->_defaultHeight;
+	int width = TextHelper::instance()->_defaultWidth;
+	float size = TextHelper::instance()->_defaultSize;
 
 	for (auto &component : targetEntity->getComponents()) {
 		//default component name (not initialized)
 		if (component->_componentName != "Component") {
-			auto entity = TextHelper::instance()->createText(component->_componentName, 1500, 300 + height * index++, width, height, 0.4, false);
+			auto entity = TextHelper::instance()->createText(component->_componentName, x, y + height * index++, width, height, size, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			clickInsideComponent->_event = std::make_pair(componentFunctors[component->_componentName], targetEntity);
 			TextHelper::instance()->attachText(entity);
@@ -158,23 +164,26 @@ void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 
 void TextureListEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int height = 50;
-	int width = 400;
+	int x = TextHelper::instance()->_defaultX;
+	int y = TextHelper::instance()->_defaultY;
+	int height = TextHelper::instance()->_defaultHeight;
+	int width = TextHelper::instance()->_defaultWidth;
+	float size = TextHelper::instance()->_defaultSize;
 
 	if (TextureManager::instance()->getTextureList().size() == 0) {
-		auto entity = TextHelper::instance()->createText("Texture list is empty", 1500, 300 + height * index++, width, height, 0.4, false);
+		auto entity = TextHelper::instance()->createText("Texture list is empty", x, y + height * index++, width, height, size, false);
 		TextHelper::instance()->attachText(entity);
 		return;
 	}
 
 	for (auto &texture : TextureManager::instance()->getTextureList()) {
-		auto entity = TextHelper::instance()->createText(texture->getPath(), 1500, 300 + height * index++, width, height, 0.4, false);
+		auto entity = TextHelper::instance()->createText(texture->getPath(), x, y + height * index++, width, height, size, false);
 		TextHelper::instance()->attachText(entity);
-		entity = TextHelper::instance()->createText("ID: " + std::to_string(texture->getTextureID()) + " Size " + std::to_string(texture->getWidth()) + "x" + std::to_string(texture->getHeight()), 
-			1500, 300 + height * index++, width, height, 0.4, false);
+		entity = TextHelper::instance()->createText("ID: " + std::to_string(texture->getTextureID()) + " Size " + std::to_string(texture->getWidth()) + "x" + std::to_string(texture->getHeight()),
+			x, y + height * index++, width, height, size, false);
 		TextHelper::instance()->attachText(entity);
 		entity = TextHelper::instance()->createText("Atlas ID: " + std::to_string(texture->getAtlas()->getAtlasID()) + " Atlas pos " + std::to_string(texture->getPosXAtlas()) + "x" + std::to_string(texture->getPosYAtlas()),
-			1500, 300 + height * index++, width, height, 0.4, false);
+			x, y + height * index++, width, height, size, false);
 		TextHelper::instance()->attachText(entity);
 	}
 	
@@ -183,42 +192,43 @@ void TextureListEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 
 void TextureLoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int height = 50;
-	int width = 400;
-	int x = 1500;
-	int y = 300;
+	int x = TextHelper::instance()->_defaultX;
+	int y = TextHelper::instance()->_defaultY;
+	int height = TextHelper::instance()->_defaultHeight;
+	int width = TextHelper::instance()->_defaultWidth;
+	float size = TextHelper::instance()->_defaultSize;
 
 	std::shared_ptr<TextureAcceptLoadEvent> accept = std::make_shared<TextureAcceptLoadEvent>();
 
 	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
 	path->setValue(&accept->_fullPath);
-	TextHelper::instance()->getValue(path, "File name", x, y, width, height, 0.4f);
+	TextHelper::instance()->getValue(path, "File name", x, y, width, height, size);
 
 	std::shared_ptr<TextCallback> atlas = std::make_shared<TextCallback>();
 	atlas->setValue(&accept->_atlasID);
-	TextHelper::instance()->getValue(atlas, "Atlas ID", x, y + height * 1, width, height, 0.4f);
+	TextHelper::instance()->getValue(atlas, "Atlas ID", x, y + height * 1, width, height, size);
 
 	std::shared_ptr<TextCallback> callbackX = std::make_shared<TextCallback>();
 	callbackX->setValue(&accept->_objectX);
-	TextHelper::instance()->getValue(callbackX, "x in atlas", x, y + height * 2, width, height, 0.4f);
+	TextHelper::instance()->getValue(callbackX, "x in atlas", x, y + height * 2, width, height, size);
 
 	std::shared_ptr<TextCallback> callbackY = std::make_shared<TextCallback>();
 	callbackY->setValue(&accept->_objectY);
-	TextHelper::instance()->getValue(callbackY, "y in atlas", x, y + height * 3, width, height, 0.4f);
+	TextHelper::instance()->getValue(callbackY, "y in atlas", x, y + height * 3, width, height, size);
 
 	std::shared_ptr<TextCallback> callbackType = std::make_shared<TextCallback>();
 	callbackType->setValue(&accept->_type);
-	TextHelper::instance()->getValue(callbackType, "Texture/Animated texture (0, 1)", x, y + height * 4, width, height, 0.4f);
+	TextHelper::instance()->getValue(callbackType, "Texture/Animated texture (0, 1)", x, y + height * 4, width, height, size);
 
 	std::shared_ptr<TextCallback> callbackTileX = std::make_shared<TextCallback>();
 	callbackTileX->setValue(&accept->_tileX);
-	TextHelper::instance()->getValue(callbackTileX, "Tile x number", x, y + height * 5, width, height, 0.4f);
+	TextHelper::instance()->getValue(callbackTileX, "Tile x number", x, y + height * 5, width, height, size);
 
 	std::shared_ptr<TextCallback> callbackTileY = std::make_shared<TextCallback>();
 	callbackTileY->setValue(&accept->_tileY);
-	TextHelper::instance()->getValue(callbackTileY, "Tile y number", x, y + height * 6, width, height, 0.4f);
+	TextHelper::instance()->getValue(callbackTileY, "Tile y number", x, y + height * 6, width, height, size);
 
-	auto entity = TextHelper::instance()->createText("Submit", x, y + height * 7, width, height, 0.4, false);
+	auto entity = TextHelper::instance()->createText("Submit", x, y + height * 7, width, height, size, false);
 	std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 	clickInsideComponent->_event = std::make_pair(accept, targetEntity);
 	TextHelper::instance()->attachText(entity);
@@ -243,30 +253,32 @@ void TextureChangeEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 
 void SaveEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int height = 50;
-	int width = 400;
-	int x = 1500;
-	int y = 300;
+	int x = TextHelper::instance()->_defaultX;
+	int y = TextHelper::instance()->_defaultY;
+	int height = TextHelper::instance()->_defaultHeight;
+	int width = TextHelper::instance()->_defaultWidth;
+	float size = TextHelper::instance()->_defaultSize;
 
 	auto saveLoadComponent = targetEntity->getComponent<SaveLoadComponent>();
 	saveLoadComponent->_mode = 0;
 	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
 	path->setValue(&saveLoadComponent->_path);
-	TextHelper::instance()->getValue(path, "File name", x, y, width, height, 0.4f);
+	TextHelper::instance()->getValue(path, "File name", x, y, width, height, size);
 }
 
 void LoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int height = 50;
-	int width = 400;
-	int x = 1500;
-	int y = 300;
+	int x = TextHelper::instance()->_defaultX;
+	int y = TextHelper::instance()->_defaultY;
+	int height = TextHelper::instance()->_defaultHeight;
+	int width = TextHelper::instance()->_defaultWidth;
+	float size = TextHelper::instance()->_defaultSize;
 
 	auto saveLoadComponent = targetEntity->getComponent<SaveLoadComponent>();
 	saveLoadComponent->_mode = 1;
 	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
 	path->setValue(&saveLoadComponent->_path);
-	TextHelper::instance()->getValue(path, "File name", x, y, width, height, 0.4f);
+	TextHelper::instance()->getValue(path, "File name", x, y, width, height, size);
 }
 
 void AddComponentEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {

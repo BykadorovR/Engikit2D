@@ -21,13 +21,13 @@ public:
 	void setValue(float* valueF);
 	void setValue(int* valueI);
 	void setValue(std::string* valueS);
-	void setValue(std::vector<int>* valueT);
+	void setValue(std::vector<float>* valueT);
 	void callToSet(std::string value);
 
 	float* _valueF;
-	std::string* _valueS;
+	std::vector<std::string*> _valueS;
 	int* _valueI;
-	std::vector<int>* _valueT;
+	std::vector<float>* _valueT;
 	TextConversion _conversion;
 };
 
@@ -39,6 +39,12 @@ public:
 	bool detachText(std::shared_ptr<Entity> entity);
 	void getValue(std::shared_ptr<TextCallback> callback, std::string text, int x, int y, int width, int height, float scale);
 	std::vector<std::shared_ptr<Entity> > _buffer;
+	int _defaultX = 1500;
+	int _defaultY = 100;
+	int _defaultWidth = 400;
+	int _defaultHeight = 30;
+	float _defaultSize = 0.3;
+
 private:
 	TextHelper();
 
@@ -93,6 +99,10 @@ public:
 	}
 	void initialize(int textureID, GLuint program) {
 		_solid = 0;
+		_tilesOrder.clear();
+		_tilesLatency.clear();
+		_currentAnimateTile = 0;
+		_currentLatency = 0;
 		_texture = TextureManager::instance()->getTexture(textureID);
 		_program = program;
 
@@ -108,6 +118,10 @@ public:
 	void initialize(std::shared_ptr<Texture> texture, GLuint program) {
 		_componentName = "TextureComponent";
 		_solid = 0;
+		_tilesOrder.clear();
+		_tilesLatency.clear();
+		_currentAnimateTile = 0;
+		_currentLatency = 0;
 		_texture = texture;
 		_program = program;
 		assert(_buffer.bindVBO(nullptr, 4 * 2 * sizeof(float), GL_DYNAMIC_DRAW) == TW_OK);
@@ -123,6 +137,10 @@ public:
 
 	void initialize(GLuint program) {
 		_solid = 1;
+		_tilesOrder.clear();
+		_tilesLatency.clear();
+		_currentAnimateTile = 0;
+		_currentLatency = 0;
 		_texture = nullptr;
 		_program = program;
 		_uSolidLocation = glGetUniformLocation(_program, _uSolidString.c_str());
@@ -134,8 +152,8 @@ public:
 	float _heightTile;
 	int _currentAnimateTile = 0;
 	int _currentLatency = 0;
-	std::vector<int> _tilesOrder;
-	std::vector<int> _tilesLatency;
+	std::vector<float> _tilesOrder;
+	std::vector<float> _tilesLatency;
 
 	//
 	Buffer _buffer;
@@ -166,6 +184,21 @@ public:
 	TextComponent() {
 		_componentName = "TextComponent";
 	}
+
+	void initialize() {
+		_scale = TextHelper::instance()->_defaultSize;
+		glGenVertexArrays(1, &_VAO);
+		glGenBuffers(1, &_VBO);
+		glBindVertexArray(_VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, _VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 4, NULL, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		KeyboardEvent::instance().registerComponent(this);
+	}
+
 	void initialize(std::shared_ptr<TextLoader> loader, std::string text, GLfloat scale, std::vector<float> color, TextType type) {
 		_loader = loader;
 		_text = text;
@@ -231,14 +264,13 @@ public:
 	}
 
 	std::shared_ptr<TextCallback> _callback;
-	TextType _type;
+	TextType _type = LABEL;
 	bool _focus;
-	std::string _text;
-	std::string _textBack;
+	std::string _text = "Empty";
+	std::string _textBack = "Empty";
 	GLfloat _scale;
-	std::vector<float> _color;
+	std::vector<float> _color = {1, 0, 0};
 	GLuint _VAO, _VBO;
-	GLuint _program;
 	std::shared_ptr<TextLoader> _loader;
 };
 

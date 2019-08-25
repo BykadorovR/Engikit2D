@@ -305,15 +305,18 @@ void InteractionAddToSystem::processManageTextures(shared_ptr<EntityManager> ent
 		if (textureManagerComponent->_interactReady) {
 			//TODO: path to texture?
 			int index = 0;
-			int height = 50;
-			int width = 200;
-			auto entity = TextHelper::instance()->createText("Texture list", 1500, 300 + height * index++, width, height, 0.4, false);
+			int x = TextHelper::instance()->_defaultX;
+			int y = TextHelper::instance()->_defaultY;
+			int height = TextHelper::instance()->_defaultHeight;
+			int width = TextHelper::instance()->_defaultWidth;
+			float size = TextHelper::instance()->_defaultSize;
+			auto entity = TextHelper::instance()->createText("Texture list", x, y + height * index++, width, height, size, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<TextureListEvent> functor = std::make_shared<TextureListEvent>();
 			clickInsideComponent->_event = std::make_pair(functor, nullptr);
 			TextHelper::instance()->attachText(entity);
 
-			entity = TextHelper::instance()->createText("Add texture", 1500, 300 + height * index++, width, height, 0.4, false);
+			entity = TextHelper::instance()->createText("Add texture", x, y + height * index++, width, height, size, false);
 			clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<TextureLoadEvent> functorLoad = std::make_shared<TextureLoadEvent>();
 			clickInsideComponent->_event = std::make_pair(functorLoad, nullptr);
@@ -369,12 +372,15 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 		}
 	}
 	if (objectEntity && subjectEntity) {
-		int width = 400;
-		int height = 50;
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
 		int index = 0;
 		for (auto &functors : componentFunctors) {
 			std::string name = functors.first;
-			auto entity = TextHelper::instance()->createText(name, 1500, 300 + height * index++, width, height, 0.4, false);
+			auto entity = TextHelper::instance()->createText(name, x, y + height * index++, width, height, size, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<AddComponentEvent> functor = std::make_shared<AddComponentEvent>();
 			functor->_name = name;
@@ -549,15 +555,18 @@ void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
 		}
 		if (saveLoadComponent && saveLoadComponent->_interactReady) {
 			int index = 0;
-			int height = 50;
-			int width = 200;
-			auto entity = TextHelper::instance()->createText("Save scene", 1500, 300 + height * index++, width, height, 0.4, false);
+			int x = TextHelper::instance()->_defaultX;
+			int y = TextHelper::instance()->_defaultY;
+			int height = TextHelper::instance()->_defaultHeight;
+			int width = TextHelper::instance()->_defaultWidth;
+			float size = TextHelper::instance()->_defaultSize;
+			auto entity = TextHelper::instance()->createText("Save scene", x, y + height * index++, width, height, size, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<SaveEvent> functor = std::make_shared<SaveEvent>();
 			clickInsideComponent->_event = std::make_pair(functor, targetEntity);
 			TextHelper::instance()->attachText(entity);
 
-			entity = TextHelper::instance()->createText("Load scene", 1500, 300 + height * index++, width, height, 0.4, false);
+			entity = TextHelper::instance()->createText("Load scene", x, y + height * index++, width, height, size, false);
 			clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<LoadEvent> functorLoad = std::make_shared<LoadEvent>();
 			clickInsideComponent->_event = std::make_pair(functorLoad, targetEntity);

@@ -23,35 +23,26 @@ extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFuncto
 class TextureComponentFunctor : public ComponentFunctor {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int width = 200;
-		int height = 50;
-		int x = 1500;
-		int y = 300;
-		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
-		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
-		if (textComponent) {
-			targetEntity->removeComponent<TextComponent>();
-			std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
-			Shader shader;
-			GLuint program;
-			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-			objectComponent->initialize(objectComponent->_sceneX, objectComponent->_sceneY, objectComponent->_objectWidth, objectComponent->_objectHeight, program);
-			textureComponent->_program = program;
-		}
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
+
 
 		int index = 1;
 		std::shared_ptr<TextureChangeEvent> accept = std::make_shared<TextureChangeEvent>();
 
 		std::shared_ptr<TextCallback> callbackTextureID = std::make_shared<TextCallback>();
 		callbackTextureID->setValue(&accept->_id);
-		TextHelper::instance()->getValue(callbackTextureID, "textureID", x, y + height * index++, width, height, 0.4f);
+		TextHelper::instance()->getValue(callbackTextureID, "textureID", x, y + height * index++, width, height, size);
 		std::shared_ptr<TextCallback> callbackTextureOrder = std::make_shared<TextCallback>();
 		callbackTextureOrder->setValue(&accept->_order);
-		TextHelper::instance()->getValue(callbackTextureOrder, "texture order", x, y + height * index++, width, height, 0.4f);
+		TextHelper::instance()->getValue(callbackTextureOrder, "texture order", x, y + height * index++, width, height, size);
 		std::shared_ptr<TextCallback> callbackTextureLatency = std::make_shared<TextCallback>();
 		callbackTextureLatency->setValue(&accept->_latency);
-		TextHelper::instance()->getValue(callbackTextureLatency, "texture latency", x, y + height * index++, width, height, 0.4f);
-		auto entity = TextHelper::instance()->createText("Submit", x, y + height * index++, width, height, 0.4, false);
+		TextHelper::instance()->getValue(callbackTextureLatency, "texture latency", x, y + height * index++, width, height, size);
+		auto entity = TextHelper::instance()->createText("Submit", x, y + height * index++, width, height, size, false);
 		std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 		clickInsideComponent->_event = std::make_pair(accept, targetEntity);
 		TextHelper::instance()->attachText(entity);
@@ -59,6 +50,18 @@ public:
 	//TODO: How to use atlas and textures dynamically
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
+		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
+		if (textComponent) {
+			targetEntity->removeComponent<TextComponent>();
+			std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+			Shader shader;
+			GLuint program;
+			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+			objectComponent->initialize(objectComponent->_sceneX, objectComponent->_sceneY, objectComponent->_objectWidth, objectComponent->_objectHeight, program);
+		}
+
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		textureComponent->initialize(objectComponent->_program);
 		return textureComponent;
 	}
 
@@ -101,11 +104,11 @@ public:
 			textureComponent->initialize(textureID, program);
 			
 			if (!jsonFile["TextureComponent"]["tilesOrder"].empty()) {
-				std::vector<int> tilesOrder = jsonFile["TextureComponent"]["tilesOrder"];
+				std::vector<float> tilesOrder = jsonFile["TextureComponent"]["tilesOrder"];
 				textureComponent->_tilesOrder = tilesOrder;
 			}
 			if (!jsonFile["TextureComponent"]["tilesLatency"].empty()) {
-				std::vector<int> tilesLatency = jsonFile["TextureComponent"]["tilesLatency"];
+				std::vector<float> tilesLatency = jsonFile["TextureComponent"]["tilesLatency"];
 				textureComponent->_tilesLatency = tilesLatency;
 			}
 		}
@@ -124,26 +127,27 @@ public:
 
 class ObjectComponentFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int width = 200;
-		int height = 50;
-		int x = 1500;
-		int y = 300;
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
 		std::shared_ptr<TextCallback> callbackX = std::make_shared<TextCallback>();
 		callbackX->setValue(&objectComponent->_sceneX);
-		TextHelper::instance()->getValue(callbackX, "sceneX", x, y, width, height, 0.4f);
+		TextHelper::instance()->getValue(callbackX, "sceneX", x, y, width, height, size);
 		std::shared_ptr<TextCallback> callbackY = std::make_shared<TextCallback>();
 		callbackY->setValue(&objectComponent->_sceneY);
-		TextHelper::instance()->getValue(callbackY, "sceneY", x, y + height * 1, width, height, 0.4f);
+		TextHelper::instance()->getValue(callbackY, "sceneY", x, y + height * 1, width, height, size);
 		std::shared_ptr<TextCallback> callbackWidth = std::make_shared<TextCallback>();
 		callbackWidth->setValue(&objectComponent->_objectWidth);
-		TextHelper::instance()->getValue(callbackWidth, "Width", x, y + height * 2, width, height, 0.4f);
+		TextHelper::instance()->getValue(callbackWidth, "Width", x, y + height * 2, width, height, size);
 		std::shared_ptr<TextCallback> callbackHeight = std::make_shared<TextCallback>();
 		callbackHeight->setValue(&objectComponent->_objectHeight);
-		TextHelper::instance()->getValue(callbackHeight, "Height", x, y + height * 3, width, height, 0.4f);
+		TextHelper::instance()->getValue(callbackHeight, "Height", x, y + height * 3, width, height, size);
 		std::shared_ptr<TextCallback> callbackCameraSpeed = std::make_shared<TextCallback>();
 		callbackCameraSpeed->setValue(&objectComponent->_cameraCoefSpeed);
-		TextHelper::instance()->getValue(callbackCameraSpeed, "CameraCoefSpeed", x, y + height * 4, width, height, 0.4f);
+		TextHelper::instance()->getValue(callbackCameraSpeed, "CameraCoefSpeed", x, y + height * 4, width, height, size);
 		
 	}
 
@@ -197,16 +201,29 @@ class ObjectComponentFunctor : public ComponentFunctor {
 
 class TextComponentFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
+		
 
+		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
+		std::shared_ptr<TextCallback> callbackText = std::make_shared<TextCallback>();
+		callbackText->setValue(&textComponent->_text);
+		callbackText->setValue(&textComponent->_textBack);
+		TextHelper::instance()->getValue(callbackText, "Enter text to display", x, y, width, height, size);
+		
+		std::shared_ptr<TextCallback> callbackScale = std::make_shared<TextCallback>();
+		callbackScale->setValue(&textComponent->_scale);
+		TextHelper::instance()->getValue(callbackScale, "Scale", x, y + height * 1, width, height, size);
+
+		std::shared_ptr<TextCallback> callbackRGB = std::make_shared<TextCallback>();
+		callbackRGB->setValue(&textComponent->_color);
+		TextHelper::instance()->getValue(callbackRGB, "RGB", x, y + height * 2, width, height, size);
 	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
-		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
-		Shader shader;
-		GLuint program;
-		program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
-		objectComponent->_program = program;
-
 		std::shared_ptr<TextureComponent> textureComponent = targetEntity->getComponent<TextureComponent>();
 		if (textureComponent)
 			targetEntity->removeComponent<TextureComponent>();
@@ -214,22 +231,14 @@ class TextComponentFunctor : public ComponentFunctor {
 		std::shared_ptr<TextComponent> textComponent(new TextComponent());
 		std::shared_ptr<TextLoader> textLoader = std::make_shared<TextLoader>();
 		textLoader->bufferSymbols(48);
-		std::string text;
-		std::cout << "Enter text to display:" << std::endl;
-		cin.ignore();
-		std::getline(cin, text);
-		float scale;
-		std::cout << "Enter scale:" << std::endl;
-		std::cin >> scale;
-		std::vector<float> color;
-		color.resize(3);
-		std::cout << "Enter color (r, g, b):" << std::endl;
-		std::cin >> color[0] >> color[1] >> color[2];
-		int type;
-		std::cout << "Enter type: label(0), edit text(1)" << std::endl;
-		std::cin >> type;
+		textComponent->initialize();
+		textComponent->_loader = textLoader;
 
-		textComponent->initialize(textLoader, text, scale, color, (TextType) type);
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		Shader shader;
+		GLuint program;
+		program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
+		objectComponent->_program = program;
 		return textComponent;
 	}
 

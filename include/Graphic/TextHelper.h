@@ -41,8 +41,8 @@ public:
 class TextureChangeEvent : public ITextEvent {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity);
-	std::vector<int> _latency;
-	std::vector<int> _order;
+	std::vector<float> _latency;
+	std::vector<float> _order;
 	int _id;
 };
 
