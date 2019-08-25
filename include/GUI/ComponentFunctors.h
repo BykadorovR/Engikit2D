@@ -286,15 +286,21 @@ class TextComponentFunctor : public ComponentFunctor {
 
 class ClickInsideFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
 
+		std::shared_ptr<ClickInsideComponent> clickInsideComponent = targetEntity->getComponent<ClickInsideComponent>();
+		std::shared_ptr<TextCallback> callbackMove = std::make_shared<TextCallback>();
+		callbackMove->setValue(&clickInsideComponent->_moveToByClick);
+		TextHelper::instance()->getValue(callbackMove, "Move toward this object allowed? (0, 1)", x, y, width, height, size);
 	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ClickInsideComponent> clickComponent(new ClickInsideComponent());
-		bool moveToByClick;
-		std::cout << "Move toward this object allowed?" << std::endl;
-		std::cin >> moveToByClick;
-		clickComponent->initialize(moveToByClick);
+		clickComponent->initialize();
 		return clickComponent;
 	}
 
@@ -338,18 +344,26 @@ class ClickInsideFunctor : public ComponentFunctor {
 
 class GroupEntitiesFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
+		int index = 0;
 
+		std::shared_ptr<GroupEntitiesComponent> groupComponent = targetEntity->getComponent<GroupEntitiesComponent>();
+		std::shared_ptr<TextCallback> callbackName = std::make_shared<TextCallback>();
+		callbackName->setValue(&groupComponent->_groupName);
+		TextHelper::instance()->getValue(callbackName, "Group name", x, y + height * index++, width, height, size);
+
+		std::shared_ptr<TextCallback> callbackID = std::make_shared<TextCallback>();
+		callbackID->setValue((int*) &groupComponent->_groupNumber);
+		TextHelper::instance()->getValue(callbackID, "Group ID", x, y + height * index++, width, height, size);
 	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<GroupEntitiesComponent> groupEntitiesComponent(new GroupEntitiesComponent());
-		uint32_t groupNumber;
-		std::string groupName;
-		std::cout << "Group number" << std::endl;
-		std::cin >> groupNumber;
-		std::cout << "Group name" << std::endl;
-		std::cin >> groupName;
-		groupEntitiesComponent->initialize(groupNumber, groupName);
+		groupEntitiesComponent->initialize(0, "Default");
 		return groupEntitiesComponent;
 	}
 
@@ -386,15 +400,20 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 
 class InteractionAddToEntityFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
 
+		std::shared_ptr<InteractionAddToEntityComponent> addComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
+		std::shared_ptr<TextCallback> callbackObject = std::make_shared<TextCallback>();
+		callbackObject->setValue((int*) &addComponent->_interactionMember);
+		TextHelper::instance()->getValue(callbackObject, "Object = 0, Subject = 1", x, y, width, height, size);
 	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<InteractionAddToEntityComponent> interactionAddToEntityComponent(new InteractionAddToEntityComponent());
-		bool interactionMember;
-		std::cout << "Object = 0, Subject = 1" << std::endl;
-		std::cin >> interactionMember;
-		interactionAddToEntityComponent->initialize((InteractionMember) interactionMember);
 		return interactionAddToEntityComponent;
 	}
 
@@ -429,36 +448,27 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 
 class MoveFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
+		int index = 0;
 
+		auto entity = TextHelper::instance()->createText("Player controlled", x, y + height * index++, width, height, size, false);
+		std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+		std::shared_ptr<MoveEventPlayer> functorMovePlayer = std::make_shared<MoveEventPlayer>();
+		clickInsideComponent->_event = std::make_pair(functorMovePlayer, targetEntity);
+		TextHelper::instance()->attachText(entity);
+
+		entity = TextHelper::instance()->createText("Predefined", x, y + height * index++, width, height, size, false);
+		clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+		std::shared_ptr<MoveEventHardcoded> functorMoveHardcoded = std::make_shared<MoveEventHardcoded>();
+		clickInsideComponent->_event = std::make_pair(functorMoveHardcoded, targetEntity);
+		TextHelper::instance()->attachText(entity);
 	}
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<MoveComponent> moveComponent(new MoveComponent());
-		MoveTypes moveType;
-		int moveTypeInt;
-		std::cout << "Choose number of type:" << std::endl;
-		std::cout << "PlayerControlled " << PlayerControlled << std::endl;
-		std::cout << "Predefined " << StaticallyDefined << std::endl;
-		std::cin >> moveTypeInt;
-		moveType = (MoveTypes) moveTypeInt;
-		GLuint program;
-		std::cout << "Enter programID:" << std::endl;
-		std::cin >> program;
-		int speed;
-		std::cout << "Enter the speed" << std::endl;
-		std::cin >> speed;
-
-		switch (moveType) {
-			case PlayerControlled:
-				moveComponent->initialize(moveType, program, speed);
-			break;
-			case StaticallyDefined:
-				std::tuple<float, float> endPoint;
-				std::cout << "Enter end point (x,y):" << std::endl;
-				std::cin >> std::get<0>(endPoint) >> std::get<1>(endPoint);
-				moveComponent->initialize(moveType, program, speed, endPoint);
-			break;
-		}
-
 		return moveComponent;
 	}
 
@@ -504,12 +514,14 @@ class MoveFunctor : public ComponentFunctor {
 		bool move = jsonFile["MoveComponent"]["move"];
 		if (type == StaticallyDefined) {
 			std::tuple<float, float> coords = jsonFile["MoveComponent"]["coords"];
-			moveComponent->initialize(type, program, speed, coords);
+			moveComponent->initialize(type, program, coords);
+			moveComponent->_speed = speed;
 		}
 		else {
 			std::tuple<float, float> leftClick = jsonFile["MoveComponent"]["leftClick"];
 			std::tuple<float, float> rightClick = jsonFile["MoveComponent"]["rightClick"];
-			moveComponent->initialize(type, program, speed);
+			moveComponent->initialize(type, program);
+			moveComponent->_speed = speed;
 			moveComponent->_leftClick = leftClick;
 			moveComponent->_rightClick = rightClick;
 			moveComponent->_move = move;

@@ -13,21 +13,27 @@ enum TextConversion {
 	MY_FLOAT = 0,
 	MY_INT = 1,
 	MY_STRING = 2,
-	MY_TUPLE
+	MY_TUPLE = 3,
+	MY_BOOL = 4,
+	MY_CLICK
 };
 
 class TextCallback {
 public:
 	void setValue(float* valueF);
 	void setValue(int* valueI);
+	void setValue(bool* valueB);
 	void setValue(std::string* valueS);
 	void setValue(std::vector<float>* valueT);
+	void setValue(std::tuple<float, float > * valueC);
 	void callToSet(std::string value);
 
 	float* _valueF;
 	std::vector<std::string*> _valueS;
 	int* _valueI;
 	std::vector<float>* _valueT;
+	bool* _valueB;
+	std::tuple<float, float>* _valueC;
 	TextConversion _conversion;
 };
 
@@ -281,11 +287,12 @@ enum MoveTypes {
 
 class MoveComponent : public Component, IMouseEvent {
 public:
-	void initialize(MoveTypes type, GLuint program, float speed) {
+	MoveComponent() {
 		_componentName = "MoveComponent";
+	}
+	void initialize(MoveTypes type, GLuint program) {
 		_type = type;
 		_program = program;
-		_speed = speed;
 		_uMatrixLocation = glGetUniformLocation(_program, _uMatrix.c_str());
 		_leftClick = { 0, 0 };
 		_rightClick = { 0, 0 };
@@ -293,19 +300,22 @@ public:
 		_move = false;
 		if (_type == PlayerControlled)
 			MouseEvent::instance().registerComponent(this);
+		else
+			MouseEvent::instance().unregisterComponent(this);
 	}
 
-	void initialize(MoveTypes type, GLuint program, int speed, std::tuple<float, float> endPoint) {
-		_componentName = "MoveComponent";
-		this->initialize(type, program, speed);
+	void initialize(MoveTypes type, GLuint program, std::tuple<float, float> endPoint) {
+		this->initialize(type, program);
 		_leftClick = endPoint;
 	}
 
 	void mouseClickDownLeft(int x, int y) {
-		_leftClick = { x, y };
+		if (_speed)
+			_leftClick = { x, y };
 	}
 	void mouseClickDownRight(int x, int y) {
-		_rightClick = { x, y };
+		if (_speed)
+			_rightClick = { x, y };
 	}
 
 	void setTransform(std::tuple<float, float> coords) {
@@ -317,7 +327,7 @@ public:
 			MouseEvent::instance().unregisterComponent(this);
 	}
 
-	float _speed;
+	float _speed = 0;
 	MoveTypes _type;
 	bool _move = false;
 	std::tuple<float, float> _leftClick;

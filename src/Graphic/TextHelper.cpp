@@ -24,6 +24,16 @@ void TextCallback::setValue(std::vector<float>* valueT) {
 	_conversion = MY_TUPLE;
 }
 
+void TextCallback::setValue(bool* valueB) {
+	_valueB = valueB;
+	_conversion = MY_BOOL;
+}
+
+void TextCallback::setValue(std::tuple<float, float>* valueC) {
+	_valueC = valueC;
+	_conversion = MY_CLICK;
+}
+
 void TextCallback::callToSet(std::string value) {
 	switch (_conversion) {
 	case MY_FLOAT:
@@ -37,14 +47,26 @@ void TextCallback::callToSet(std::string value) {
 			*text = value;
 		}
 		break;
-	case MY_TUPLE:
-		_valueT->clear();
-		std::istringstream is1(value);
-		float n;
-		while (is1 >> n) {
-			_valueT->push_back(n);
+	case MY_TUPLE: {
+			_valueT->clear();
+			std::istringstream is1(value);
+			float n;
+			while (is1 >> n) {
+				_valueT->push_back(n);
+			}
 		}
+		break;
+	case MY_CLICK: {
+			std::istringstream is1(value);
+			float n;
+			is1 >> n;
+			std::get<0>(*_valueC) = n;
+			is1 >> n;
+			std::get<1>(*_valueC) = n;
+		}
+		break;
 	}
+	
 }
 
 void TextHelper::getValue(std::shared_ptr<TextCallback> callback, std::string text, int x, int y, int width, int height, float scale) {
@@ -279,6 +301,44 @@ void LoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
 	path->setValue(&saveLoadComponent->_path);
 	TextHelper::instance()->getValue(path, "File name", x, y, width, height, size);
+}
+
+void MoveEventPlayer::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	int index = 0;
+	int x = TextHelper::instance()->_defaultX;
+	int y = TextHelper::instance()->_defaultY;
+	int height = TextHelper::instance()->_defaultHeight;
+	int width = TextHelper::instance()->_defaultWidth;
+	float size = TextHelper::instance()->_defaultSize;
+
+	auto objectComponent = targetEntity->getComponent<ObjectComponent>();
+	auto moveComponent = targetEntity->getComponent<MoveComponent>();
+	moveComponent->initialize(PlayerControlled, objectComponent->_program);
+
+	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
+	path->setValue(&moveComponent->_speed);
+	TextHelper::instance()->getValue(path, "Speed", x, y, width, height, size);
+}
+
+void MoveEventHardcoded::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	int index = 0;
+	int x = TextHelper::instance()->_defaultX;
+	int y = TextHelper::instance()->_defaultY;
+	int height = TextHelper::instance()->_defaultHeight;
+	int width = TextHelper::instance()->_defaultWidth;
+	float size = TextHelper::instance()->_defaultSize;
+
+	auto objectComponent = targetEntity->getComponent<ObjectComponent>();
+	auto moveComponent = targetEntity->getComponent<MoveComponent>();
+	moveComponent->initialize(StaticallyDefined, objectComponent->_program);
+
+	std::shared_ptr<TextCallback> path = std::make_shared<TextCallback>();
+	path->setValue(&moveComponent->_speed);
+	TextHelper::instance()->getValue(path, "Speed", x, y + height * index++, width, height, size);
+
+	path = std::make_shared<TextCallback>();
+	path->setValue(&moveComponent->_leftClick);
+	TextHelper::instance()->getValue(path, "Enter end point", x, y + height * index++, width, height, size);
 }
 
 void AddComponentEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {

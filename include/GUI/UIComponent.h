@@ -109,13 +109,16 @@ enum InteractionMember {
 
 class InteractionAddToEntityComponent : public Component {
 public:
+	InteractionAddToEntityComponent() {
+		_componentName = "InteractionAddToEntityComponent";
+	}
+
 	InteractionMember _interactionMember;
 	bool _interactReady = false;
 	std::function<std::shared_ptr<Component>(void)> _createFunctor;
 	std::function<void(std::shared_ptr<Entity>)> _removeFunctor;
 
 	void initialize(InteractionMember interactionMember) {
-		_componentName = "InteractionAddToEntityComponent";
 		_interactionMember = interactionMember;
 	}
 

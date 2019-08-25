@@ -56,6 +56,16 @@ public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity);
 };
 
+class MoveEventPlayer : public ITextEvent {
+public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+};
+
+class MoveEventHardcoded : public ITextEvent {
+public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+};
+
 class AddComponentEvent : public ITextEvent {
 public:
 	std::string _name;
