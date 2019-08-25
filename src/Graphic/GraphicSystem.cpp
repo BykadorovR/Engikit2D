@@ -185,10 +185,10 @@ void textUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TextCom
 void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<MoveComponent> move) {
 	float adjustX = std::get<0>(move->_coords);
 	float adjustY = std::get<1>(move->_coords);
-	Matrix2D matrix;
-	matrix.translate(adjustX, adjustY);
-	object->_transform = object->_transform * matrix;
-	glUniformMatrix4fv(move->_uMatrixLocation, 1, false, object->_transform.getData());
+	//Matrix2D matrix;
+	//matrix.translate(adjustX, adjustY);
+	//object->_transform = object->_transform * matrix;
+	//glUniformMatrix4fv(move->_uMatrixLocation, 1, false, object->_transform.getData());
 	object->_sceneX += adjustX;
 	object->_sceneY += adjustY;
 	//TODO: ISSUE!! ORDER DEPENDENCIES BETWEEN CAMERA AND TRANSFORM. CAMERA USES _coords VAR TOO
@@ -198,10 +198,10 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Mo
 void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<CameraComponent> camera, std::tuple<float, float> coords) {
 	float x = -std::get<0>(coords) * object->_cameraCoefSpeed;
 	float y = -std::get<1>(coords) * object->_cameraCoefSpeed;
-	Matrix2D matrix;
-	matrix.translate(x, y);
-	object->_camera = object->_camera * matrix;
-	glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
+	//Matrix2D matrix;
+	//matrix.translate(x, y);
+	//object->_camera = object->_camera * matrix;
+	//glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
 	object->_sceneX += x;
 	object->_sceneY += y;
 }
