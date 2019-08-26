@@ -70,6 +70,7 @@ public:
 		_objectHeight = objectHeight;
 		_sceneX = sceneX;
 		_sceneY = sceneY;
+		_cameraCoefSpeed = 0;
 
 		assert(_buffer.bindVBO(nullptr, sizeof(float) * 4 * 2, GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
@@ -81,11 +82,12 @@ public:
 		_objectHeight = objectHeight;
 		_sceneX = sceneX;
 		_sceneY = sceneY;
+		_cameraCoefSpeed = 0;
 	}
 
 	Matrix2D _transform;
 	Matrix2D _camera;
-	float _cameraCoefSpeed;
+	float _cameraCoefSpeed = 0;
 	//
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;

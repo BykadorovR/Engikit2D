@@ -184,7 +184,6 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
 		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
-		objectComponent->_cameraCoefSpeed = cameraSpeed;
 		Shader shader;
 		GLuint program;
 		if (jsonFile["TextComponent"].empty()) {
@@ -195,6 +194,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			program = shader.buildProgramFromAsset("../data/shaders/text.vsh", "../data/shaders/text.fsh");
 			objectComponent->initializeText(sceneX, sceneY, objectWidth, objectHeight, program);
 		}
+		objectComponent->_cameraCoefSpeed = cameraSpeed;
 		return 0;
 	}
 };
@@ -532,22 +532,25 @@ class MoveFunctor : public ComponentFunctor {
 
 class CameraFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
+		int x = TextHelper::instance()->_defaultX;
+		int y = TextHelper::instance()->_defaultY;
+		int height = TextHelper::instance()->_defaultHeight;
+		int width = TextHelper::instance()->_defaultWidth;
+		float size = TextHelper::instance()->_defaultSize;
 
+		std::shared_ptr<CameraComponent> cameraComponent = targetEntity->getComponent<CameraComponent>();
+		std::shared_ptr<TextCallback> callbackSpeed = std::make_shared<TextCallback>();
+		callbackSpeed->setValue((int*)&cameraComponent->_cameraSpeed);
+		TextHelper::instance()->getValue(callbackSpeed, "Camera speed", x, y, width, height, size);
 	}
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<CameraComponent> cameraComponent(new CameraComponent());
-		/*int entityID;
-		std::cout << "Enter entityID:" << std::endl;
-		std::cin >> entityID;
-		int programID;
-		std::cout << "Enter programID:" << std::endl;
-		std::cin >> programID;
-		int speed;
-		std::cout << "Enter camera speed: " << std::endl;
-		std::cin >> speed;
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		cameraComponent->initialize(objectComponent->_program);
 
-		cameraComponent->initialize(entityID, speed, programID);
-		*/
+		std::shared_ptr<MoveComponent> moveComponent = targetEntity->getComponent<MoveComponent>();
+		if (moveComponent && moveComponent->_type == PlayerControlled)
+			targetEntity->removeComponent<MoveComponent>();
 		return cameraComponent;
 	}
 
@@ -587,9 +590,12 @@ class CameraFunctor : public ComponentFunctor {
 		bool move = jsonFile["CameraComponent"]["move"];
 		std::tuple<float, float> leftClick = jsonFile["CameraComponent"]["leftClick"];
 		std::tuple<float, float> rightClick = jsonFile["CameraComponent"]["rightClick"];
-		cameraComponent->initialize(entityID, speed, program);
+		cameraComponent->initialize(program);
+		cameraComponent->_cameraSpeed = speed;
 		cameraComponent->_leftClick = leftClick;
 		cameraComponent->_rightClick = rightClick;
+		cameraComponent->_cameraX = 0;
+		cameraComponent->_cameraY = 0;
 		cameraComponent->_move = move;
 		
 		return 0;

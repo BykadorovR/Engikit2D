@@ -304,6 +304,10 @@ void LoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 }
 
 void MoveEventPlayer::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	std::shared_ptr<CameraComponent> cameraComponent = targetEntity->getComponent<CameraComponent>();
+	if (cameraComponent)
+		targetEntity->removeComponent<CameraComponent>();
+
 	int index = 0;
 	int x = TextHelper::instance()->_defaultX;
 	int y = TextHelper::instance()->_defaultY;

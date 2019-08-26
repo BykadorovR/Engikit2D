@@ -59,9 +59,8 @@ void on_surface_changed() {
 
 		//TODO: path to texture?
 		sprite->createComponent<TextureComponent>()->initialize(program);
-		bool moveToByClick = true;
 		std::shared_ptr<ClickInsideComponent> clickInsideComponent(new ClickInsideComponent());
-		clickInsideComponent->initialize(moveToByClick);
+		clickInsideComponent->initialize();
 		std::shared_ptr<ComponentTextEvent> textEvent = std::make_shared<ComponentTextEvent>();
 		clickInsideComponent->_event = std::make_pair(textEvent, sprite);
 		sprite->addComponent(clickInsideComponent);

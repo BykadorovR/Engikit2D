@@ -8,9 +8,9 @@ public:
 	CameraComponent() {
 		_componentName = "CameraComponent";
 	}
-	void initialize(int entityID, int cameraSpeed, GLuint program) {
-		_entityID = entityID;
-		_cameraSpeed = cameraSpeed;
+	void initialize(GLuint program) {
+		_cameraSpeed = 0;
+		_program = program;
 		_uViewMatrixLocation = glGetUniformLocation(program, _uViewMatrix.c_str());
 		MouseEvent::instance().registerComponent(this);
 	}
@@ -30,13 +30,12 @@ public:
 		_rightClick = { x, y };
 	}
 
-	int _cameraSpeed;
+	int _cameraSpeed = 0;
 	bool _move = false;
 	float _cameraX, _cameraY;
 	std::tuple<float, float> _leftClick;
 	std::tuple<float, float> _rightClick;
 	std::tuple<float, float> _coords;
-	int _entityID;
 	GLuint _program;
 	//
 	GLint _uViewMatrixLocation;
