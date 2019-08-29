@@ -64,6 +64,7 @@ public:
 	ObjectComponent() {
 		_componentName = "ObjectComponent";
 	}
+
 	void initialize(int sceneX, int sceneY, int objectWidth, int objectHeight, GLuint program) {
 		_program = program;
 		_objectWidth = objectWidth;
@@ -71,6 +72,7 @@ public:
 		_sceneX = sceneX;
 		_sceneY = sceneY;
 		_cameraCoefSpeed = 0;
+		_scale = 1;
 
 		assert(_buffer.bindVBO(nullptr, sizeof(float) * 4 * 2, GL_STATIC_DRAW) == TW_OK);
 		_aPositionLocation = glGetAttribLocation(_program, _aPositionString.c_str());
@@ -83,12 +85,14 @@ public:
 		_sceneX = sceneX;
 		_sceneY = sceneY;
 		_cameraCoefSpeed = 0;
+		_scale = 1;
 	}
 
 	Matrix2D _transform;
 	Matrix2D _camera;
 	float _cameraCoefSpeed = 0;
 	//
+	float _scale = 1;
 	float _sceneX, _sceneY;
 	int _objectWidth, _objectHeight;
 	//

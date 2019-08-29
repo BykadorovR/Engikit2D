@@ -9,8 +9,8 @@
 void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 	glUseProgram(object->_program);
 
-	float objectWidthN = (float)object->_objectWidth / (float)resolution.first;
-	float objectHeightN = (float)object->_objectHeight / (float)resolution.second;
+	float objectWidthN = (float)object->_objectWidth * object->_scale / (float)resolution.first;
+	float objectHeightN = (float)object->_objectHeight * object->_scale / (float)resolution.second;
 	float startX = (float)(object->_sceneX) / (float)resolution.first;
 	float startY = (float)(resolution.second - object->_sceneY) / (float)resolution.second;
 	// Order of coordinates: X, Y

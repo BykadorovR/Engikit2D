@@ -145,9 +145,12 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		std::shared_ptr<TextCallback> callbackHeight = std::make_shared<TextCallback>();
 		callbackHeight->setValue(&objectComponent->_objectHeight);
 		TextHelper::instance()->getValue(callbackHeight, "Height", x, y + height * 3, width, height, size);
+		std::shared_ptr<TextCallback> callbackScale = std::make_shared<TextCallback>();
+		callbackScale->setValue(&objectComponent->_scale);
+		TextHelper::instance()->getValue(callbackScale, "Scale", x, y + height * 4, width, height, size);
 		std::shared_ptr<TextCallback> callbackCameraSpeed = std::make_shared<TextCallback>();
 		callbackCameraSpeed->setValue(&objectComponent->_cameraCoefSpeed);
-		TextHelper::instance()->getValue(callbackCameraSpeed, "CameraCoefSpeed", x, y + height * 4, width, height, size);
+		TextHelper::instance()->getValue(callbackCameraSpeed, "CameraCoefSpeed", x, y + height * 5, width, height, size);
 		
 	}
 
@@ -169,6 +172,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["cameraCoefSpeed"] = objectComponent->_cameraCoefSpeed;
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["sceneCoord"] = {objectComponent->_sceneX, objectComponent->_sceneY};
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["objectSize"] = { objectComponent->_objectWidth, objectComponent->_objectHeight };
+		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["scale"] = objectComponent->_scale;
 	}
 
 	int deserializeFunctor(std::shared_ptr<Entity> targetEntity, json jsonFile) {
@@ -184,6 +188,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 		float sceneY = jsonFile["ObjectComponent"]["sceneCoord"][1];
 		float objectWidth = jsonFile["ObjectComponent"]["objectSize"][0];
 		float objectHeight = jsonFile["ObjectComponent"]["objectSize"][1];
+		float scale = jsonFile["ObjectComponent"]["scale"];
 		Shader shader;
 		GLuint program;
 		if (jsonFile["TextComponent"].empty()) {
@@ -195,6 +200,7 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			objectComponent->initializeText(sceneX, sceneY, objectWidth, objectHeight, program);
 		}
 		objectComponent->_cameraCoefSpeed = cameraSpeed;
+		objectComponent->_scale = scale;
 		return 0;
 	}
 };

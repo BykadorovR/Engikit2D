@@ -271,6 +271,12 @@ void TextureChangeEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 		textureComponent->_tilesLatency = _latency;
 	if (_order.size() > 0)
 		textureComponent->_tilesOrder = _order;
+
+	int widthTile = textureComponent->_texture->getWidth() / textureComponent->_texture->getColumn();
+	int heightTile = textureComponent->_texture->getHeight() / textureComponent->_texture->getRow();
+	objectComponent->_objectWidth = widthTile;
+	objectComponent->_objectHeight = heightTile;
+	
 }
 
 void SaveEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
