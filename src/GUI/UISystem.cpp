@@ -34,6 +34,8 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(
 
 void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, std::shared_ptr<MoveComponent> moveComponent) {
 	float speed = moveComponent->_speed;
+	moveComponent->setTransform({ moveComponent->_direction.first * speed, moveComponent->_direction.second * speed });
+
 	float clickX = std::get<0>(moveComponent->_leftClick);
 	float clickY = std::get<1>(moveComponent->_leftClick);
 	if (!clickX || !clickY)

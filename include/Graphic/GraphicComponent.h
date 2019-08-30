@@ -291,7 +291,7 @@ enum MoveTypes {
 	StaticallyDefined = 1
 };
 
-class MoveComponent : public Component, IMouseEvent {
+class MoveComponent : public Component, IMouseEvent, IKeyboardEvent {
 public:
 	MoveComponent() {
 		_componentName = "MoveComponent";
@@ -304,10 +304,14 @@ public:
 		_rightClick = { 0, 0 };
 		_coords = { 0, 0 };
 		_move = false;
-		if (_type == PlayerControlled)
+		if (_type == PlayerControlled) {
 			MouseEvent::instance().registerComponent(this);
-		else
+			KeyboardEvent::instance().registerComponent(this);
+		}
+		else {
 			MouseEvent::instance().unregisterComponent(this);
+			KeyboardEvent::instance().unregisterComponent(this);
+		}
 	}
 
 	void initialize(MoveTypes type, GLuint program, std::tuple<float, float> endPoint) {
@@ -324,13 +328,50 @@ public:
 			_rightClick = { x, y };
 	}
 
+	void keyboardPressed(int character, int action, int mode) {
+		if (action == 1) {
+			switch (character) {
+				case GLFW_KEY_LEFT:
+					_direction.first = -1;
+				break;
+				case GLFW_KEY_RIGHT:
+					_direction.first = 1;
+				break;
+				case GLFW_KEY_UP:
+					_direction.second = -1;
+				break;
+				case GLFW_KEY_DOWN:
+					_direction.second = 1;
+				break;
+			}
+		}
+		if (action == 0) {
+			switch (character) {
+			case GLFW_KEY_LEFT:
+				_direction.first = 0;
+				break;
+			case GLFW_KEY_RIGHT:
+				_direction.first = 0;
+				break;
+			case GLFW_KEY_UP:
+				_direction.second = 0;
+				break;
+			case GLFW_KEY_DOWN:
+				_direction.second = 0;
+				break;
+			}
+		}
+	}
+
 	void setTransform(std::tuple<float, float> coords) {
 		_coords = coords;
 	}
 
 	~MoveComponent() {
-		if (_type == PlayerControlled)
+		if (_type == PlayerControlled) {
 			MouseEvent::instance().unregisterComponent(this);
+			KeyboardEvent::instance().unregisterComponent(this);
+		}
 	}
 
 	float _speed = 0;
@@ -339,6 +380,7 @@ public:
 	std::tuple<float, float> _leftClick;
 	std::tuple<float, float> _rightClick;
 	std::tuple<float, float> _coords;
+	std::pair<int, int> _direction;
 	GLuint _program;
 	//
 	GLint _uMatrixLocation;
