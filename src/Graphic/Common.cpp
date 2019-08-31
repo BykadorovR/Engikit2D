@@ -5,6 +5,10 @@
 #include "assert.h"
 
 World world;
+std::pair<int, int> resolution(720, 480);
+float resolutionRatioX = (float) resolution.first / (float) 1920;
+float resolutionRatioY = (float) resolution.second / (float) 1080;
+
 
 std::string rawFileContent(const char* relativePath) {
 	std::string content;

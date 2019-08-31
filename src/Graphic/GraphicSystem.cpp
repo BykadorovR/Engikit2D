@@ -9,10 +9,10 @@
 void vertexUpdate(std::shared_ptr<ObjectComponent> object) {
 	glUseProgram(object->_program);
 
-	float objectWidthN = (float)object->_objectWidth * object->_scale / (float)resolution.first;
-	float objectHeightN = (float)object->_objectHeight * object->_scale / (float)resolution.second;
-	float startX = (float)(object->_sceneX) / (float)resolution.first;
-	float startY = (float)(resolution.second - object->_sceneY) / (float)resolution.second;
+	float objectWidthN = (float)object->getWidth() / (float)resolution.first;
+	float objectHeightN = (float)object->getHeight() / (float)resolution.second;
+	float startX = (float)(object->getSceneX()) / (float)resolution.first;
+	float startY = (float)(resolution.second - object->getSceneY()) / (float)resolution.second;
 	// Order of coordinates: X, Y
 	// 0   2
 	// | / |
@@ -95,10 +95,10 @@ void textureUpdate(std::shared_ptr<TextureComponent> object) {
 }
 
 void textUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<TextComponent> textComponent) {
-	float startX = object->_sceneX;
-	float startY = object->_sceneY;
-	float endX = object->_sceneX + object->_objectWidth;
-	float endY = object->_sceneY + object->_objectHeight;
+	float startX = object->getSceneX();
+	float startY = object->getSceneY();
+	float endX = startX + object->getWidth();
+	float endY = startY + object->getHeight();
 	float x = startX;
 	float y = startY;
 	glUseProgram(object->_program);
@@ -189,8 +189,8 @@ void transformUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Mo
 	//matrix.translate(adjustX, adjustY);
 	//object->_transform = object->_transform * matrix;
 	//glUniformMatrix4fv(move->_uMatrixLocation, 1, false, object->_transform.getData());
-	object->_sceneX += adjustX;
-	object->_sceneY += adjustY;
+	object->changeSceneX(adjustX);
+	object->changeSceneY(adjustY);
 	//TODO: ISSUE!! ORDER DEPENDENCIES BETWEEN CAMERA AND TRANSFORM. CAMERA USES _coords VAR TOO
 	move->_coords = { 0, 0 };
 }
@@ -202,8 +202,8 @@ void cameraUpdate(std::shared_ptr<ObjectComponent> object, std::shared_ptr<Camer
 	//matrix.translate(x, y);
 	//object->_camera = object->_camera * matrix;
 	//glUniformMatrix4fv(camera->_uViewMatrixLocation, 1, false, object->_camera.getData());
-	object->_sceneX += x;
-	object->_sceneY += y;
+	object->changeSceneX(x);
+	object->changeSceneY(y);
 }
 
 std::tuple<float, float> cameraFindCoords(shared_ptr<EntityManager> entityManager, std::shared_ptr<CameraComponent>& cameraComponent, /*std::shared_ptr<ObjectComponent>& cameraObjectComponent,*/ std::shared_ptr<Entity>& camera) {

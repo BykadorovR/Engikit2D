@@ -8,7 +8,9 @@
 #include "Windows.h"
 #include "Entity.h"
 
-const std::pair<int, int> resolution(720, 480);
+extern std::pair<int, int> resolution;
+extern float resolutionRatioX;
+extern float resolutionRatioY;
 extern World world;
 static Entity currentSprite;
 

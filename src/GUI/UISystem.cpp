@@ -8,8 +8,8 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickClickMove(
 	std::tuple<std::tuple<int, int>, ClickCount> clickedInside = { {0, 0}, ClickCount::NO };
 
 	//first click
-	if (clickClickMoveComponent->_clickFlag && currentClickX > objectComponent->_sceneX  && currentClickY > objectComponent->_sceneY &&
-		currentClickX < objectComponent->_sceneX + objectComponent->_objectWidth && currentClickY < objectComponent->_sceneY + objectComponent->_objectHeight) {
+	if (clickClickMoveComponent->_clickFlag && currentClickX > objectComponent->getSceneX()  && currentClickY > objectComponent->getSceneY() &&
+		currentClickX < objectComponent->getSceneX() + objectComponent->getWidth() && currentClickY < objectComponent->getSceneY() + objectComponent->getHeight()) {
 
 		clickClickMoveComponent->_previousClick = clickClickMoveComponent->_currentClick;
 		clickClickMoveComponent->_currentClick = { 0, 0 };
@@ -40,13 +40,13 @@ void MoveSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, st
 	float clickY = std::get<1>(moveComponent->_leftClick);
 	if (!clickX || !clickY)
 		return;
-	if (moveComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
-		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight)
+	if (moveComponent->_move == false && clickX > objectComponent->getSceneX()  && clickY > objectComponent->getSceneY() &&
+		clickX < objectComponent->getSceneX() + objectComponent->getWidth() && clickY < objectComponent->getSceneY() + objectComponent->getHeight())
 		return;
 
 	moveComponent->_move = true;
-	float objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
-	float objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
+	float objectX = objectComponent->getSceneX() + objectComponent->getWidth() / 2;
+	float objectY = objectComponent->getSceneY() + objectComponent->getHeight() / 2;
 	float angle = atan2(clickY - objectY, clickX - objectX);
 	float stepX = cos(angle) * speed;
 	float stepY = sin(angle) * speed;
@@ -70,13 +70,13 @@ void CameraSystem::moveEntity(std::shared_ptr<ObjectComponent> objectComponent, 
 	clickX -= cameraComponent->_cameraX;
 	clickY -= cameraComponent->_cameraY;
 
-	if (cameraComponent->_move == false && clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
-		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight)
+	if (cameraComponent->_move == false && clickX > objectComponent->getSceneX()  && clickY > objectComponent->getSceneY() &&
+		clickX < objectComponent->getSceneX() + objectComponent->getWidth() && clickY < objectComponent->getSceneY() + objectComponent->getHeight())
 		return;
 
 	cameraComponent->_move = true;
-	float objectX = objectComponent->_sceneX + objectComponent->_objectWidth / 2;
-	float objectY = objectComponent->_sceneY + objectComponent->_objectHeight / 2;
+	float objectX = objectComponent->getSceneX() + objectComponent->getWidth() / 2;
+	float objectY = objectComponent->getSceneY() + objectComponent->getHeight() / 2;
 	float angle = atan2(clickY - objectY, clickX - objectX);
 	float stepX = cos(angle) * speed;
 	float stepY = sin(angle) * speed;
@@ -126,8 +126,8 @@ std::tuple<std::tuple<int, int>, ClickCount> MouseSystem::processClickInside(std
 	if (!clickX || !clickY)
 		return clickedInside;
 
-	if (clickX > objectComponent->_sceneX  && clickY > objectComponent->_sceneY &&
-		clickX < objectComponent->_sceneX + objectComponent->_objectWidth && clickY < objectComponent->_sceneY + objectComponent->_objectHeight &&
+	if (clickX > objectComponent->getSceneX()  && clickY > objectComponent->getSceneY() &&
+		clickX < objectComponent->getSceneX() + objectComponent->getWidth() && clickY < objectComponent->getSceneY() + objectComponent->getHeight() &&
 		clickInsideComponent->_leftClickFlag) {
 		clickInsideComponent->_leftClickFlag = false;
 		clickedInside = {clickInsideComponent->_leftClick, ClickCount::FIRST};
@@ -307,11 +307,11 @@ void InteractionAddToSystem::processManageTextures(shared_ptr<EntityManager> ent
 		if (textureManagerComponent->_interactReady) {
 			//TODO: path to texture?
 			int index = 0;
-			int x = TextHelper::instance()->_defaultX;
-			int y = TextHelper::instance()->_defaultY;
-			int height = TextHelper::instance()->_defaultHeight;
-			int width = TextHelper::instance()->_defaultWidth;
-			float size = TextHelper::instance()->_defaultSize;
+			int x = TextHelper::instance()->getX();
+			int y = TextHelper::instance()->getY();
+			int height = TextHelper::instance()->getHeight();
+			int width = TextHelper::instance()->getWidth();
+			float size = TextHelper::instance()->getSize();
 			auto entity = TextHelper::instance()->createText("Texture list", x, y + height * index++, width, height, size, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<TextureListEvent> functor = std::make_shared<TextureListEvent>();
@@ -374,11 +374,11 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 		}
 	}
 	if (objectEntity && subjectEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 		int index = 0;
 		for (auto &functors : componentFunctors) {
 			std::string name = functors.first;
@@ -495,6 +495,21 @@ void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::
 	}
 }
 
+void SaveLoadSystem::saveResolution(std::shared_ptr<GUISave> fileSave) {
+	fileSave->_jsonFile["Screen resolution"] = { resolution.first, resolution.second };
+}
+
+void SaveLoadSystem::loadResolution(std::shared_ptr<GUISave> fileLoad) {
+	for (json::iterator it = fileLoad->_jsonFile.begin(); it != fileLoad->_jsonFile.end(); ++it) {
+		if (it.key() == "Screen resolution") {
+			int resolutionX = it.value()[0];
+			int resolutionY = it.value()[1];
+			resolutionRatioX = (float) resolution.first / (float) resolutionX;
+			resolutionRatioY = (float) resolution.second / (float)resolutionY;
+		}
+	}
+}
+
 void SaveLoadSystem::saveTextures(std::shared_ptr<GUISave> fileSave) {
 	auto textureManager = TextureManager::instance();
 	//texture atlases:
@@ -542,6 +557,7 @@ void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
 				saveLoadComponent->_mode = 2;
 				std::shared_ptr<GUISave> saveFile = std::make_shared<GUISave>(saveLoadComponent->_path);
 				//First of all need to save texture atlases and textures
+				saveResolution(saveFile);
 				saveTextures(saveFile);
 				saveEntities(entityManager, saveFile);
 				saveLoadComponent->_path = "";
@@ -550,6 +566,7 @@ void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
 				saveLoadComponent->_mode = 2;
 				std::shared_ptr<GUISave> loadFile = make_shared<GUISave>(saveLoadComponent->_path);
 				loadFile->loadFile();
+				loadResolution(loadFile);
 				loadTextures(loadFile);
 				loadEntities(entityManager, loadFile);
 				saveLoadComponent->_path = "";
@@ -557,11 +574,11 @@ void SaveLoadSystem::update(shared_ptr<EntityManager> entityManager) {
 		}
 		if (saveLoadComponent && saveLoadComponent->_interactReady) {
 			int index = 0;
-			int x = TextHelper::instance()->_defaultX;
-			int y = TextHelper::instance()->_defaultY;
-			int height = TextHelper::instance()->_defaultHeight;
-			int width = TextHelper::instance()->_defaultWidth;
-			float size = TextHelper::instance()->_defaultSize;
+			int x = TextHelper::instance()->getX();
+			int y = TextHelper::instance()->getY();
+			int height = TextHelper::instance()->getHeight();
+			int width = TextHelper::instance()->getWidth();
+			float size = TextHelper::instance()->getSize();
 			auto entity = TextHelper::instance()->createText("Save scene", x, y + height * index++, width, height, size, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<SaveEvent> functor = std::make_shared<SaveEvent>();

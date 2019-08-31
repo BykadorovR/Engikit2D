@@ -35,10 +35,12 @@ public:
 };
 
 class SaveLoadSystem : public System {
+	void saveResolution(std::shared_ptr<GUISave> fileSave);
 	void saveEntities(shared_ptr<EntityManager> entityManager, std::shared_ptr<GUISave> fileSave);
 	void loadEntities(shared_ptr<EntityManager> entityManager, std::shared_ptr<GUISave> fileLoad);
 	void saveTextures(std::shared_ptr<GUISave> fileSave);
 	void loadTextures(std::shared_ptr<GUISave> fileLoad);
+	void loadResolution(std::shared_ptr<GUISave> fileLoad);
 public:
 	void update(shared_ptr<EntityManager> entityManager);
 };

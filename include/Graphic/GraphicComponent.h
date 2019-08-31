@@ -45,10 +45,32 @@ public:
 	bool detachText(std::shared_ptr<Entity> entity);
 	void getValue(std::shared_ptr<TextCallback> callback, std::string text, int x, int y, int width, int height, float scale);
 	std::vector<std::shared_ptr<Entity> > _buffer;
-	int _defaultX = resolution.first - resolution.first / 5;
-	int _defaultY = resolution.second / 10;
-	int _defaultWidth = resolution.first / 5;
-	int _defaultHeight = 30;
+
+	int getX() {
+		return _defaultX;
+	}
+
+	int getY() {
+		return _defaultY;
+	}
+
+	int getWidth() {
+		return _defaultWidth;
+	}
+
+	int getHeight() {
+		return _defaultHeight;
+	}
+
+	float getSize() {
+		return _defaultSize - 0.1f * (1 - min(resolutionRatioX, resolutionRatioY));
+	}
+
+private:
+	int _defaultX = 1920 - 1920 / 5;
+	int _defaultY = 1080 / 10;
+	int _defaultWidth = 1920 / 5;
+	int _defaultHeight = 60;
 	float _defaultSize = 0.3;
 
 private:
@@ -88,13 +110,33 @@ public:
 		_scale = 1;
 	}
 
+	void changeSceneX(float adjustX) {
+		_sceneX += adjustX;
+	}
+	
+	void changeSceneY(float adjustY) {
+		_sceneY += adjustY;
+	}
+
+	float getSceneX() {
+		return _sceneX * _scale * resolutionRatioX;
+	}
+
+	float getSceneY() {
+		return _sceneY * _scale * resolutionRatioY;
+	}
+
+	int getWidth() {
+		return _objectWidth * _scale * resolutionRatioX;
+	}
+
+	int getHeight() {
+		return _objectHeight * _scale * resolutionRatioY;
+	}
+
 	Matrix2D _transform;
 	Matrix2D _camera;
 	float _cameraCoefSpeed = 0;
-	//
-	float _scale = 1;
-	float _sceneX, _sceneY;
-	int _objectWidth, _objectHeight;
 	//
 	Buffer _buffer;
 	//
@@ -102,6 +144,11 @@ public:
 	GLuint _program;
 	//
 	std::string _aPositionString = "a_Position";
+
+	//
+	float _scale = 1;
+	float _sceneX, _sceneY;
+	int _objectWidth, _objectHeight;
 };
 
 class TextureComponent : public Component {
@@ -198,7 +245,7 @@ public:
 	}
 
 	void initialize() {
-		_scale = TextHelper::instance()->_defaultSize;
+		_scale = TextHelper::instance()->getSize();
 		glGenVertexArrays(1, &_VAO);
 		glGenBuffers(1, &_VBO);
 		glBindVertexArray(_VAO);

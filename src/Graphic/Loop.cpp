@@ -53,7 +53,7 @@ void on_surface_changed() {
 		auto program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 		sprite = world.createEntity();
 		std::shared_ptr<ObjectComponent> objectComponent(new ObjectComponent());
-		objectComponent->initialize(std::get<0>(coords), std::get<1>(coords), 100, 100, program);
+		objectComponent->initialize(std::get<0>(coords) / resolutionRatioX, std::get<1>(coords) / resolutionRatioY, 100, 100, program);
 		objectComponent->_cameraCoefSpeed = 1;
 		sprite->addComponent(objectComponent);
 

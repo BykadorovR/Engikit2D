@@ -167,11 +167,11 @@ shared_ptr<Entity> TextHelper::createText(std::string text, int x, int y, int wi
 void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	//Need take all attached components and print them
 	int index = 0;
-	int x = TextHelper::instance()->_defaultX;
-	int y = TextHelper::instance()->_defaultY;
-	int height = TextHelper::instance()->_defaultHeight;
-	int width = TextHelper::instance()->_defaultWidth;
-	float size = TextHelper::instance()->_defaultSize;
+	int x = TextHelper::instance()->getX();
+	int y = TextHelper::instance()->getY();
+	int height = TextHelper::instance()->getHeight();
+	int width = TextHelper::instance()->getWidth();
+	float size = TextHelper::instance()->getSize();
 
 	for (auto &component : targetEntity->getComponents()) {
 		//default component name (not initialized)
@@ -186,11 +186,11 @@ void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 
 void TextureListEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int x = TextHelper::instance()->_defaultX;
-	int y = TextHelper::instance()->_defaultY;
-	int height = TextHelper::instance()->_defaultHeight;
-	int width = TextHelper::instance()->_defaultWidth;
-	float size = TextHelper::instance()->_defaultSize;
+	int x = TextHelper::instance()->getX();
+	int y = TextHelper::instance()->getY();
+	int height = TextHelper::instance()->getHeight();
+	int width = TextHelper::instance()->getWidth();
+	float size = TextHelper::instance()->getSize();
 
 	if (TextureManager::instance()->getTextureList().size() == 0) {
 		auto entity = TextHelper::instance()->createText("Texture list is empty", x, y + height * index++, width, height, size, false);
@@ -214,11 +214,11 @@ void TextureListEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 
 void TextureLoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int x = TextHelper::instance()->_defaultX;
-	int y = TextHelper::instance()->_defaultY;
-	int height = TextHelper::instance()->_defaultHeight;
-	int width = TextHelper::instance()->_defaultWidth;
-	float size = TextHelper::instance()->_defaultSize;
+	int x = TextHelper::instance()->getX();
+	int y = TextHelper::instance()->getY();
+	int height = TextHelper::instance()->getHeight();
+	int width = TextHelper::instance()->getWidth();
+	float size = TextHelper::instance()->getSize();
 
 	std::shared_ptr<TextureAcceptLoadEvent> accept = std::make_shared<TextureAcceptLoadEvent>();
 
@@ -281,11 +281,11 @@ void TextureChangeEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 
 void SaveEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int x = TextHelper::instance()->_defaultX;
-	int y = TextHelper::instance()->_defaultY;
-	int height = TextHelper::instance()->_defaultHeight;
-	int width = TextHelper::instance()->_defaultWidth;
-	float size = TextHelper::instance()->_defaultSize;
+	int x = TextHelper::instance()->getX();
+	int y = TextHelper::instance()->getY();
+	int height = TextHelper::instance()->getHeight();
+	int width = TextHelper::instance()->getWidth();
+	float size = TextHelper::instance()->getSize();
 
 	auto saveLoadComponent = targetEntity->getComponent<SaveLoadComponent>();
 	saveLoadComponent->_mode = 0;
@@ -296,11 +296,11 @@ void SaveEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 
 void LoadEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int x = TextHelper::instance()->_defaultX;
-	int y = TextHelper::instance()->_defaultY;
-	int height = TextHelper::instance()->_defaultHeight;
-	int width = TextHelper::instance()->_defaultWidth;
-	float size = TextHelper::instance()->_defaultSize;
+	int x = TextHelper::instance()->getX();
+	int y = TextHelper::instance()->getY();
+	int height = TextHelper::instance()->getHeight();
+	int width = TextHelper::instance()->getWidth();
+	float size = TextHelper::instance()->getSize();
 
 	auto saveLoadComponent = targetEntity->getComponent<SaveLoadComponent>();
 	saveLoadComponent->_mode = 1;
@@ -315,11 +315,11 @@ void MoveEventPlayer::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 		targetEntity->removeComponent<CameraComponent>();
 
 	int index = 0;
-	int x = TextHelper::instance()->_defaultX;
-	int y = TextHelper::instance()->_defaultY;
-	int height = TextHelper::instance()->_defaultHeight;
-	int width = TextHelper::instance()->_defaultWidth;
-	float size = TextHelper::instance()->_defaultSize;
+	int x = TextHelper::instance()->getX();
+	int y = TextHelper::instance()->getY();
+	int height = TextHelper::instance()->getHeight();
+	int width = TextHelper::instance()->getWidth();
+	float size = TextHelper::instance()->getSize();
 
 	auto objectComponent = targetEntity->getComponent<ObjectComponent>();
 	auto moveComponent = targetEntity->getComponent<MoveComponent>();
@@ -332,11 +332,11 @@ void MoveEventPlayer::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 
 void MoveEventHardcoded::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	int index = 0;
-	int x = TextHelper::instance()->_defaultX;
-	int y = TextHelper::instance()->_defaultY;
-	int height = TextHelper::instance()->_defaultHeight;
-	int width = TextHelper::instance()->_defaultWidth;
-	float size = TextHelper::instance()->_defaultSize;
+	int x = TextHelper::instance()->getX();
+	int y = TextHelper::instance()->getY();
+	int height = TextHelper::instance()->getHeight();
+	int width = TextHelper::instance()->getWidth();
+	float size = TextHelper::instance()->getSize();
 
 	auto objectComponent = targetEntity->getComponent<ObjectComponent>();
 	auto moveComponent = targetEntity->getComponent<MoveComponent>();

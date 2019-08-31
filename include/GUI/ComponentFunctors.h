@@ -23,11 +23,12 @@ extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFuncto
 class TextureComponentFunctor : public ComponentFunctor {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
+
 
 
 		int index = 1;
@@ -57,7 +58,7 @@ public:
 			Shader shader;
 			GLuint program;
 			program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-			objectComponent->initialize(objectComponent->_sceneX, objectComponent->_sceneY, objectComponent->_objectWidth, objectComponent->_objectHeight, program);
+			objectComponent->initialize(objectComponent->getSceneX(), objectComponent->getSceneY(), objectComponent->getWidth(), objectComponent->getHeight(), program);
 		}
 
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
@@ -127,11 +128,11 @@ public:
 
 class ObjectComponentFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
 		std::shared_ptr<TextCallback> callbackX = std::make_shared<TextCallback>();
 		callbackX->setValue(&objectComponent->_sceneX);
@@ -170,8 +171,8 @@ class ObjectComponentFunctor : public ComponentFunctor {
 			return;
 
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["cameraCoefSpeed"] = objectComponent->_cameraCoefSpeed;
-		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["sceneCoord"] = {objectComponent->_sceneX, objectComponent->_sceneY};
-		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["objectSize"] = { objectComponent->_objectWidth, objectComponent->_objectHeight };
+		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["sceneCoord"] = {objectComponent->getSceneX(), objectComponent->getSceneY()};
+		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["objectSize"] = { objectComponent->getWidth(), objectComponent->getHeight() };
 		save->_jsonFile["Entity"][std::to_string(entityID)]["ObjectComponent"]["scale"] = objectComponent->_scale;
 	}
 
@@ -207,11 +208,11 @@ class ObjectComponentFunctor : public ComponentFunctor {
 
 class TextComponentFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 		
 
 		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
@@ -292,11 +293,11 @@ class TextComponentFunctor : public ComponentFunctor {
 
 class ClickInsideFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 
 		std::shared_ptr<ClickInsideComponent> clickInsideComponent = targetEntity->getComponent<ClickInsideComponent>();
 		std::shared_ptr<TextCallback> callbackMove = std::make_shared<TextCallback>();
@@ -350,11 +351,11 @@ class ClickInsideFunctor : public ComponentFunctor {
 
 class GroupEntitiesFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 		int index = 0;
 
 		std::shared_ptr<GroupEntitiesComponent> groupComponent = targetEntity->getComponent<GroupEntitiesComponent>();
@@ -406,11 +407,11 @@ class GroupEntitiesFunctor : public ComponentFunctor {
 
 class InteractionAddToEntityFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 
 		std::shared_ptr<InteractionAddToEntityComponent> addComponent = targetEntity->getComponent<InteractionAddToEntityComponent>();
 		std::shared_ptr<TextCallback> callbackObject = std::make_shared<TextCallback>();
@@ -454,11 +455,11 @@ class InteractionAddToEntityFunctor : public ComponentFunctor {
 
 class MoveFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 		int index = 0;
 
 		auto entity = TextHelper::instance()->createText("Player controlled", x, y + height * index++, width, height, size, false);
@@ -538,11 +539,11 @@ class MoveFunctor : public ComponentFunctor {
 
 class CameraFunctor : public ComponentFunctor {
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
-		int x = TextHelper::instance()->_defaultX;
-		int y = TextHelper::instance()->_defaultY;
-		int height = TextHelper::instance()->_defaultHeight;
-		int width = TextHelper::instance()->_defaultWidth;
-		float size = TextHelper::instance()->_defaultSize;
+		int x = TextHelper::instance()->getX();
+		int y = TextHelper::instance()->getY();
+		int height = TextHelper::instance()->getHeight();
+		int width = TextHelper::instance()->getWidth();
+		float size = TextHelper::instance()->getSize();
 
 		std::shared_ptr<CameraComponent> cameraComponent = targetEntity->getComponent<CameraComponent>();
 		std::shared_ptr<TextCallback> callbackSpeed = std::make_shared<TextCallback>();
