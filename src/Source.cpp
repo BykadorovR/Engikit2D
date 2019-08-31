@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 
 	GLFWwindow* mainWindow;
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", /*NULL*/ monitor, NULL);	
+	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", NULL /*monitor*/, NULL);	
 	if (mainWindow == NULL) {
 		glfwTerminate();
 		return -1;

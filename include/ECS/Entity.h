@@ -87,7 +87,8 @@ public:
 	shared_ptr<Entity> create(shared_ptr<Entity> _entity = nullptr) {
 		shared_ptr<Entity> entity = make_shared<Entity>();
 		entities.push_back(entity);
-		entity->_index = entities.size() - 1;
+		int index = entities.size() == 1 ? 0 : entities.size() - 2;
+		entity->_index = entities[index]->_index + 1;
 		return entities.back();
 	}
 
@@ -109,7 +110,8 @@ public:
 			}
 		}
 		entities.push_back(entity);
-		entity->_index = entities.size() - 1;
+		int index = entities.size() == 1 ? 0 : entities.size() - 2;
+		entity->_index = entities[index]->_index + 1;
 		return true;
 	}
 

@@ -5,7 +5,7 @@
 #include "assert.h"
 
 World world;
-std::pair<int, int> resolution(720, 480);
+std::pair<int, int> resolution(1920, 1080);
 float resolutionRatioX = (float) resolution.first / (float) 1920;
 float resolutionRatioY = (float) resolution.second / (float) 1080;
 
