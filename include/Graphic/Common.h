@@ -13,6 +13,7 @@ extern float resolutionRatioX;
 extern float resolutionRatioY;
 extern World world;
 static Entity currentSprite;
+extern bool gameMode;
 
 enum ErrorCodes {
 	TW_OK = 0,

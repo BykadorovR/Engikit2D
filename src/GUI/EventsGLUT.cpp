@@ -20,6 +20,21 @@ void KeyboardEvent::unregisterComponent(IKeyboardEvent* listener) {
 }
 
 void KeyboardEvent::keyboardPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (action == 1) {
+		switch (key) {
+		case GLFW_KEY_HOME:
+			static int number = 0;
+			if (number % 2 == 0) {
+				gameMode = true;
+			}
+			else {
+				gameMode = false;
+			}
+			number++;
+			break;
+		}
+	}
+
 	for (auto listener : _listeners) {
 		listener->keyboardPressed(key, action, mods);
 	}

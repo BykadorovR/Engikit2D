@@ -8,7 +8,7 @@ World world;
 std::pair<int, int> resolution(1920, 1080);
 float resolutionRatioX = (float) resolution.first / (float) 1920;
 float resolutionRatioY = (float) resolution.second / (float) 1080;
-
+bool gameMode = false;
 
 std::string rawFileContent(const char* relativePath) {
 	std::string content;

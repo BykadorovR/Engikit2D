@@ -1,6 +1,7 @@
 #include "GraphicSystem.h"
 #include "Camera.h"
 #include "TextLoader.h"
+#include "UIComponent.h"
 //INFO: for now every object use OWN program, all of them use one shader, though. It's convinient enough in sense of 
 //programming (no needs to think about uniforms state) but can affect performance.
 //If any perf gaps, need to add vertexReset, transformReset, etc functions which will zero uniforms
@@ -229,6 +230,11 @@ void DrawSystem::update(shared_ptr<EntityManager> entityManager) {
 	auto coords = cameraFindCoords(entityManager, cameraComponent, /*cameraObjectComponent,*/ camera);
 
 	for (auto entity : entityManager->getEntities()) {
+		auto groupComponent = entity->getComponent<GroupEntitiesComponent>();
+		
+		if (groupComponent->_groupName == "Engine" && gameMode == true)
+			continue;
+
 		auto vertexObject = entity->getComponent<ObjectComponent>();
 		if (vertexObject)
 			vertexUpdate(vertexObject);

@@ -168,6 +168,9 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 		auto saveLoadComponent = entity->getComponent<SaveLoadComponent>();
 		auto textComponent = entity->getComponent<TextComponent>();
 
+		if (groupComponent->_groupName == "Engine" && gameMode == true)
+			continue;
+
 		if (objectComponent && clickInsideComponent && groupComponent) {
 			std::tuple<std::tuple<int, int>, int> click = (processClickInside(objectComponent, clickInsideComponent, groupComponent));
 			bool clickedInside = (std::get<0>(std::get<0>(click)) != 0 || std::get<1>(std::get<0>(click)) != 0) ? true : false;
