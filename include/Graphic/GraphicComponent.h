@@ -70,7 +70,7 @@ private:
 	int _defaultX = 1920 - 1920 / 5;
 	int _defaultY = 1080 / 10;
 	int _defaultWidth = 1920 / 5;
-	int _defaultHeight = 60;
+	int _defaultHeight = 30;
 	float _defaultSize = 0.3;
 
 private:

@@ -19,7 +19,7 @@ public:
 };
 
 extern std::map<std::string, std::shared_ptr<ComponentFunctor> > componentFunctors;
-
+extern std::map<std::string, bool> addFunctors;;
 class TextureComponentFunctor : public ComponentFunctor {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity) {
@@ -46,6 +46,13 @@ public:
 		auto entity = TextHelper::instance()->createText("Submit", x, y + height * index++, width, height, size, false);
 		std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 		clickInsideComponent->_event = std::make_pair(accept, targetEntity);
+		TextHelper::instance()->attachText(entity);
+
+		std::shared_ptr<ComponentDeleteEvent> deleteEvent = std::make_shared<ComponentDeleteEvent>();
+		deleteEvent->_name = "TextureComponent";
+		entity = TextHelper::instance()->createText("Delete", x, y + height * index++, width, height, size, false);
+		clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+		clickInsideComponent->_event = std::make_pair(deleteEvent, targetEntity);
 		TextHelper::instance()->attachText(entity);
 	}
 	//TODO: How to use atlas and textures dynamically
@@ -213,21 +220,28 @@ class TextComponentFunctor : public ComponentFunctor {
 		int height = TextHelper::instance()->getHeight();
 		int width = TextHelper::instance()->getWidth();
 		float size = TextHelper::instance()->getSize();
-		
+		int index = 0;
 
 		std::shared_ptr<TextComponent> textComponent = targetEntity->getComponent<TextComponent>();
 		std::shared_ptr<TextCallback> callbackText = std::make_shared<TextCallback>();
 		callbackText->setValue(&textComponent->_text);
 		callbackText->setValue(&textComponent->_textBack);
-		TextHelper::instance()->getValue(callbackText, "Enter text to display", x, y, width, height, size);
+		TextHelper::instance()->getValue(callbackText, "Enter text to display", x, y + height * index++, width, height, size);
 		
 		std::shared_ptr<TextCallback> callbackScale = std::make_shared<TextCallback>();
 		callbackScale->setValue(&textComponent->_scale);
-		TextHelper::instance()->getValue(callbackScale, "Scale", x, y + height * 1, width, height, size);
+		TextHelper::instance()->getValue(callbackScale, "Scale", x, y + height * index++, width, height, size);
 
 		std::shared_ptr<TextCallback> callbackRGB = std::make_shared<TextCallback>();
 		callbackRGB->setValue(&textComponent->_color);
-		TextHelper::instance()->getValue(callbackRGB, "RGB", x, y + height * 2, width, height, size);
+		TextHelper::instance()->getValue(callbackRGB, "RGB", x, y + height * index++, width, height, size);
+
+		std::shared_ptr<ComponentDeleteEvent> deleteEvent = std::make_shared<ComponentDeleteEvent>();
+		deleteEvent->_name = "TextComponent";
+		auto entity = TextHelper::instance()->createText("Delete", x, y + height * index++, width, height, size, false);
+		auto clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+		clickInsideComponent->_event = std::make_pair(deleteEvent, targetEntity);
+		TextHelper::instance()->attachText(entity);
 	}
 	//this component can't be added to Entity, so it's just a stub
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
@@ -251,6 +265,14 @@ class TextComponentFunctor : public ComponentFunctor {
 
 	void removeFunctor(std::shared_ptr<Entity> targetEntity) {
 		targetEntity->removeComponent<TextComponent>();
+		std::shared_ptr<TextureComponent> textureComponent(new TextureComponent());
+		std::shared_ptr<ObjectComponent> objectComponent = targetEntity->getComponent<ObjectComponent>();
+		Shader shader;
+		GLuint program;
+		program = shader.buildProgramFromAsset("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+		objectComponent->_program = program;
+		textureComponent->initialize(objectComponent->_program);
+		targetEntity->addComponent(textureComponent);
 	}
 	void serializeFunctor(std::shared_ptr<Entity> targetEntity, std::shared_ptr<GUISave> save) {
 		int entityID = targetEntity->_index;
@@ -308,6 +330,8 @@ class ClickInsideFunctor : public ComponentFunctor {
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<ClickInsideComponent> clickComponent(new ClickInsideComponent());
 		clickComponent->initialize();
+		std::shared_ptr<ComponentTextEvent> textEvent = std::make_shared<ComponentTextEvent>();
+		clickComponent->_event = std::make_pair(textEvent, targetEntity);
 		return clickComponent;
 	}
 
@@ -473,6 +497,13 @@ class MoveFunctor : public ComponentFunctor {
 		std::shared_ptr<MoveEventHardcoded> functorMoveHardcoded = std::make_shared<MoveEventHardcoded>();
 		clickInsideComponent->_event = std::make_pair(functorMoveHardcoded, targetEntity);
 		TextHelper::instance()->attachText(entity);
+
+		std::shared_ptr<ComponentDeleteEvent> deleteEvent = std::make_shared<ComponentDeleteEvent>();
+		deleteEvent->_name = "MoveComponent";
+		entity = TextHelper::instance()->createText("Delete", x, y + height * index++, width, height, size, false);
+		clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+		clickInsideComponent->_event = std::make_pair(deleteEvent, targetEntity);
+		TextHelper::instance()->attachText(entity);
 	}
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<MoveComponent> moveComponent(new MoveComponent());
@@ -544,11 +575,19 @@ class CameraFunctor : public ComponentFunctor {
 		int height = TextHelper::instance()->getHeight();
 		int width = TextHelper::instance()->getWidth();
 		float size = TextHelper::instance()->getSize();
+		int index = 0;
 
 		std::shared_ptr<CameraComponent> cameraComponent = targetEntity->getComponent<CameraComponent>();
 		std::shared_ptr<TextCallback> callbackSpeed = std::make_shared<TextCallback>();
 		callbackSpeed->setValue((int*)&cameraComponent->_cameraSpeed);
-		TextHelper::instance()->getValue(callbackSpeed, "Camera speed", x, y, width, height, size);
+		TextHelper::instance()->getValue(callbackSpeed, "Camera speed", x, y + height * index++, width, height, size);
+
+		std::shared_ptr<ComponentDeleteEvent> deleteEvent = std::make_shared<ComponentDeleteEvent>();
+		deleteEvent->_name = "CameraComponent";
+		auto entity = TextHelper::instance()->createText("Delete", x, y + height * index++, width, height, size, false);
+		auto clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+		clickInsideComponent->_event = std::make_pair(deleteEvent, targetEntity);
+		TextHelper::instance()->attachText(entity);
 	}
 	std::shared_ptr<Component> createFunctor(std::shared_ptr<Entity> targetEntity) {
 		std::shared_ptr<CameraComponent> cameraComponent(new CameraComponent());

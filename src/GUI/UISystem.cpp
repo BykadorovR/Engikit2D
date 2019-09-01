@@ -337,23 +337,6 @@ void InteractionAddToSystem::processCreateEntity(shared_ptr<EntityManager> entit
 		if (!interactionComponent)
 			continue;
 		if (interactionComponent->_interactReady) {
-			/*int action = 0;
-			std::cout << "Enter the 1 to delete or 2 to create Entity, 0 to do nothing" << std::endl;
-			std::cin >> action;
-			switch (action) {
-				case 0:
-				break;
-				case 1:
-					int entityID;
-					std::cout << "Enter ID of entity to delete" << std::endl;
-					std::cin >> entityID;
-					interactionComponent->_removeFunctor(entityID);
-				break;
-				case 2:
-					interactionComponent->_createFunctor(interactionComponent->creationCoords);
-				break;
-			}
-			*/
 			interactionComponent->_createFunctor(interactionComponent->creationCoords);
 			interactionComponent->_interactReady = false;
 		}
@@ -382,6 +365,9 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 		int index = 0;
 		for (auto &functors : componentFunctors) {
 			std::string name = functors.first;
+			//To avoid adding components which are always should be in entity
+			if (!addFunctors[name])
+				continue;
 			auto entity = TextHelper::instance()->createText(name, x, y + height * index++, width, height, size, false);
 			std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
 			std::shared_ptr<AddComponentEvent> functor = std::make_shared<AddComponentEvent>();
@@ -389,40 +375,6 @@ void InteractionAddToSystem::processAddComponentToEntity(shared_ptr<EntityManage
 			clickInsideComponent->_event = std::make_pair(functor, objectEntity);
 			TextHelper::instance()->attachText(entity);
 		}
-
-		/*
-		auto interactionComponentSubject = subjectEntity->getComponent<InteractionAddToEntityComponent>();
-
-		switch (action) {
-			case 0:
-			break;
-			case 1:
-			{
-				std::cout << "Choose component" << std::endl;
-				for (std::map<std::string, std::shared_ptr<ComponentFunctor> >::iterator it = componentFunctors.begin(); it != componentFunctors.end(); ++it) {
-					cout << "Name " << it->first << "\n";
-				}
-				std::string key;
-				std::cin >> key;
-
-				componentFunctors[key]->removeFunctor(objectEntity);
-				break;
-			}
-			case 2:
-			{
-				std::cout << "Choose component" << std::endl;
-				for (std::map<std::string, std::shared_ptr<ComponentFunctor> >::iterator it = componentFunctors.begin(); it != componentFunctors.end(); ++it) {
-					cout << "Name " << it->first << "\n";
-				}
-				std::string key;
-				std::cin >> key;
-
-				std::shared_ptr<Component> addedComponent = componentFunctors[key]->createFunctor(objectEntity);
-				objectEntity->addComponent(addedComponent);
-				break;
-			}
-		}
-		*/
 	}
 	
 
@@ -463,16 +415,6 @@ void SaveLoadSystem::loadEntities(shared_ptr<EntityManager> entityManager, std::
 			for (json::iterator itID = it.value().begin(); itID != it.value().end(); ++itID) {
 				std::shared_ptr<Entity> targetEntity = nullptr;
 				int id = atoi(itID.key().c_str());
-				/*
-				for (auto entity : entityManager->getEntities()) {
-					//it's entity ID
-					if (id == entity->_index) {
-						targetEntity = entity;
-						//we need clear this entity before using it (so we don't need anything what can be in this "occupied" entity)
-						targetEntity->clearAllComponents();
-					}
-				}
-				*/
 				if (targetEntity == nullptr) {
 					targetEntity = entityManager->create();
 					//targetEntity->_index = id;

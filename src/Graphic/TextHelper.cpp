@@ -355,3 +355,7 @@ void AddComponentEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	std::shared_ptr<Component> addedComponent = componentFunctors[_name]->createFunctor(targetEntity);
 	targetEntity->addComponent(addedComponent);
 }
+
+void ComponentDeleteEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	componentFunctors[_name]->removeFunctor(targetEntity);
+}

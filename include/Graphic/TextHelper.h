@@ -46,6 +46,12 @@ public:
 	int _id;
 };
 
+class ComponentDeleteEvent : public ITextEvent {
+public:
+	std::string _name;
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+};
+
 class SaveEvent : public ITextEvent {
 public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity);
