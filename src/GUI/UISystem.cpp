@@ -197,8 +197,34 @@ void MouseSystem::update(shared_ptr<EntityManager> entityManager) {
 				}
 			}
 			else if (std::get<1>(click) != ClickCount::NO) {
-				if (textComponent)
+				//to avoid clicks after loosing focus in text so sprite won't move to this point
+				bool clicked = false;
+				for (auto entity : entityManager->getEntities()) {
+					auto textComponent = entity->getComponent<TextComponent>();
+					if (textComponent && textComponent->_focus == true)
+						clicked = true;
+				}
+				if (clicked) {
+					auto moveComponent = entity->getComponent<MoveComponent>();
+					if (moveComponent) {
+						moveComponent->_move = false;
+						moveComponent->_coords = { 0, 0 };
+						moveComponent->_leftClick = { 0, 0 };
+						moveComponent->_rightClick = { 0, 0 };
+					}
+					auto cameraComponent = entity->getComponent<CameraComponent>();
+					if (cameraComponent) {
+						cameraComponent->_move = false;
+						cameraComponent->_coords = { 0, 0 };
+						cameraComponent->_leftClick = { 0, 0 };
+						cameraComponent->_rightClick = { 0, 0 };
+						cameraComponent->_cameraX = 0;
+						cameraComponent->_cameraY = 0;
+					}
+				}
+				if (textComponent && textComponent->_focus) {
 					textComponent->setFocus(false);
+				}
 			}
 			if (clickedInside && clickInsideComponent->_moveToByClick == false) {
 				for (auto playerEntity : playerControlledEntities) {
