@@ -79,3 +79,8 @@ public:
 	void configureFunctor(std::shared_ptr<Entity> targetEntity);
 
 };
+
+class DeleteEntityEvent : public ITextEvent {
+public:
+	void configureFunctor(std::shared_ptr<Entity> targetEntity);
+};

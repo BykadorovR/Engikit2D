@@ -182,6 +182,12 @@ void ComponentTextEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) 
 			TextHelper::instance()->attachText(entity);
 		}
 	}
+
+	auto entity = TextHelper::instance()->createText("Delete entity", x, y + height * index++, width, height, size, false);
+	std::shared_ptr<ClickInsideComponent> clickInsideComponent = entity->getComponent<ClickInsideComponent>();
+	std::shared_ptr<DeleteEntityEvent> deleteEvent = std::make_shared<DeleteEntityEvent>();
+	clickInsideComponent->_event = std::make_pair(deleteEvent, targetEntity);
+	TextHelper::instance()->attachText(entity);
 }
 
 void TextureListEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
@@ -358,4 +364,9 @@ void AddComponentEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 
 void ComponentDeleteEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
 	componentFunctors[_name]->removeFunctor(targetEntity);
+}
+
+void DeleteEntityEvent::configureFunctor(std::shared_ptr<Entity> targetEntity) {
+	targetEntity->clearAllComponents();
+	world.unregisterEntity(targetEntity->_index);
 }
