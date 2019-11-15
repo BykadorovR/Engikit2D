@@ -58,28 +58,57 @@ ExternalProject_Add(
 #affects all projects, add folder "include" to include section in VS
 include_directories("include/ECS")
 include_directories("include/Graphic")
-include_directories("include/GUI")
+include_directories("include/Interaction")
+include_directories("include/Network")
+include_directories("include/Sound")
+include_directories("include/UI")
+include_directories("include/UserInput")
+include_directories("include/Utility")
 
-file(GLOB_RECURSE app_graphic_source "src/Graphic/*.c*")
-file(GLOB_RECURSE app_ecs_source "src/ECS/*.c*")
-file(GLOB_RECURSE app_gui_source "src/GUI/*.c*")
-file(GLOB app_other_source "src/*.c*")
-source_group("src/Graphic" FILES ${app_graphic_source})
-source_group("src/ECS" FILES ${app_ecs_source})
-source_group("src/GUI" FILES ${app_gui_source})
-source_group("src" FILES ${app_other_source})
+file(GLOB_RECURSE app_source_ecs "src/ECS/*.c*")
+source_group("ECS\\src" FILES ${app_source_ecs})
+file(GLOB_RECURSE app_source_graphic "src/Graphic/*.c*")
+source_group("Graphic\\src" FILES ${app_source_graphic})
+file(GLOB_RECURSE app_source_interaction "src/Interaction/*.c*")
+source_group("Interaction\\src" FILES ${app_source_interaction})
+file(GLOB_RECURSE app_source_network "src/Network/*.c*")
+source_group("Network\\src" FILES ${app_source_network})
+file(GLOB_RECURSE app_source_sound "src/Sound/*.c*")
+source_group("Sound\\src" FILES ${app_source_sound})
+file(GLOB_RECURSE app_source_ui "src/UI/*.c*")
+source_group("UI\\src" FILES ${app_source_ui})
+file(GLOB_RECURSE app_source_user "src/UserInput/*.c*")
+source_group("UserInput\\src" FILES ${app_source_user})
+file(GLOB_RECURSE app_source_utility "src/Utility/*.c*")
+source_group("Utility\\src" FILES ${app_source_utility})
 
-file(GLOB_RECURSE app_ecs_headers "include/ECS/*.h*")
-file(GLOB_RECURSE app_graphic_headers "include/Graphic/*.h*")
-file(GLOB_RECURSE app_gui_headers "include/GUI/*.h*")
-file(GLOB app_other_headers "include/*.h*")
-source_group("include/ECS" FILES ${app_ecs_headers})
-source_group("include/Graphic" FILES ${app_graphic_headers})
-source_group("include/GUI" FILES ${app_gui_headers})
-source_group("include" FILES ${app_other_headers})
+file(GLOB_RECURSE app_header_ecs "include/ECS/*.h*")
+source_group("ECS\\include" FILES ${app_header_ecs})
+file(GLOB_RECURSE app_header_graphic "include/Graphic/*.h*")
+source_group("Graphic\\include" FILES ${app_header_graphic})
+file(GLOB_RECURSE app_header_interaction "include/Interaction/*.h*")
+source_group("Interaction\\include" FILES ${app_header_interaction})
+file(GLOB_RECURSE app_header_network "include/Network/*.h*")
+source_group("Network\\include" FILES ${app_header_network})
+file(GLOB_RECURSE app_header_sound "include/Sound/*.h*")
+source_group("Sound\\include" FILES ${app_header_sound})
+file(GLOB_RECURSE app_header_ui "include/UI/*.h*")
+source_group("UI\\include" FILES ${app_header_ui})
+file(GLOB_RECURSE app_header_user "include/UserInput/*.h*")
+source_group("UserInput\\include" FILES ${app_header_user})
+file(GLOB_RECURSE app_header_utility "include/Utility/*.h*")
+source_group("Utility\\include" FILES ${app_header_utility})
+
 
 #include headers to project (so they will be shown in include folder)
-add_executable(game ${app_ecs_headers} ${app_graphic_headers} ${app_gui_headers} ${app_other_headers} ${app_graphic_source} ${app_gui_source} ${app_ecs_source} ${app_other_source})
+add_executable(game ${app_header_ecs} ${app_source_ecs}
+					${app_header_graphic} ${app_source_graphic}
+					${app_header_interaction} ${app_source_interaction}
+					${app_header_network} ${app_source_network}
+					${app_header_sound} ${app_source_sound}
+					${app_header_ui} ${app_source_ui}
+					${app_header_user} ${app_source_user}
+					${app_header_utility} ${app_source_utility})
 
 add_dependencies(game glew glfw libpng freetype )
 
