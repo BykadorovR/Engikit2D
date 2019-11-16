@@ -65,6 +65,8 @@ include_directories("include/UI")
 include_directories("include/UserInput")
 include_directories("include/Utility")
 
+file(GLOB_RECURSE app_source_main "src/*.c*")
+source_group("Main\\src" FILES ${app_source_main})
 file(GLOB_RECURSE app_source_ecs "src/ECS/*.c*")
 source_group("ECS\\src" FILES ${app_source_ecs})
 file(GLOB_RECURSE app_source_graphic "src/Graphic/*.c*")
@@ -108,7 +110,8 @@ add_executable(game ${app_header_ecs} ${app_source_ecs}
 					${app_header_sound} ${app_source_sound}
 					${app_header_ui} ${app_source_ui}
 					${app_header_user} ${app_source_user}
-					${app_header_utility} ${app_source_utility})
+					${app_header_utility} ${app_source_utility}
+					${app_source_main})
 
 add_dependencies(game glew glfw libpng freetype )
 

@@ -1,18 +1,21 @@
-﻿#include "General.h"
-#include "World.h"
-#include "System.h"
-#include "Component.h"
-#include "Entity.h"
-#include "Events.h"
-#include "PlatformGL.h"
-#include "Loop.h"
-#include "Common.h"
-#include "Events.h"
+﻿#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <sstream>
 
 #include "Windows.h"
-static void error_callback(int error, const char* description)
-{
-	fprintf(stderr, "Error: %s\n", description);
+#include "State.h"
+#include "UserInputEvents.h"
+
+void surfaceCreated() {
+
+}
+
+void surfaceChanged() {
+
+}
+
+void drawFrame() {
+	
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
@@ -30,7 +33,7 @@ int main(int argc, char **argv) {
 
 	GLFWwindow* mainWindow;
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	mainWindow = glfwCreateWindow(resolution.first, resolution.second, "Main window", NULL /*monitor*/, NULL);	
+	mainWindow = glfwCreateWindow(std::get<0>(resolution), std::get<1>(resolution), "Main window", NULL /*monitor*/, NULL);
 	if (mainWindow == NULL) {
 		glfwTerminate();
 		return -1;
@@ -53,12 +56,12 @@ int main(int argc, char **argv) {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	on_surface_created();
-	on_surface_changed();
+	surfaceCreated();
+	surfaceChanged();
 	while (!glfwWindowShouldClose(mainWindow)) {
 		// OpenGL API calls go here...
 
-		on_draw_frame();
+		drawFrame();
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
 	}
