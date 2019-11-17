@@ -7,11 +7,7 @@
 #include "UserInputEvents.h"
 
 void surfaceCreated() {
-
-}
-
-void surfaceChanged() {
-
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 void drawFrame() {
@@ -57,7 +53,6 @@ int main(int argc, char **argv) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	surfaceCreated();
-	surfaceChanged();
 	while (!glfwWindowShouldClose(mainWindow)) {
 		// OpenGL API calls go here...
 
