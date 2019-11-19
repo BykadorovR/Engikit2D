@@ -1,6 +1,7 @@
 #pragma once
 #include "EntityManager.h"
 #include "SystemManager.h"
+#include "BufferManager.h"
 
 class Scene {
 private:

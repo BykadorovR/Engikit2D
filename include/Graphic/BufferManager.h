@@ -1,6 +1,7 @@
 #pragma once
 #include <tuple>
 #include <memory>
+#include <GL/glew.h>
 
 #include "Buffer.h"
 

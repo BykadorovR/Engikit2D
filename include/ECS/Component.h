@@ -11,6 +11,6 @@ protected:
 	std::map<Operation, std::vector<Action> > _interaction;
 public:
 	Component();
-	std::string _componentName = "Component";
+	std::string _componentName;
 	virtual ~Component() = default;
 };

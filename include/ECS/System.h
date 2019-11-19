@@ -7,6 +7,6 @@ private:
 public:
 	System();
 	// Called every game update
-	virtual void update(std::shared_ptr<EntityManager> entityManager);
+	virtual void update(std::shared_ptr<EntityManager> entityManager) = 0;
 
 };
