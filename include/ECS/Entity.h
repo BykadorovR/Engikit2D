@@ -44,6 +44,9 @@ public:
 		return false;
 	}
 
+	int getIndex();
+	void setIndex(int index);
+
 	void addComponent(std::shared_ptr<Component> concreteComponent);
 	void clearAllComponents();
 

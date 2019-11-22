@@ -2,9 +2,9 @@
 
 uniform mat4 u_Matrix = mat4(1.0);
 uniform mat4 u_ViewMatrix = mat4(1.0);
-attribute vec4 a_Position;
-attribute vec2 a_TextureCoordinates;
-varying vec2 v_TextureCoordinates;
+layout(location = 0) in vec4 a_Position;
+layout(location = 1) in vec2 a_TextureCoordinates;
+out vec2 v_TextureCoordinates;
 void main()
 {
     v_TextureCoordinates = a_TextureCoordinates;

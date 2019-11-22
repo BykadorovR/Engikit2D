@@ -12,6 +12,6 @@ private:
 public:
 	//need to create VAO
 	BufferManager();
-	bool addBuffer(BufferType type, std::tuple<int, int> position, std::tuple<int, int> size);
-	bool changeBuffer(int ID, std::tuple<int, int> position, std::tuple<int, int> tuple);
+	bool addBuffer(BufferType type, std::tuple<float, float> position, std::tuple<float, float> size);
+	bool changeBuffer(int ID, std::tuple<float, float> position, std::tuple<float, float> tuple);
 };

@@ -10,7 +10,7 @@ private:
 	std::shared_ptr<BufferManager> _bufferManager;
 	std::string _name;
 public:
-	Scene();
+	Scene(std::string name);
 
 	std::shared_ptr<Entity> createEntity();
 	bool unregisterEntity(int entityID);
@@ -19,5 +19,6 @@ public:
 
 	std::shared_ptr<EntityManager> getEntityManager();
 	std::shared_ptr<SystemManager> getSystemManager();
+	std::string getName();
 	bool isEntityAttached(std::shared_ptr<Entity> entity);
 };

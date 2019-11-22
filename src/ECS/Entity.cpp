@@ -5,6 +5,14 @@ Entity::Entity() {
 	_editorMode = true;
 }
 
+int Entity::getIndex() {
+	return _index;
+}
+
+void Entity::setIndex(int index) {
+	_index = index;
+}
+
 void Entity::addComponent(std::shared_ptr<Component> concreteComponent) {
 	int componentIndex = -1;
 	for (unsigned int i = 0; i < _components.size(); i++) {

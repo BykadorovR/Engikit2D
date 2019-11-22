@@ -2,8 +2,8 @@
 
 precision mediump float;
 
-uniform sampler2D u_TextureUnit;
-varying vec2 v_TextureCoordinates;
+sampler2D u_TextureUnit;
+in vec2 v_TextureCoordinates;
 uniform float u_AdjustX = 0.0;
 uniform float u_AdjustY = 0.0;
 uniform int u_Solid = 0;
