@@ -37,6 +37,7 @@ bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tup
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	return false;
 }
 
 GLuint Buffer::getVBO() {

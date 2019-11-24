@@ -5,13 +5,16 @@
 
 #include "ImageLoader.h"
 
-class Texture {
+class TextureRaw {
 private:
 	std::string _path;
-	std::tuple<float, float> _size;
+	//rows and cols number
 	std::tuple<float, float> _tileSize;
 	int _textureID;
 	std::shared_ptr<ImageLoader> _imageLoader;
 public:
-	
+	TextureRaw(std::string path, std::tuple<float, float> tileSize);
+	std::shared_ptr<ImageLoader> getImageLoader();
+	bool setTextureID(int textureID);
+	int getTextureID();
 };

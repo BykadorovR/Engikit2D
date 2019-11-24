@@ -10,4 +10,5 @@ std::shared_ptr<Buffer> BufferManager::addBuffer(BufferType type, std::tuple<flo
 	std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>();
 	buffer->create(type, position, size);
 	_buffers.push_back(buffer);
+	return buffer;
 }

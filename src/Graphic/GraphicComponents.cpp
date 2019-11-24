@@ -1,4 +1,5 @@
 #include "GraphicComponents.h"
+#include "TextureManager.h"
 
 ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
@@ -16,6 +17,6 @@ TextureComponent::TextureComponent() {
 
 bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> bufferManager) {
 	_textureID = textureID;
-	auto texture = TextureManager::instance()->getTexture(textureID);
+	std::shared_ptr<TextureRaw> texture = TextureManager::instance()->getTexture(textureID);
 	_buffer = bufferManager->addBuffer(BufferType::Position, , );
 }

@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <png.h>
 #include <vector>
+
+
 //needed for internal libPNG conversions
 struct DataHandle {
 	DataHandle(png_byte* _data, png_size_t _size, png_size_t _offset) : data(_data), size(_size), offset(_offset) {

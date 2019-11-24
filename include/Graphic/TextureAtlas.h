@@ -12,10 +12,13 @@ private:
 	std::vector<uint8_t> _data;
 	GLuint _textureObjectId;
 	int _atlasID;
-	std::vector < std::shared_ptr<Texture> > _textures;
+	int _textureCounter = 0;
+	//Texture and position of this texture in the current atlas
+	std::vector<std::tuple<std::shared_ptr<TextureRaw>, std::tuple<float, float> > > _textures;
 public:
 	TextureAtlas(std::tuple<float, float> size);
-	bool addTexture(std::shared_ptr<Texture> texture, std::tuple<int, int> position);
-	std::shared_ptr<Texture> getTexture(int textureID);
-	std::vector<std::shared_ptr<Texture> > getTextureList();
+	bool addTexture(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position);
+	std::shared_ptr<TextureRaw> getTexture(int textureID);
+	int getAtlasID();
+	bool setAtlasID(int atlasID);
 };

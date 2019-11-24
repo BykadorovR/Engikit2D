@@ -29,5 +29,5 @@ private:
 	bool _invisible;
 public:
 	TextureComponent();
-	bool initialize(int textureID);
+	bool initialize(int textureID, std::shared_ptr<BufferManager> bufferManager);
 };
