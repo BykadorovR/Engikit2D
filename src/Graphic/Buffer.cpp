@@ -5,9 +5,11 @@
 
 Buffer::Buffer() {
 	glGenBuffers(1, &_vbo);
-	_ID++;
 }
 
+/*
+Let's assume for now that 1 object = 1 buffer, so no impl for N objects = 1 buffer;
+*/
 bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tuple<float, float> size) {
 	float width = std::get<0>(size),
 		  height = std::get<1>(size);
@@ -35,4 +37,8 @@ bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tup
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+GLuint Buffer::getVBO() {
+	return _vbo;
 }

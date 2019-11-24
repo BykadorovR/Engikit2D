@@ -3,8 +3,19 @@
 ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
 }
+
 bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::shared_ptr<BufferManager> bufferManager) {
 	_position = position;
 	_size = size;
-	bufferManager->addBuffer(BufferType::Position, _position, _size);
+	_buffer = bufferManager->addBuffer(BufferType::Position, _position, _size);
+}
+
+TextureComponent::TextureComponent() {
+	_componentName = "TextureComponent";
+}
+
+bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> bufferManager) {
+	_textureID = textureID;
+	auto texture = TextureManager::instance()->getTexture(textureID);
+	_buffer = bufferManager->addBuffer(BufferType::Position, , );
 }

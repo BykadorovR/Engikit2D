@@ -8,13 +8,14 @@ enum BufferType {
 	Texture = 1
 };
 
+//all operations with Buffer should go via BufferManager
 class Buffer {
 private:
 	std::vector<float> _data;
 	GLuint _vbo;
-	static int _ID;
 public:
 	Buffer();
 	bool create(BufferType type, std::tuple<float, float> position, std::tuple<float, float> size);
-	bool change(int ID, std::tuple<float, float> position, std::tuple<float, float> size);
+	bool change(std::tuple<float, float> position, std::tuple<float, float> size);
+	GLuint getVBO();
 };

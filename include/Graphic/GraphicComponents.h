@@ -10,6 +10,7 @@ private:
 	float _scale;
 	std::tuple<float, float> _position;
 	std::tuple<float, float> _size;
+	std::shared_ptr<Buffer> _buffer;
 
 public:
 	ObjectComponent();
@@ -24,6 +25,7 @@ private:
 	int _currentLatency;
 	std::vector<float> _tilesOrder;
 	std::vector<float> _tilesLatency;
+	std::shared_ptr<Buffer> _buffer;
 	bool _invisible;
 public:
 	TextureComponent();
