@@ -5,13 +5,33 @@
 #include "Windows.h"
 #include "State.h"
 #include "UserInputEvents.h"
+#include "TextureAtlas.h"
+#include "Texture.h"
+#include "Entity.h"
+#include "SceneManager.h"
+#include "GraphicComponents.h"
+#include "GraphicSystems.h"
 
+std::shared_ptr<Scene> activeScene;
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	std::shared_ptr<TextureAtlas> atlas = std::make_shared<TextureAtlas>( std::make_tuple<float, float>(4096, 4096));
+	std::shared_ptr<TextureRaw> textureRaw = std::make_shared<TextureRaw>("../data/textures/air_hockey_surface.png", 
+																		  std::make_tuple < float, float>(1, 1));
+	atlas->addTexture(textureRaw, { 0, 0 });
+	std::shared_ptr<Entity> sprite;
+	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
+	activeScene = sceneManager->createScene("basic");
+	sprite = activeScene->createEntity();
+	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
+	sprite->createComponent<ObjectComponent>()->initialize({ 100, 100 }, { 100, 100 }, bufferManager);
+	sprite->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
 }
 
+std::shared_ptr<DrawSystem> drawSystem;
 void drawFrame() {
-	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	drawSystem->update(activeScene->getEntityManager());
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
@@ -24,7 +44,7 @@ int main(int argc, char **argv) {
 
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //Core profile deprecate all fixed function API calls
 
 	GLFWwindow* mainWindow;

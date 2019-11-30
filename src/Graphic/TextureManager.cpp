@@ -19,17 +19,17 @@ std::shared_ptr<TextureRaw> TextureManager::createTexture(std::string imagePath,
 	return textureRaw;
 }
 
-std::shared_ptr<TextureRaw> TextureManager::getTexture(int textureID) {
-	std::shared_ptr<TextureRaw> texture = nullptr;
-	for (auto atlas : _atlasList) {
-		texture = atlas->getTexture(textureID);
-	}
-	return texture;
-}
-
 std::shared_ptr<TextureAtlas> TextureManager::createAtlas(std::tuple<float, float> size) {
 	std::shared_ptr<TextureAtlas> targetAtlas = std::make_shared<TextureAtlas>(size);
 	targetAtlas->setAtlasID(_textureAtlasCounter++);
 	_atlasList.push_back(targetAtlas);
 	return targetAtlas;
+}
+
+std::shared_ptr < TextureAtlas > TextureManager::getTextureAtlas(int textureID) {
+	for (auto atlas : _atlasList) {
+		if (atlas->containTexture(textureID))
+			return atlas;
+	}
+	return nullptr;
 }

@@ -4,7 +4,6 @@
 
 class TextureManager {
 private:
-	TextureManager();
 	std::vector<std::shared_ptr<TextureAtlas> > _atlasList;
 	int _textureAtlasCounter = 0;
 public:
@@ -14,6 +13,6 @@ public:
 	}
 	void printTextures();
 	std::shared_ptr<TextureRaw> createTexture(std::string imagePath, int atlasID, std::tuple<float, float> posAtlas, std::tuple<float, float> tileSize);
-	std::shared_ptr<TextureRaw> getTexture(int textureID);
+	std::shared_ptr<TextureAtlas> getTextureAtlas(int textureID);
 	std::shared_ptr<TextureAtlas> createAtlas(std::tuple<float, float> size);
 };

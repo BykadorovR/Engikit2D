@@ -9,6 +9,12 @@ bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<f
 	_position = position;
 	_size = size;
 	_buffer = bufferManager->addBuffer(BufferType::Position, _position, _size);
+	_shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	return false;
+}
+
+std::shared_ptr<Shader> ObjectComponent::getShader() {
+	return _shader;
 }
 
 TextureComponent::TextureComponent() {
@@ -17,6 +23,14 @@ TextureComponent::TextureComponent() {
 
 bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> bufferManager) {
 	_textureID = textureID;
-	std::shared_ptr<TextureRaw> texture = TextureManager::instance()->getTexture(textureID);
-	_buffer = bufferManager->addBuffer(BufferType::Position, , );
+	auto textureInfo = TextureManager::instance()->getTextureAtlas(textureID)->getTexture(textureID);
+	auto texture = std::get<0>(textureInfo);
+	auto texturePosition = std::get<1>(textureInfo);
+	//pos in atlas, tile size
+	_buffer = bufferManager->addBuffer(BufferType::Position, texturePosition, texture->getTileSize());
+	return false;
+}
+
+int TextureComponent::getTextureID() {
+	return _textureID;
 }

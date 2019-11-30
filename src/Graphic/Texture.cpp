@@ -19,3 +19,7 @@ bool TextureRaw::setTextureID(int textureID) {
 	_textureID = textureID;
 	return false;
 }
+
+std::tuple<float, float> TextureRaw::getTileSize() {
+	return _tileSize;
+}

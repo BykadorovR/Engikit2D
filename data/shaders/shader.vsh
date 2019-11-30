@@ -1,4 +1,4 @@
-#version 410
+#version 420
 
 uniform mat4 u_Matrix = mat4(1.0);
 uniform mat4 u_ViewMatrix = mat4(1.0);

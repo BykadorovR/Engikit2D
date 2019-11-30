@@ -18,7 +18,9 @@ private:
 public:
 	TextureAtlas(std::tuple<float, float> size);
 	bool addTexture(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position);
-	std::shared_ptr<TextureRaw> getTexture(int textureID);
+	std::tuple<std::shared_ptr<TextureRaw>, std::tuple<float, float> > getTexture(int textureID);
+	bool containTexture(int textureID);
 	int getAtlasID();
 	bool setAtlasID(int atlasID);
+	GLuint getTextureObject();
 };

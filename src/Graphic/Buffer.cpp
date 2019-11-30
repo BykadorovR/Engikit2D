@@ -36,6 +36,14 @@ bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tup
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_STATIC_DRAW);
+	if (type == BufferType::Position) {
+		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(/*location = 0*/0);
+	}
+	else {
+		glVertexAttribPointer(/*location = 1*/1, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(/*location = 1*/1);
+	}
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	return false;
 }

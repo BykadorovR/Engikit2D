@@ -11,10 +11,10 @@ public:
 	*/
 	template <class ConcreteComponent>
 	std::shared_ptr<ConcreteComponent> createComponent() {
-		shared_ptr<ConcreteComponent> component = getComponent<ConcreteComponent>();
+		std::shared_ptr<ConcreteComponent> component = getComponent<ConcreteComponent>();
 		if (component == nullptr) {
-			component = make_shared<ConcreteComponent>();
-			_components.push_back(component);
+			component = std::make_shared<ConcreteComponent>();
+			//_components.push_back(component);
 			return component;
 		}
 		return component;
@@ -23,7 +23,7 @@ public:
 	template <class ConcreteComponent>
 	std::shared_ptr<ConcreteComponent> getComponent() {
 		for (auto c : _components) {
-			shared_ptr<ConcreteComponent> foundComponent = dynamic_pointer_cast<ConcreteComponent>(c);
+			std::shared_ptr<ConcreteComponent> foundComponent = std::dynamic_pointer_cast<ConcreteComponent>(c);
 			if (foundComponent)
 				return foundComponent;
 		}

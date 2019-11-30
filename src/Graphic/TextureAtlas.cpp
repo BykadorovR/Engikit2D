@@ -50,7 +50,18 @@ bool TextureAtlas::setAtlasID(int atlasID) {
 	return false;
 }
 
-std::shared_ptr<TextureRaw> TextureAtlas::getTexture(int textureID) {
+std::tuple<std::shared_ptr<TextureRaw>, std::tuple<float, float> > TextureAtlas::getTexture(int textureID) {
 	auto textureIterator = std::find_if(_textures.begin(), _textures.end(), [textureID](std::tuple< std::shared_ptr<TextureRaw>, std::tuple<float, float> > texture) {return std::get<0>(texture)->getTextureID() == textureID; });
-	return std::get<0>(*textureIterator);
+	return *textureIterator;
+}
+
+bool TextureAtlas::containTexture(int textureID) {
+	auto textureIterator = std::find_if(_textures.begin(), _textures.end(), [textureID](std::tuple< std::shared_ptr<TextureRaw>, std::tuple<float, float> > texture) {return std::get<0>(texture)->getTextureID() == textureID; });
+	if (textureIterator != _textures.end())
+		return true;
+	return false;
+}
+
+GLuint TextureAtlas::getTextureObject() {
+	return _textureObjectId;
 }

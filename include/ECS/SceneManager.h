@@ -8,7 +8,7 @@ private:
 	std::shared_ptr<Scene> _activeScene;
 public:
 	SceneManager();
-	std::shared_ptr<Scene> createScene(std::string fileName);
+	std::shared_ptr<Scene> createScene(std::string sceneName);
 	bool loadScene(std::string fileName);
 	bool saveActiveScene(std::string fileName);
 	bool changeScene(std::string sceneName);

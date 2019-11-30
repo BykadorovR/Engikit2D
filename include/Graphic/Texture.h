@@ -17,4 +17,5 @@ public:
 	std::shared_ptr<ImageLoader> getImageLoader();
 	bool setTextureID(int textureID);
 	int getTextureID();
+	std::tuple<float, float> getTileSize();
 };
