@@ -23,26 +23,29 @@ TextureAtlas::TextureAtlas(std::tuple<float, float> size) {
 }
 
 bool TextureAtlas::addTexture(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position) {
-	for (int y = 0; y < std::get<1>(_size); y++)
-		for (int x = 0; x < std::get<0>(_size) * DEPTH_COLOR; x++) {
+	auto textureSize = texture->getImageLoader()->getSize();
+	auto textureData = texture->getImageLoader()->getData();
+	for (int y = 0; y < std::get<1>(textureSize); y++)
+		for (int x = 0; x < std::get<0>(textureSize) * DEPTH_COLOR; x++) {
 			int coordXIntoResult = std::get<0>(position) * DEPTH_COLOR + x;
 			int coordYIntoResult = std::get<1>(position) + y;
 			assert(coordXIntoResult < std::get<0>(_size) * DEPTH_COLOR);
 			assert(coordYIntoResult < std::get<1>(_size));
 			int coordIntoResult = coordXIntoResult + std::get<0>(_size) * DEPTH_COLOR * coordYIntoResult;
-			int coordIntoSource = x + std::get<0>(_size) * DEPTH_COLOR * y;
+			int coordIntoSource = x + std::get<0>(textureSize) * DEPTH_COLOR * y;
 			assert(coordIntoResult < std::get<0>(_size) * std::get<1>(_size) * DEPTH_COLOR);
-			assert(coordIntoSource < std::get<0>(_size) * std::get<1>(_size) * DEPTH_COLOR);
-			_data[coordIntoResult] = texture->getImageLoader()->getData()[coordIntoSource];
+			assert(coordIntoSource < std::get<0>(textureSize) * std::get<1>(textureSize) * DEPTH_COLOR);
+			_data[coordIntoResult] = textureData[coordIntoSource];
 		}
 
+	_textures.push_back({texture, position});
 	texture->setTextureID(_textureCounter++);
 
 	return true;
 }
 
 int TextureAtlas::getAtlasID() {
-	return _atlasID;
+	return _textureObjectId;
 }
 
 bool TextureAtlas::setAtlasID(int atlasID) {

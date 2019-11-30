@@ -113,12 +113,10 @@ int ImageLoader::loadPNG(const char* relativePath) {
 	return sts;
 }
 
-unsigned int ImageLoader::getWidth() {
-	return width;
+std::tuple<float, float> ImageLoader::getSize() {
+	return { width, height };
 }
-unsigned int ImageLoader::getHeight() {
-	return height;
-}
+
 int ImageLoader::getBitdepth() {
 	return bitDepth;
 }

@@ -5,7 +5,7 @@
 #include "Component.h"
 #include "Shader.h"
 
-class ObjectComponent : Component {
+class ObjectComponent : public Component {
 private:
 	float _cameraMultiplier;
 	float _scale;
@@ -20,7 +20,7 @@ public:
 	std::shared_ptr<Shader> getShader();
 };
 
-class TextureComponent : Component {
+class TextureComponent : public Component {
 private:
 	int _textureID;
 	std::tuple<float, float> _tileSize;

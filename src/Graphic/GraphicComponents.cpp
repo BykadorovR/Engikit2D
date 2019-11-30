@@ -27,7 +27,7 @@ bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> 
 	auto texture = std::get<0>(textureInfo);
 	auto texturePosition = std::get<1>(textureInfo);
 	//pos in atlas, tile size
-	_buffer = bufferManager->addBuffer(BufferType::Position, texturePosition, texture->getTileSize());
+	_buffer = bufferManager->addBuffer(BufferType::Texture, texturePosition, texture->getImageLoader()->getSize());
 	return false;
 }
 

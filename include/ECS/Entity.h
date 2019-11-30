@@ -14,8 +14,7 @@ public:
 		std::shared_ptr<ConcreteComponent> component = getComponent<ConcreteComponent>();
 		if (component == nullptr) {
 			component = std::make_shared<ConcreteComponent>();
-			//_components.push_back(component);
-			return component;
+			_components.push_back(component);
 		}
 		return component;
 	}

@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <png.h>
 #include <vector>
-
+#include <tuple>
 
 //needed for internal libPNG conversions
 struct DataHandle {
@@ -23,8 +23,7 @@ public:
 	//return status
 	int loadPNG(const char* relativePath);
 	GLenum getGLColorFormat();
-	unsigned int getWidth();
-	unsigned int getHeight();
+	std::tuple<float, float> getSize();
 	int getBitdepth();
 	std::vector<unsigned char> getData();
 
@@ -36,5 +35,5 @@ private:
 	unsigned int height;
 	int bitDepth;
 	int colorFormat;
-	std::vector<unsigned char> data;
+	std::vector<uint8_t> data;
 };

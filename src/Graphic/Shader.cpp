@@ -1,5 +1,7 @@
 #include "Shader.h"
 #include <assert.h>
+#include <Windows.h>
+#include <sstream>
 #include <iostream>
 #include <vector>
 #include "Common.h"
@@ -23,7 +25,9 @@ GLuint Shader::compileShader(std::string source, GLenum type) {
 		std::vector<GLchar> errorLog(maxLength);
 		glGetShaderInfoLog(shader_object_id, maxLength, &maxLength, &errorLog[0]);
 		std::string textLog(&errorLog[0]);
-		std::cout << textLog << std::endl;
+		std::ostringstream os;
+		os << textLog;
+		OutputDebugString(os.str().c_str());
 
 		// Provide the infolog in whatever manor you deem best.
 		// Exit with failure.
