@@ -22,7 +22,6 @@ bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tup
 	float startY = (float)(std::get<1>(resolution) - y) / (float)std::get<1>(resolution);
 	if (type == BufferType::Texture) {
 		startY = (float)y / (float)std::get<1>(resolution);
-		objectWidthN  *= -1; //In case of X,Y, Y increased from bot to top, in case of U,V, from top to bot
 		objectHeightN *= -1; //so in data[] we will have only "+" sign everywhere
 	}
 	// Order of coordinates: X, Y
@@ -37,14 +36,13 @@ bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tup
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_STATIC_DRAW);
 	if (type == BufferType::Position) {
-		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(/*location = 0*/0);
+		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 	else {
-		glVertexAttribPointer(/*location = 1*/1, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(/*location = 1*/1);
+		glVertexAttribPointer(/*location = 1*/1, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	return false;
 }
 

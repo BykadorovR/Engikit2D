@@ -12,5 +12,6 @@ layout(location = 4) uniform float u_AdjustY = 0.0;
 
 void main()
 {
-    gl_FragColor = texture2D(u_TextureUnit, vec2(v_TextureCoordinates.x+u_AdjustX, v_TextureCoordinates.y+u_AdjustY));
+    //gl_FragColor = texture2D(u_TextureUnit, vec2(v_TextureCoordinates.x+u_AdjustX, v_TextureCoordinates.y+u_AdjustY));
+	gl_FragColor = vec4(1.0,0.0,1.0,1.0);
 }

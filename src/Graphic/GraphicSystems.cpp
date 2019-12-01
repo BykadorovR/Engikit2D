@@ -17,8 +17,7 @@ void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) 
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	_bufferManager->deactivateBuffer();
 }
 
 // Called every game update
