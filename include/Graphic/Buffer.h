@@ -15,7 +15,7 @@ private:
 	GLuint _vbo;
 public:
 	Buffer();
-	bool create(BufferType type, std::tuple<float, float> position, std::tuple<float, float> size);
+	bool create(BufferType type, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
 	bool change(std::tuple<float, float> position, std::tuple<float, float> size);
 	GLuint getVBO();
 };

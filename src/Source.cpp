@@ -19,6 +19,7 @@ void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas({ 4096, 4096 });
 	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
+	atlas->initialize();
 	std::shared_ptr<Entity> sprite;
 	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
 	activeScene = sceneManager->createScene("basic");

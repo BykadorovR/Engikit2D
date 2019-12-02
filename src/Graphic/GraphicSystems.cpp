@@ -11,12 +11,11 @@ void DrawSystem::vertexUpdate(std::shared_ptr<ObjectComponent> vertexObject) {
 }
 
 void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) {
-	glUniform1f(/*u_AdjustX*/ 3, 0);
-	glUniform1f(/*u_AdjustY*/ 4, 0);
+	glUniform1f(/*u_AdjustX*/ 2, 0);
+	glUniform1f(/*u_AdjustY*/ 3, 0);
 	glBindTexture(GL_TEXTURE_2D, TextureManager::instance()->getTextureAtlas(textureObject->getTextureID())->getTextureObject());
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindTexture(GL_TEXTURE_2D, 0);
 	_bufferManager->deactivateBuffer();
 }
 

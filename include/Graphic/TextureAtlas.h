@@ -17,10 +17,12 @@ private:
 	std::vector<std::tuple<std::shared_ptr<TextureRaw>, std::tuple<float, float> > > _textures;
 public:
 	TextureAtlas(std::tuple<float, float> size);
+	bool initialize();
 	bool addTexture(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position);
 	std::tuple<std::shared_ptr<TextureRaw>, std::tuple<float, float> > getTexture(int textureID);
 	bool containTexture(int textureID);
 	int getAtlasID();
 	bool setAtlasID(int atlasID);
 	GLuint getTextureObject();
+	std::tuple<float, float> getSize();
 };

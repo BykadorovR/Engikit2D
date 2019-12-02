@@ -1,7 +1,6 @@
 #include <tuple>
 
 #include "Buffer.h"
-#include "State.h"
 
 Buffer::Buffer() {
 	glGenBuffers(1, &_vbo);
@@ -10,18 +9,18 @@ Buffer::Buffer() {
 /*
 Let's assume for now that 1 object = 1 buffer, so no impl for N objects = 1 buffer;
 */
-bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tuple<float, float> size) {
-	float width = std::get<0>(size),
-		  height = std::get<1>(size);
+bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
+	float width = std::get<0>(sizeTarget),
+		  height = std::get<1>(sizeTarget);
 	float x = std::get<0>(position),
 		  y = std::get<1>(position);
-	float objectWidthN = (float)width / (float)std::get<0>(resolution);
-	float objectHeightN = (float)height / (float)std::get<1>(resolution);
-	float startX = (float)x / (float)std::get<0>(resolution);
+	float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
+	float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
+	float startX = (float)x / (float)std::get<0>(sizeOverall);
 	//by default for BufferType::Position
-	float startY = (float)(std::get<1>(resolution) - y) / (float)std::get<1>(resolution);
+	float startY = (float)(std::get<1>(sizeOverall) - y) / (float)std::get<1>(sizeOverall);
 	if (type == BufferType::Texture) {
-		startY = (float)y / (float)std::get<1>(resolution);
+		startY = (float)y / (float)std::get<1>(sizeOverall);
 		objectHeightN *= -1; //so in data[] we will have only "+" sign everywhere
 	}
 	// Order of coordinates: X, Y
@@ -34,7 +33,7 @@ bool Buffer::create(BufferType type, std::tuple<float, float> position, std::tup
 					 startX + objectWidthN, startY - objectHeightN };
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
 	if (type == BufferType::Position) {
 		glEnableVertexAttribArray(/*location = 0*/0);
 		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);

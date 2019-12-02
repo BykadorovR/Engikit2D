@@ -9,17 +9,19 @@ TextureAtlas::TextureAtlas(std::tuple<float, float> size) {
 	_size = size;
 	_data.resize(std::get<0>(size) * std::get<1>(size) * DEPTH_COLOR);
 
-	GLuint textureObjectId;
+	glGenTextures(1, &_textureObjectId);
+	assert(_textureObjectId != 0);
+}
+
+bool TextureAtlas::initialize() {
 	GLenum ARGBFormat = 0x1908;
-	glGenTextures(1, &textureObjectId);
-	assert(textureObjectId != 0);
-	glBindTexture(GL_TEXTURE_2D, textureObjectId);
+	glBindTexture(GL_TEXTURE_2D, _textureObjectId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, ARGBFormat, std::get<0>(size), std::get<1>(size), 0, ARGBFormat, GL_UNSIGNED_BYTE, &_data[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, ARGBFormat, std::get<0>(_size), std::get<1>(_size), 0, ARGBFormat, GL_UNSIGNED_BYTE, &_data[0]);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	_textureObjectId = textureObjectId;
+	return false;
 }
 
 bool TextureAtlas::addTexture(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position) {
@@ -67,4 +69,8 @@ bool TextureAtlas::containTexture(int textureID) {
 
 GLuint TextureAtlas::getTextureObject() {
 	return _textureObjectId;
+}
+
+std::tuple<float, float> TextureAtlas::getSize() {
+	return _size;
 }

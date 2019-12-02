@@ -7,11 +7,11 @@ precision mediump float;
 //glBindTexture(GL_TEXTURE_2D, id);
 layout(binding=0) uniform sampler2D u_TextureUnit;
 in vec2 v_TextureCoordinates;
-layout(location = 3) uniform float u_AdjustX = 0.0;
-layout(location = 4) uniform float u_AdjustY = 0.0;
+layout(location = 2) uniform float u_AdjustX = 0.0;
+layout(location = 3) uniform float u_AdjustY = 0.0;
 
 void main()
 {
-    //gl_FragColor = texture2D(u_TextureUnit, vec2(v_TextureCoordinates.x+u_AdjustX, v_TextureCoordinates.y+u_AdjustY));
-	gl_FragColor = vec4(1.0,0.0,1.0,1.0);
+	//gl_FragColor = vec4(1.0,0.0,1.0,1.0);
+    gl_FragColor = texture2D(u_TextureUnit, vec2(v_TextureCoordinates.x+u_AdjustX, v_TextureCoordinates.y+u_AdjustY));
 }

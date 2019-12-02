@@ -18,6 +18,7 @@ public:
 	ObjectComponent();
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::shared_ptr<BufferManager> bufferManager);
 	std::shared_ptr<Shader> getShader();
+	std::shared_ptr<Buffer> getBuffer();
 };
 
 class TextureComponent : public Component {
@@ -34,4 +35,5 @@ public:
 	TextureComponent();
 	bool initialize(int textureID, std::shared_ptr<BufferManager> bufferManager);
 	int getTextureID();
+	std::shared_ptr<Buffer> getBuffer();
 };
