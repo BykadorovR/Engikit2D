@@ -12,12 +12,13 @@
 #include "GraphicComponents.h"
 #include "GraphicSystems.h"
 #include "TextureManager.h"
+#include "GlyphsLoader.h"
 
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas({ 4096, 4096 });
+	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas(GL_RGBA, { 4096, 4096 });
 	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
 	atlas->initialize();
 	std::shared_ptr<Entity> sprite;
@@ -27,6 +28,12 @@ void surfaceCreated() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	sprite->createComponent<ObjectComponent>()->initialize({ 100, 100 }, { 100, 100 }, bufferManager);
 	sprite->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
+
+	//std::shared_ptr<Entity> text;
+	std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>();
+	glyphsLoader->bufferSymbols(16);
+	//text->createComponent<ObjectComponent>()->initialize({ 100, 100 }, { 100, 100 }, bufferManager);
+	//text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, "test", 1, { 0, 0, 1, 1 }, glyphsLoader, bufferManager);
 
 	drawSystem = std::make_shared<DrawSystem>(bufferManager);
 }

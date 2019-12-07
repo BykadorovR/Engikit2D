@@ -1,14 +1,26 @@
 #include "Texture.h"
 
 TextureRaw::TextureRaw(std::string path, std::tuple<float, float> tileSize) {
-	_path = path;
 	_tileSize = tileSize;
-	_imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
-	_imageLoader->loadPNG(&path[0]);
+	auto imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
+	imageLoader->loadPNG(&path[0]);
+
+	_data = imageLoader->getData();
+	_realImageSize = imageLoader->getSize();
 }
 
-std::shared_ptr<ImageLoader> TextureRaw::getImageLoader() {
-	return _imageLoader;
+TextureRaw::TextureRaw(std::vector<uint8_t> data, std::tuple<float, float> realImageSize) {
+	_tileSize = { 1.0f, 1.0f };
+	_data = data;
+	_realImageSize = realImageSize;
+}
+
+std::tuple<float, float> TextureRaw::getRealImageSize() {
+	return _realImageSize;
+}
+
+std::vector<uint8_t> TextureRaw::getData() {
+	return _data;
 }
 
 int TextureRaw::getTextureID() {

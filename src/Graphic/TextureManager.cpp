@@ -19,8 +19,15 @@ std::shared_ptr<TextureRaw> TextureManager::createTexture(std::string imagePath,
 	return textureRaw;
 }
 
-std::shared_ptr<TextureAtlas> TextureManager::createAtlas(std::tuple<float, float> size) {
-	std::shared_ptr<TextureAtlas> targetAtlas = std::make_shared<TextureAtlas>(size);
+std::shared_ptr<TextureRaw> TextureManager::createTexture(int atlasID, std::tuple<float, float> posAtlas, std::vector<uint8_t> data, std::tuple<float, float> realImageSize) {
+	std::shared_ptr<TextureAtlas> targetAtlas = findAtlas(_atlasList, atlasID);
+	std::shared_ptr<TextureRaw> textureRaw = std::make_shared<TextureRaw>(data, realImageSize);
+	targetAtlas->addTexture(textureRaw, posAtlas);
+	return textureRaw;
+}
+
+std::shared_ptr<TextureAtlas> TextureManager::createAtlas(GLenum fourCC, std::tuple<float, float> size) {
+	std::shared_ptr<TextureAtlas> targetAtlas = std::make_shared<TextureAtlas>(fourCC, size);
 	targetAtlas->setAtlasID(_textureAtlasCounter++);
 	_atlasList.push_back(targetAtlas);
 	return targetAtlas;

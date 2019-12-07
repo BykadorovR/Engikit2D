@@ -13,9 +13,10 @@ class Buffer {
 private:
 	std::vector<float> _data;
 	GLuint _vbo;
+	BufferType _type;
 public:
-	Buffer();
-	bool create(BufferType type, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
-	bool change(std::tuple<float, float> position, std::tuple<float, float> size);
+	Buffer(BufferType type);
+	bool create(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
+	bool change(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
 	GLuint getVBO();
 };

@@ -13,6 +13,7 @@ public:
 	}
 	void printTextures();
 	std::shared_ptr<TextureRaw> createTexture(std::string imagePath, int atlasID, std::tuple<float, float> posAtlas, std::tuple<float, float> tileSize);
+	std::shared_ptr<TextureRaw> createTexture(int atlasID, std::tuple<float, float> posAtlas, std::vector<uint8_t> data, std::tuple<float, float> realImageSize);
 	std::shared_ptr<TextureAtlas> getTextureAtlas(int textureID);
-	std::shared_ptr<TextureAtlas> createAtlas(std::tuple<float, float> size);
+	std::shared_ptr<TextureAtlas> createAtlas(GLenum fourCC, std::tuple<float, float> size);
 };

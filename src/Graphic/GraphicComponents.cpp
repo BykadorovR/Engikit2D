@@ -1,6 +1,7 @@
 #include "GraphicComponents.h"
 #include "TextureManager.h"
 #include "State.h"
+#include <algorithm>
 
 ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
@@ -22,8 +23,35 @@ std::shared_ptr<Buffer> ObjectComponent::getBuffer() {
 	return _buffer;
 }
 
+std::tuple<float, float> ObjectComponent::getPosition() {
+	return _position;
+}
+
+std::tuple<float, float> ObjectComponent::getSize() {
+	return _size;
+}
+
+
 TextureComponent::TextureComponent() {
 	_componentName = "TextureComponent";
+}
+
+bool TextureComponent::setColorMask(std::vector<float> colorMask) {
+	_colorMask = colorMask;
+	return false;
+}
+
+std::vector<float> TextureComponent::getColorMask() {
+	return _colorMask;
+}
+
+bool TextureComponent::setColorAddition(std::vector<float> colorAddition) {
+	_colorAddition = colorAddition;
+	return false;
+}
+
+std::vector<float> TextureComponent::getColorAddition() {
+	return _colorAddition;
 }
 
 bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> bufferManager) {
@@ -33,7 +61,9 @@ bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> 
 	auto texture = std::get<0>(textureInfo);
 	auto texturePosition = std::get<1>(textureInfo);
 	//pos in atlas, tile size
-	_buffer = bufferManager->addBuffer(BufferType::Texture, texturePosition, texture->getImageLoader()->getSize(), textureAtlas->getSize());
+	_buffer = bufferManager->addBuffer(BufferType::Texture, texturePosition, texture->getRealImageSize(), textureAtlas->getSize());
+	_colorMask = { 1.0f, 1.0f, 1.0f, 1.0f };
+	_colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
 	return false;
 }
 
@@ -43,4 +73,50 @@ int TextureComponent::getTextureID() {
 
 std::shared_ptr<Buffer> TextureComponent::getBuffer() {
 	return _buffer;
+}
+
+TextComponent::TextComponent() {
+	_focus = false;
+	_page = 0;
+}
+
+bool TextComponent::initialize(TextComponentType type, std::string text, float scale, std::vector<float> color,
+	std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
+	_scale = scale;
+	_color = color;
+	_type = type;
+	_text = text;
+	_glyphsLoader = glyphsLoader;
+
+	//Texture buffer with temporal values, should be changed in runtime
+	_buffer = bufferManager->addBuffer(BufferType::Texture, { 0, 0 }, { 0, 0 }, _glyphsLoader->getAtlas()->getSize());
+	return false;
+}
+
+std::shared_ptr<Buffer> TextComponent::getBuffer() {
+	return _buffer;
+}
+
+std::string TextComponent::getText() {
+	return _text;
+}
+
+float TextComponent::getScale() {
+	return _scale;
+}
+
+std::vector<float> TextComponent::getColor() {
+	return _color;
+}
+
+std::shared_ptr<GlyphsLoader> TextComponent::getLoader() {
+	return _glyphsLoader;
+}
+
+bool TextComponent::setFocus(bool focus) {
+	return false;
+}
+
+bool TextComponent::getFocus() {
+	return _focus;
 }
