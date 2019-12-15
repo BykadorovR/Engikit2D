@@ -28,13 +28,13 @@ bool Buffer::create(std::tuple<float, float> position, std::tuple<float, float> 
 	// 0   2
 	// | / |
 	// 1   3
-	float data[] = { startX,                startY,
-					 startX,                startY - objectHeightN,
-					 startX + objectWidthN, startY,
-					 startX + objectWidthN, startY - objectHeightN };
+	_data = { startX,                startY,
+			  startX,                startY - objectHeightN,
+			  startX + objectWidthN, startY,
+			  startX + objectWidthN, startY - objectHeightN };
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(_data), &_data[0], GL_STATIC_DRAW);
 	if (_type == BufferType::Position) {
 		glEnableVertexAttribArray(/*location = 0*/0);
 		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -44,6 +44,10 @@ bool Buffer::create(std::tuple<float, float> position, std::tuple<float, float> 
 		glVertexAttribPointer(/*location = 1*/1, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 	return false;
+}
+
+BufferType Buffer::getType() {
+	return _type;
 }
 
 bool Buffer::change(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
@@ -64,13 +68,13 @@ bool Buffer::change(std::tuple<float, float> position, std::tuple<float, float> 
 	// 0   2
 	// | / |
 	// 1   3
-	float data[] = { startX,                startY,
-					 startX,                startY - objectHeightN,
-					 startX + objectWidthN, startY,
-					 startX + objectWidthN, startY - objectHeightN };
+	_data = { startX,                startY,
+			  startX,                startY - objectHeightN,
+			  startX + objectWidthN, startY,
+			  startX + objectWidthN, startY - objectHeightN };
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(data), data);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(_data), &_data[0]);
 	if (_type == BufferType::Position) {
 		glEnableVertexAttribArray(/*location = 0*/0);
 		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);

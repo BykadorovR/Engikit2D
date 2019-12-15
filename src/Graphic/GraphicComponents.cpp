@@ -7,11 +7,13 @@ ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
 }
 
-bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::shared_ptr<BufferManager> bufferManager) {
+bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::shared_ptr<BufferManager> bufferManager, std::shared_ptr<Shader> shader) {
 	_position = position;
 	_size = size;
-	_buffer = bufferManager->addBuffer(BufferType::Position, _position, _size, resolution);
-	_shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	_bufferManager = bufferManager;
+
+	_bufferManager->addBuffer(BufferType::Position, _position, _size, resolution);
+	_shader = shader;
 	return false;
 }
 
@@ -19,8 +21,8 @@ std::shared_ptr<Shader> ObjectComponent::getShader() {
 	return _shader;
 }
 
-std::shared_ptr<Buffer> ObjectComponent::getBuffer() {
-	return _buffer;
+std::shared_ptr<BufferManager> ObjectComponent::getBufferManager() {
+	return _bufferManager;
 }
 
 std::tuple<float, float> ObjectComponent::getPosition() {
@@ -56,12 +58,14 @@ std::vector<float> TextureComponent::getColorAddition() {
 
 bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> bufferManager) {
 	_textureID = textureID;
+	_bufferManager = bufferManager;
 	auto textureAtlas = TextureManager::instance()->getTextureAtlas(textureID);
 	auto textureInfo = textureAtlas->getTexture(textureID);
 	auto texture = std::get<0>(textureInfo);
 	auto texturePosition = std::get<1>(textureInfo);
+
 	//pos in atlas, tile size
-	_buffer = bufferManager->addBuffer(BufferType::Texture, texturePosition, texture->getRealImageSize(), textureAtlas->getSize());
+	_bufferManager->addBuffer(BufferType::Texture, texturePosition, texture->getRealImageSize(), textureAtlas->getSize());
 	_colorMask = { 1.0f, 1.0f, 1.0f, 1.0f };
 	_colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
 	return false;
@@ -71,8 +75,8 @@ int TextureComponent::getTextureID() {
 	return _textureID;
 }
 
-std::shared_ptr<Buffer> TextureComponent::getBuffer() {
-	return _buffer;
+std::shared_ptr<BufferManager> TextureComponent::getBufferManager() {
+	return _bufferManager;
 }
 
 TextComponent::TextComponent() {
@@ -87,14 +91,15 @@ bool TextComponent::initialize(TextComponentType type, std::string text, float s
 	_type = type;
 	_text = text;
 	_glyphsLoader = glyphsLoader;
+	_bufferManager = bufferManager;
 
 	//Texture buffer with temporal values, should be changed in runtime
-	_buffer = bufferManager->addBuffer(BufferType::Texture, { 0, 0 }, { 0, 0 }, _glyphsLoader->getAtlas()->getSize());
+	_bufferManager->addBuffer(BufferType::Texture, { 0, 0 }, { 0, 0 }, _glyphsLoader->getAtlas()->getSize());
 	return false;
 }
 
-std::shared_ptr<Buffer> TextComponent::getBuffer() {
-	return _buffer;
+std::shared_ptr<BufferManager> TextComponent::getBufferManager() {
+	return _bufferManager;
 }
 
 std::string TextComponent::getText() {

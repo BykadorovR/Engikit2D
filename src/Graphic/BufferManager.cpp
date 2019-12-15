@@ -13,11 +13,19 @@ std::shared_ptr<Buffer> BufferManager::addBuffer(BufferType type, std::tuple<flo
 	return buffer;
 }
 
-bool BufferManager::changeBuffer(std::shared_ptr<Buffer> buffer, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
+bool BufferManager::changeBuffer(BufferType bufferType, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
 	activateBuffer();
-	buffer->change(position, sizeTarget, sizeOverall);
+	getBuffer(bufferType)->change(position, sizeTarget, sizeOverall);
 	deactivateBuffer();
 	return false;
+}
+
+std::shared_ptr<Buffer> BufferManager::getBuffer(BufferType type) {
+	for (auto buffer : _buffers) {
+		if (buffer->getType() == type)
+			return buffer;
+	}
+	return nullptr;
 }
 
 bool BufferManager::activateBuffer() {

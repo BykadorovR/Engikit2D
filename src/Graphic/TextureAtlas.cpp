@@ -17,9 +17,11 @@ TextureAtlas::TextureAtlas(GLenum fourCC, std::tuple<float, float> size) {
 
 bool TextureAtlas::initialize() {
 	glBindTexture(GL_TEXTURE_2D, _textureObjectId);
+	// Set texture options
+	glTexImage2D(GL_TEXTURE_2D, 0, _fourCC, std::get<0>(_size), std::get<1>(_size), 0, _fourCC, GL_UNSIGNED_BYTE, &_data[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, _fourCC, std::get<0>(_size), std::get<1>(_size), 0, _fourCC, GL_UNSIGNED_BYTE, &_data[0]);
+
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	return false;
@@ -46,6 +48,31 @@ bool TextureAtlas::addTexture(std::shared_ptr<TextureRaw> texture, std::tuple<fl
 
 	return false;
 }
+
+bool TextureAtlas::addTextureFont(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position) {
+	auto textureSize = texture->getRealImageSize();
+	auto textureData = texture->getData();
+	for (int y = 0; y < std::get<1>(textureSize); y++)
+		for (int x = 0; x < std::get<0>(textureSize); x++) {
+			int coordXIntoResult = std::get<0>(position) * _bitDepth + x * _bitDepth;
+			int coordYIntoResult = std::get<1>(position) + y;
+			assert(coordXIntoResult < std::get<0>(_size) * _bitDepth);
+			assert(coordYIntoResult < std::get<1>(_size));
+			int coordIntoResult = coordXIntoResult + std::get<0>(_size) * _bitDepth * coordYIntoResult;
+			int coordIntoSource = x + std::get<0>(textureSize) * y;
+			assert(coordIntoResult < std::get<0>(_size) * std::get<1>(_size) * _bitDepth);
+			assert(coordIntoSource < std::get<0>(textureSize) * std::get<1>(textureSize));
+			for (int k = 0; k < 3; k++)
+				_data[coordIntoResult + k] = 255;
+			_data[coordIntoResult + _bitDepth - 1] = textureData[coordIntoSource];
+		}
+
+	_textures.push_back({ texture, position });
+	texture->setTextureID(_textureCounter++);
+
+	return false;
+}
+
 
 int TextureAtlas::getAtlasID() {
 	return _textureObjectId;

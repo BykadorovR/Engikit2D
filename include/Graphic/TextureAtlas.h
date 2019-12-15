@@ -11,6 +11,7 @@ public:
 	TextureAtlas(GLenum fourCC, std::tuple<float, float> size);
 	bool initialize();
 	bool addTexture(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position);
+	bool addTextureFont(std::shared_ptr<TextureRaw> texture, std::tuple<float, float> position);
 	std::tuple<std::shared_ptr<TextureRaw>, std::tuple<float, float> > getTexture(int textureID);
 	bool containTexture(int textureID);
 	int getAtlasID();

@@ -19,4 +19,5 @@ public:
 	bool create(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
 	bool change(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
 	GLuint getVBO();
+	BufferType getType();
 };

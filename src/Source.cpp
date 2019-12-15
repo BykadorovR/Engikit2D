@@ -18,24 +18,31 @@ std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
+	activeScene = sceneManager->createScene("basic");
+
 	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas(GL_RGBA, { 4096, 4096 });
 	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
 	atlas->initialize();
-	std::shared_ptr<Entity> sprite;
-	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
-	activeScene = sceneManager->createScene("basic");
-	sprite = activeScene->createEntity();
-	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	sprite->createComponent<ObjectComponent>()->initialize({ 100, 100 }, { 100, 100 }, bufferManager);
-	sprite->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
 
-	//std::shared_ptr<Entity> text;
-	std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>();
-	glyphsLoader->bufferSymbols(16);
-	//text->createComponent<ObjectComponent>()->initialize({ 100, 100 }, { 100, 100 }, bufferManager);
-	//text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, "test", 1, { 0, 0, 1, 1 }, glyphsLoader, bufferManager);
+	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	{
+		std::shared_ptr<Entity> sprite = activeScene->createEntity();
+		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
+		sprite->createComponent<ObjectComponent>()->initialize({ 0, 100 }, { 100, 100 }, bufferManager, shader);
+		sprite->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
+	}
+	{
+		std::shared_ptr<Entity> text = activeScene->createEntity();
+		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
+		std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>();
+		glyphsLoader->bufferSymbols(24);
+		text->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
+		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, "XajuNgv23hv65zzHHH", 1, { 0, 0.5, 1, 1 }, glyphsLoader, bufferManager);
+		//text->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
+	}
 
-	drawSystem = std::make_shared<DrawSystem>(bufferManager);
+	drawSystem = std::make_shared<DrawSystem>();
 }
 
 

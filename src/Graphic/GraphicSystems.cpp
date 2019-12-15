@@ -3,13 +3,11 @@
 #include <algorithm>
 #include "State.h"
 
-DrawSystem::DrawSystem(std::shared_ptr<BufferManager> bufferManager) {
-	_bufferManager = bufferManager;
+DrawSystem::DrawSystem() {
 }
 
 void DrawSystem::vertexUpdate(std::shared_ptr<ObjectComponent> vertexObject) {
 	glUseProgram(vertexObject->getShader()->getProgram());
-	_bufferManager->activateBuffer();
 }
 
 void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) {
@@ -18,9 +16,9 @@ void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) 
 	glUniform4fv(/*color_mask*/     4, 1, reinterpret_cast<GLfloat *>(&textureObject->getColorMask()[0]));
 	glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&textureObject->getColorAddition()[0]));
 	glBindTexture(GL_TEXTURE_2D, TextureManager::instance()->getTextureAtlas(textureObject->getTextureID())->getTextureObject());
-
+	textureObject->getBufferManager()->activateBuffer();
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	_bufferManager->deactivateBuffer();
+	textureObject->getBufferManager()->deactivateBuffer();
 }
 
 void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
@@ -33,53 +31,55 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 
 	//the tallest char
 	float allignHeight = 0;
-	for (std::string::const_iterator c = textObject->getText().begin(); c != textObject->getText().end(); c++)
+	std::string text = textObject->getText();
+	for (std::string::const_iterator c = text.begin(); c != text.end(); c++)
 	{
-		FT_Face chFace = textObject->getLoader()->getCharacters()[*c];
-		allignHeight = std::max(static_cast<float>(chFace->glyph->bitmap.rows), allignHeight);
+		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
+		allignHeight = std::max(static_cast<float>(std::get<1>(chInfo.size)), allignHeight);
 	}
 
-	bool allignY = false;
 	int yAllign = 0;
 	// Iterate through all characters
-	for (std::string::const_iterator c = textObject->getText().begin(); c != textObject->getText().end(); c++)
+	for (std::string::const_iterator c = text.begin(); c != text.end(); c++)
 	{
-		FT_Face chFace = textObject->getLoader()->getCharacters()[*c];
-		GLfloat w = chFace->glyph->bitmap.width * textObject->getScale();
-		GLfloat h = chFace->glyph->bitmap.rows * textObject->getScale();
+		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
+		GLfloat w = std::get<0>(chInfo.size) * textObject->getScale();
+		GLfloat h = std::get<1>(chInfo.size) * textObject->getScale();
 		GLfloat yPos = 0;
 		GLfloat xPos = 0;
-		xPos = currentX + chFace->glyph->bitmap_left *  textObject->getScale();
+		xPos = currentX + std::get<0>(chInfo.bearing) *  textObject->getScale();
 		if (xPos + w >= std::get<0>(positionEnd)) {
 			yAllign += allignHeight;
 			currentX = std::get<0>(positionStart);
-			xPos = currentX + chFace->glyph->bitmap_left *  textObject->getScale();
+			xPos = currentX + std::get<0>(chInfo.bearing) *  textObject->getScale();
 		}
 
-		yPos = currentY + (allignHeight + yAllign + chFace->glyph->bitmap.rows - chFace->glyph->bitmap_top) * textObject->getScale();
+		yPos = currentY - (allignHeight + yAllign + std::get<1>(chInfo.size) - std::get<1>(chInfo.bearing)) * textObject->getScale();
 		if (yPos >= std::get<1>(positionEnd))
 			break;
-		
 		//First of all we should change vertex buffer by changing size and position
-		_bufferManager->changeBuffer(vertexObject->getBuffer(), { xPos, yPos }, { w, h }, resolution);
+		vertexObject->getBufferManager()->changeBuffer(BufferType::Position, { xPos, yPos }, { w, h }, resolution);
 		
 		std::tuple<float, float> characterAtlasPosition = textObject->getLoader()->getCharactersAtlasPosition()[*c];
 		//Now we should change texture buffer by passing position of current glyph in atlas to OpenGL API
-		_bufferManager->changeBuffer(textObject->getBuffer(), characterAtlasPosition, { chFace->glyph->bitmap.width, chFace->glyph->bitmap.rows },
-									 textObject->getLoader()->getAtlas()->getSize());
+		textObject->getBufferManager()->changeBuffer(BufferType::Texture, characterAtlasPosition, 
+													{ std::get<0>(chInfo.size), std::get<1>(chInfo.size) },
+													textObject->getLoader()->getAtlas()->getSize());
 
 		glUniform1f(/*u_AdjustX*/       2, 0);
 		glUniform1f(/*u_AdjustY*/       3, 0);
-		std::vector<float> colorMask = {1.0f, 1.0f, 1.0f, 1.0f};
-		glUniform4fv(/*color_mask*/     4, 1, reinterpret_cast<GLfloat *>(&colorMask[0]));
-		glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&textObject->getColor()[0]));
+		
+		glUniform4fv(/*color_mask*/     4, 1, reinterpret_cast<GLfloat *>(&textObject->getColor()[0]));
+		std::vector<float> colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
+		glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&colorAddition[0]));
 
-		glBindTexture(GL_TEXTURE_2D, textObject->getLoader()->getAtlas()->getAtlasID());
+		glBindTexture(GL_TEXTURE_2D, textObject->getLoader()->getAtlas()->getTextureObject());
+		textObject->getBufferManager()->activateBuffer();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		textObject->getBufferManager()->deactivateBuffer();
 		//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		xPos += (chFace->glyph->advance.x >> 6) * textObject->getScale(); // Bitshift by 6 to get value in pixels (2^6 = 64)
+		currentX += (chInfo.advance >> 6) * textObject->getScale(); // Bitshift by 6 to get value in pixels (2^6 = 64)
 	}
-	_bufferManager->deactivateBuffer();
 }
 
 // Called every game update

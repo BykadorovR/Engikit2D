@@ -13,7 +13,8 @@ public:
 	//need to create VAO
 	BufferManager();
 	std::shared_ptr<Buffer> addBuffer(BufferType type, std::tuple<float, float> position, std::tuple<float, float> size, std::tuple<float, float> sizeOverall);
-	bool changeBuffer(std::shared_ptr<Buffer> buffer, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
+	bool changeBuffer(BufferType type, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
+	std::shared_ptr<Buffer> BufferManager::getBuffer(BufferType type);
 	bool activateBuffer();
 	bool deactivateBuffer();
 };
