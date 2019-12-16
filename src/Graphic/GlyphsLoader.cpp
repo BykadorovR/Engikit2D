@@ -50,7 +50,7 @@ void GlyphsLoader::bufferSymbols(int symbolHeight) {
 		}
 		std::tuple<float, float> atlasPosition = { atlasX, atlasY };
 
-		atlasX += std::get<0>(charSize);
+		atlasX += std::get<0>(charSize) + 1; //+ 1 = to delimit chars by width
 		std::vector<uint8_t> charData(face->glyph->bitmap.buffer, face->glyph->bitmap.buffer +
 			static_cast<int>(std::get<0>(charSize) * std::get<1>(charSize)));
 

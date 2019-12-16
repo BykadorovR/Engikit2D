@@ -29,7 +29,7 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<Entity> sprite = activeScene->createEntity();
 		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-		sprite->createComponent<ObjectComponent>()->initialize({ 0, 100 }, { 100, 100 }, bufferManager, shader);
+		sprite->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
 		sprite->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
 	}
 	{
@@ -38,7 +38,7 @@ void surfaceCreated() {
 		std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>();
 		glyphsLoader->bufferSymbols(24);
 		text->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
-		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, "XajuNgv23hv65zzHHH", 1, { 0, 0.5, 1, 1 }, glyphsLoader, bufferManager);
+		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, "Prijet123", 0.8, { 1, 0.5, 0.3, 1 }, glyphsLoader, bufferManager);
 		//text->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
 	}
 
