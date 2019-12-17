@@ -2,20 +2,21 @@
 #include <algorithm>
 #include "Texture.h"
 
-GlyphsLoader::GlyphsLoader() {
+GlyphsLoader::GlyphsLoader(std::tuple<int, int> symbolsCodes) {
 	//Need to create atlas without TextureManager so it can't be used outside
-	_charactersAtlas = std::make_shared<TextureAtlas>(GL_RGBA, std::tuple<float, float>(1024, 1024));
+	_charactersAtlas = std::make_shared<TextureAtlas>(GL_RGBA, std::tuple<float, float>(256, 256));
+	_symbolsCodes = symbolsCodes;
 }
 
 std::shared_ptr<TextureAtlas> GlyphsLoader::getAtlas() {
 	return _charactersAtlas;
 }
 
-std::map<GLchar, CharacterInfo> GlyphsLoader::getCharacters() {
+std::map<FT_ULong, CharacterInfo> GlyphsLoader::getCharacters() {
 	return _characters;
 }
 
-std::map<GLchar, std::tuple<float, float> > GlyphsLoader::getCharactersAtlasPosition() {
+std::map<FT_ULong, std::tuple<float, float> > GlyphsLoader::getCharactersAtlasPosition() {
 	return _charactersAtlasPosition;
 }
 
@@ -29,11 +30,24 @@ void GlyphsLoader::bufferSymbols(int symbolHeight) {
 	FT_Face face;
 	if (FT_New_Face(ft, "../data/fonts/arial.ttf", 0, &face))
 		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+	
+	FT_Select_Charmap(face, ft_encoding_unicode);
+
 	FT_Set_Pixel_Sizes(face, 0, symbolHeight);
 	float maxHeight = 0;
 	float atlasX = 0;
 	float atlasY = 0;
-	for (GLubyte c = 48; c < 122; c++)
+
+	std::vector<int> codes;
+	//from " " to "~" including all digits and eng alphabet 
+	for (int i = 20; i <= 126; i++) {
+		codes.push_back(i);
+	}
+
+	for (int i = std::get<0>(_symbolsCodes); i <= std::get<1>(_symbolsCodes); i++) {
+		codes.push_back(i);
+	}
+	for (auto c : codes)
 	{
 		// Load character glyph 
 		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
@@ -41,6 +55,8 @@ void GlyphsLoader::bufferSymbols(int symbolHeight) {
 			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
 			continue;
 		}
+
+		auto glyph_index = FT_Get_Char_Index(face, c);
 
 		std::tuple<float, float> charSize = { face->glyph->bitmap.width, face->glyph->bitmap.rows };
 		maxHeight = std::max(std::get<1>(charSize), maxHeight);
@@ -59,14 +75,14 @@ void GlyphsLoader::bufferSymbols(int symbolHeight) {
 		_charactersAtlas->addTextureFont(glyph, atlasPosition);
 		//bind position of character in atlas to character so texture rendering will depends on only 1 texture and position
 		//inside it
-		_charactersAtlasPosition.insert(std::pair<GLchar, std::tuple<float, float> >(c, atlasPosition));
+		_charactersAtlasPosition.insert(std::pair<FT_ULong, std::tuple<float, float> >(c, atlasPosition));
 
 		CharacterInfo info = { 
 			std::tuple<int, int>(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 			std::tuple<int, int>(face->glyph->bitmap_left, face->glyph->bitmap_top),
 			face->glyph->advance.x };
 
-		_characters.insert(std::pair<GLchar, CharacterInfo>(c, info));
+		_characters.insert(std::pair<FT_ULong, CharacterInfo>(c, info));
 	}
 	_charactersAtlas->initialize();
 }

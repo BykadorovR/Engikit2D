@@ -24,7 +24,6 @@ void surfaceCreated() {
 	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas(GL_RGBA, { 4096, 4096 });
 	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
 	atlas->initialize();
-
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	{
 		std::shared_ptr<Entity> sprite = activeScene->createEntity();
@@ -35,11 +34,11 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<Entity> text = activeScene->createEntity();
 		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-		std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>();
+		std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>(std::make_tuple<int, int>(static_cast<int>(*(L"А")), 
+																											  static_cast<int>(*(L"я"))));
 		glyphsLoader->bufferSymbols(24);
 		text->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
-		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, "Prijet123", 0.8, { 1, 0.5, 0.3, 1 }, glyphsLoader, bufferManager);
-		//text->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
+		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, L"230AфAqwr~!@$(*_0afaAШЩфИТS1Жопа", 0.8, { 1, 0.5, 0.3, 1 }, glyphsLoader, bufferManager);
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();

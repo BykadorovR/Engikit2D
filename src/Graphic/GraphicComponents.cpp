@@ -84,7 +84,7 @@ TextComponent::TextComponent() {
 	_page = 0;
 }
 
-bool TextComponent::initialize(TextComponentType type, std::string text, float scale, std::vector<float> color,
+bool TextComponent::initialize(TextComponentType type, std::wstring text, float scale, std::vector<float> color,
 	std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
 	_scale = scale;
 	_color = color;
@@ -102,7 +102,7 @@ std::shared_ptr<BufferManager> TextComponent::getBufferManager() {
 	return _bufferManager;
 }
 
-std::string TextComponent::getText() {
+std::wstring TextComponent::getText() {
 	return _text;
 }
 

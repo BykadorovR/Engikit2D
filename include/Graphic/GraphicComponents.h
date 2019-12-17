@@ -56,11 +56,11 @@ enum TextComponentType {
 class TextComponent : public Component {
 public:
 	TextComponent();
-	bool initialize(TextComponentType type, std::string text, float scale, std::vector<float> color, 
+	bool initialize(TextComponentType type, std::wstring text, float scale, std::vector<float> color, 
 					std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager);
 	bool setFocus(bool focus);
 	bool getFocus();
-	std::string getText();
+	std::wstring getText();
 	std::shared_ptr<GlyphsLoader> getLoader();
 	float getScale();
 	std::vector<float> getColor();
@@ -69,7 +69,7 @@ private:
 	//if focus == true all keys will be handled as text for this TextComponent
 	bool _focus;
 	int _page;
-	std::string _text;
+	std::wstring _text;
 	float _scale;
 	std::vector<float> _color;
 	std::shared_ptr<GlyphsLoader> _glyphsLoader;

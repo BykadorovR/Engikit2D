@@ -29,12 +29,13 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	float startX = std::get<0>(positionStart);
 	float startY = std::get<1>(positionStart);
 
+	const float lineSpacingCoeff = 1.1;
 	//the tallest char
 	float allignHeight = 0;
 	float allignBearing = 0;
-	std::string text = textObject->getText();
+	std::wstring text = textObject->getText();
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
-	for (std::string::const_iterator c = text.begin(); c != text.end(); c++)
+	for (auto c = text.begin(); c != text.end(); c++)
 	{
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		allignHeight = std::max(static_cast<float>(std::get<1>(chInfo.size)), allignHeight);
@@ -44,7 +45,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	int yAllign = 0;
 	int xAllign = 0;
 	// Iterate through all characters
-	for (std::string::const_iterator c = text.begin(); c != text.end(); c++)
+	for (auto c = text.begin(); c != text.end(); c++)
 	{
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		GLfloat w = std::get<0>(chInfo.size) * textObject->getScale();
@@ -53,11 +54,11 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		GLfloat xPos = 0;
 		xPos = startX + std::get<0>(chInfo.bearing) * textObject->getScale() + xAllign;
 		if (xPos + w >= std::get<0>(positionEnd)) {
-			yAllign += allignHeight * textObject->getScale();
+			yAllign += (allignHeight) * lineSpacingCoeff * textObject->getScale();
 			xAllign = 0;
 			xPos = startX + std::get<0>(chInfo.bearing) * textObject->getScale();
 		}
-		//allign by the tallest char
+		//allign by the tallest char (bearing is the upper part of symbol)
 		yPos = startY + (allignBearing - std::get<1>(chInfo.bearing)) * textObject->getScale() + yAllign;
 		if (yPos + h >= std::get<1>(positionEnd))
 			break;
