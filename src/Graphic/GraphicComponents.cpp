@@ -56,6 +56,14 @@ std::vector<float> TextureComponent::getColorAddition() {
 	return _colorAddition;
 }
 
+bool TextureComponent::initialize(std::shared_ptr<BufferManager> bufferManager) {
+	_textureID = -1;
+	_bufferManager = bufferManager;
+	_colorMask = { 1.0f, 1.0f, 1.0f, 1.0f };
+	_colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
+	return false;
+}
+
 bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> bufferManager) {
 	_textureID = textureID;
 	_bufferManager = bufferManager;
@@ -69,6 +77,12 @@ bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> 
 	_colorMask = { 1.0f, 1.0f, 1.0f, 1.0f };
 	_colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
 	return false;
+}
+
+bool TextureComponent::hasBindedTexture() {
+	if (_textureID < 0)
+		return false;
+	return true;
 }
 
 int TextureComponent::getTextureID() {

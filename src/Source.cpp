@@ -29,16 +29,27 @@ void surfaceCreated() {
 		std::shared_ptr<Entity> sprite = activeScene->createEntity();
 		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 		sprite->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
-		sprite->createComponent<TextureComponent>()->initialize(textureRaw->getTextureID(), bufferManager);
+		auto textureComponent = sprite->createComponent<TextureComponent>();
+		textureComponent->initialize(bufferManager);
+		textureComponent->setColorMask({ 0, 0, 0, 0 });
+		textureComponent->setColorAddition({ 1, 1, 0, 1 });
+	}
+	{
+		std::shared_ptr<Entity> sprite = activeScene->createEntity();
+		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
+		sprite->createComponent<ObjectComponent>()->initialize({ 300, 300 }, { 100, 100 }, bufferManager, shader);
+		auto textureComponent = sprite->createComponent<TextureComponent>();
+		textureComponent->initialize(textureRaw->getTextureID(), bufferManager);
 	}
 	{
 		std::shared_ptr<Entity> text = activeScene->createEntity();
 		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-		std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>(std::make_tuple<int, int>(static_cast<int>(*(L"А")), 
+		std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>("../data/fonts/arial.ttf", 
+																					std::make_tuple<int, int>(static_cast<int>(*(L"А")), 
 																											  static_cast<int>(*(L"я"))));
 		glyphsLoader->bufferSymbols(24);
 		text->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
-		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, L"230AфAqwr~!@$(*_0afaAШЩфИТS1Жопа", 0.8, { 1, 0.5, 0.3, 1 }, glyphsLoader, bufferManager);
+		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, L"230фAqwr~!@$$(*_0afaAШЩГИТS1Жопа", 0.8, { 1, 0.5, 0.3, 1 }, glyphsLoader, bufferManager);
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();

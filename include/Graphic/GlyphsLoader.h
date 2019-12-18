@@ -15,13 +15,14 @@ struct CharacterInfo {
 
 class GlyphsLoader {
 public:
-	GlyphsLoader(std::tuple<int, int> symbolsCodes);
+	GlyphsLoader(std::string fontPath, std::tuple<int, int> symbolsCodes);
 	void bufferSymbols(int symbolHeight);
 	std::map<FT_ULong, CharacterInfo> getCharacters();
 	std::map<FT_ULong, std::tuple<float, float> > getCharactersAtlasPosition();
 	std::shared_ptr<TextureAtlas> getAtlas();
 private:
 	int _symbolHeight;
+	std::string _fontPath;
 	std::tuple<int, int> _symbolsCodes;
 	std::shared_ptr<TextureAtlas> _charactersAtlas;
 	std::map<FT_ULong, std::tuple<float, float> > _charactersAtlasPosition;

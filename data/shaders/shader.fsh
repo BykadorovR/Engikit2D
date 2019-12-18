@@ -15,6 +15,6 @@ out vec4 color;
 void main()
 {
     color = texture2D(u_TextureUnit, vec2(v_TextureCoordinates.x+u_AdjustX, v_TextureCoordinates.y+u_AdjustY));
-	color += color_addition;
 	color *= color_mask;
+	color += color_addition;
 }

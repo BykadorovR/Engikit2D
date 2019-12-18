@@ -39,12 +39,14 @@ private:
 	bool _invisible;
 public:
 	TextureComponent();
+	bool initialize(std::shared_ptr<BufferManager> bufferManager);
 	bool initialize(int textureID, std::shared_ptr<BufferManager> bufferManager);
 	bool setColorMask(std::vector<float> colorMask);
 	std::vector<float> getColorMask();
 	bool setColorAddition(std::vector<float> colorAddition);
 	std::vector<float> getColorAddition();
 	int getTextureID();
+	bool hasBindedTexture();
 	std::shared_ptr<BufferManager> getBufferManager();
 };
 

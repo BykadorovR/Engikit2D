@@ -15,7 +15,8 @@ void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) 
 	glUniform1f(/*u_AdjustY*/       3, 0);
 	glUniform4fv(/*color_mask*/     4, 1, reinterpret_cast<GLfloat *>(&textureObject->getColorMask()[0]));
 	glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&textureObject->getColorAddition()[0]));
-	glBindTexture(GL_TEXTURE_2D, TextureManager::instance()->getTextureAtlas(textureObject->getTextureID())->getTextureObject());
+	if (textureObject->hasBindedTexture())
+		glBindTexture(GL_TEXTURE_2D, TextureManager::instance()->getTextureAtlas(textureObject->getTextureID())->getTextureObject());
 	textureObject->getBufferManager()->activateBuffer();
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	textureObject->getBufferManager()->deactivateBuffer();
@@ -29,24 +30,27 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	float startX = std::get<0>(positionStart);
 	float startY = std::get<1>(positionStart);
 
-	const float lineSpacingCoeff = 1.1;
+	const float lineSpacingCoeff = 1;
 	//the tallest char
-	float allignHeight = 0;
 	float allignBearing = 0;
 	std::wstring text = textObject->getText();
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
-	for (auto c = text.begin(); c != text.end(); c++)
-	{
+	for (auto c = text.begin(); c != text.end(); c++) {
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
-		allignHeight = std::max(static_cast<float>(std::get<1>(chInfo.size)), allignHeight);
 		allignBearing = std::max(static_cast<float>(std::get<1>(chInfo.bearing)), allignBearing);
+	}
+
+	float allignHeight = 0;
+	for (auto c = text.begin(); c != text.end(); c++) {
+		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
+		allignHeight = std::max(allignBearing - static_cast<float>(std::get<1>(chInfo.bearing)) + 
+												static_cast<float>(std::get<1>(chInfo.size)), allignHeight);
 	}
 
 	int yAllign = 0;
 	int xAllign = 0;
 	// Iterate through all characters
-	for (auto c = text.begin(); c != text.end(); c++)
-	{
+	for (auto c = text.begin(); c != text.end(); c++) {
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		GLfloat w = std::get<0>(chInfo.size) * textObject->getScale();
 		GLfloat h = std::get<1>(chInfo.size) * textObject->getScale();

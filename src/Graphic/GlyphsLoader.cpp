@@ -2,10 +2,11 @@
 #include <algorithm>
 #include "Texture.h"
 
-GlyphsLoader::GlyphsLoader(std::tuple<int, int> symbolsCodes) {
+GlyphsLoader::GlyphsLoader(std::string fontPath, std::tuple<int, int> symbolsCodes) {
 	//Need to create atlas without TextureManager so it can't be used outside
 	_charactersAtlas = std::make_shared<TextureAtlas>(GL_RGBA, std::tuple<float, float>(256, 256));
 	_symbolsCodes = symbolsCodes;
+	_fontPath = fontPath;
 }
 
 std::shared_ptr<TextureAtlas> GlyphsLoader::getAtlas() {
@@ -28,7 +29,7 @@ void GlyphsLoader::bufferSymbols(int symbolHeight) {
 		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
 
 	FT_Face face;
-	if (FT_New_Face(ft, "../data/fonts/arial.ttf", 0, &face))
+	if (FT_New_Face(ft, _fontPath.c_str(), 0, &face))
 		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
 	
 	FT_Select_Charmap(face, ft_encoding_unicode);
