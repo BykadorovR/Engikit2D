@@ -14,6 +14,8 @@
 #include "TextureManager.h"
 #include "GlyphsLoader.h"
 
+#include "Back.h"
+
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
 void surfaceCreated() {
@@ -24,6 +26,14 @@ void surfaceCreated() {
 	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas(GL_RGBA, { 4096, 4096 });
 	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
 	atlas->initialize();
+
+	std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>("../data/fonts/arial.ttf",
+		std::make_tuple<int, int>(static_cast<int>(*(L"А")),
+			static_cast<int>(*(L"я"))));
+	glyphsLoader->bufferSymbols(24);
+
+
+	//TODO: shaders should be global
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	{
 		std::shared_ptr<Entity> sprite = activeScene->createEntity();
@@ -44,12 +54,16 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<Entity> text = activeScene->createEntity();
 		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-		std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>("../data/fonts/arial.ttf", 
-																					std::make_tuple<int, int>(static_cast<int>(*(L"А")), 
-																											  static_cast<int>(*(L"я"))));
-		glyphsLoader->bufferSymbols(24);
+		//TODO: make glyphs loader global
 		text->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
 		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, L"230фAqwr~!@$$(*_0afaAШЩГИТS1Жопа", 0.8, { 1, 0.5, 0.3, 1 }, glyphsLoader, bufferManager);
+	}
+	{
+		std::shared_ptr<BackFactory> backFactory = std::make_shared<BackFactory>(activeScene);
+		std::shared_ptr<Back> back1 = std::dynamic_pointer_cast<Back>(backFactory->createView());
+		std::shared_ptr<Back> back2 = std::dynamic_pointer_cast<Back>(backFactory->createView());
+		back1->initialize({ 0, 100 }, { 200, 100 }, { 0, 1, 0, 1 }, shader);
+		back2->initialize({ 300, 100 }, { 200, 100 }, textureRaw->getTextureID(), shader);
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();
