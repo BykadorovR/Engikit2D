@@ -15,6 +15,8 @@
 #include "GlyphsLoader.h"
 
 #include "Back.h"
+#include "Label.h"
+#include "Button.h"
 
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
@@ -56,14 +58,15 @@ void surfaceCreated() {
 		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 		//TODO: make glyphs loader global
 		text->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
-		text->createComponent<TextComponent>()->initialize(TextComponentType::LABEL, L"230фAqwr~!@$$(*_0afaAШЩГИТS1Жопа", 0.8, { 1, 0.5, 0.3, 1 }, glyphsLoader, bufferManager);
+		text->createComponent<TextComponent>()->initialize(L"230фAqwr~!@$$(*_0afaAШЩГИТS1Жопа", glyphsLoader, bufferManager);
+		text->getComponent<TextComponent>()->setColor({ 1, 1, 1, 1 });
+		text->getComponent<TextComponent>()->setScale(0.8);
 	}
 	{
-		std::shared_ptr<BackFactory> backFactory = std::make_shared<BackFactory>(activeScene);
-		std::shared_ptr<Back> back1 = std::dynamic_pointer_cast<Back>(backFactory->createView());
-		std::shared_ptr<Back> back2 = std::dynamic_pointer_cast<Back>(backFactory->createView());
-		back1->initialize({ 0, 100 }, { 200, 100 }, { 0, 1, 0, 1 }, shader);
-		back2->initialize({ 300, 100 }, { 200, 100 }, textureRaw->getTextureID(), shader);
+		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
+		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
+		//TODO: rewrite to Back options and LabelOptions
+		button->initialize({ 400, 400 }, { 100, 100 }, textureRaw->getTextureID(), L"Button", {1, 0, 1, 1}, 1.3f, glyphsLoader, shader);
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();

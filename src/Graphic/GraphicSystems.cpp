@@ -22,6 +22,7 @@ void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) 
 	textureObject->getBufferManager()->deactivateBuffer();
 }
 
+//TODO: add possibility to choose allignment (center, left, right)
 void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
 	std::tuple<float, float> positionStart = vertexObject->getPosition();
 	std::tuple<float, float> positionEnd = { std::get<0>(vertexObject->getPosition()) + std::get<0>(vertexObject->getSize()),

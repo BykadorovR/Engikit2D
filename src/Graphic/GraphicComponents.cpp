@@ -98,11 +98,9 @@ TextComponent::TextComponent() {
 	_page = 0;
 }
 
-bool TextComponent::initialize(TextComponentType type, std::wstring text, float scale, std::vector<float> color,
-	std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
-	_scale = scale;
-	_color = color;
-	_type = type;
+bool TextComponent::initialize(std::wstring text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
+	_scale = 1.f;
+	_color = {1.f, 1.f, 1.f, 1.f};
 	_text = text;
 	_glyphsLoader = glyphsLoader;
 	_bufferManager = bufferManager;
@@ -120,8 +118,18 @@ std::wstring TextComponent::getText() {
 	return _text;
 }
 
+bool TextComponent::setScale(float scale) {
+	_scale = scale;
+	return false;
+}
+
 float TextComponent::getScale() {
 	return _scale;
+}
+
+bool TextComponent::setColor(std::vector<float> color) {
+	_color = color;
+	return false;
 }
 
 std::vector<float> TextComponent::getColor() {

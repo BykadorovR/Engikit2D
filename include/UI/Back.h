@@ -1,6 +1,11 @@
+#pragma once
 #include "View.h"
 #include "Scene.h"
 #include "Shader.h"
+
+struct BackOptions {
+
+};
 
 class Back : public View {
 public:

@@ -50,21 +50,17 @@ public:
 	std::shared_ptr<BufferManager> getBufferManager();
 };
 
-enum TextComponentType {
-	LABEL = 0,
-	EDIT = 1
-};
-
 class TextComponent : public Component {
 public:
 	TextComponent();
-	bool initialize(TextComponentType type, std::wstring text, float scale, std::vector<float> color, 
-					std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager);
+	bool initialize(std::wstring text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager);
 	bool setFocus(bool focus);
 	bool getFocus();
 	std::wstring getText();
 	std::shared_ptr<GlyphsLoader> getLoader();
+	bool setScale(float scale);
 	float getScale();
+	bool setColor(std::vector<float> color);
 	std::vector<float> getColor();
 	std::shared_ptr<BufferManager> getBufferManager();
 private:
@@ -75,6 +71,5 @@ private:
 	float _scale;
 	std::vector<float> _color;
 	std::shared_ptr<GlyphsLoader> _glyphsLoader;
-	TextComponentType _type;
 	std::shared_ptr<BufferManager> _bufferManager;
 };
