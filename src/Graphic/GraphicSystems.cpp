@@ -28,6 +28,8 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	std::tuple<float, float> positionEnd = { std::get<0>(vertexObject->getPosition()) + std::get<0>(vertexObject->getSize()),
 											 std::get<1>(vertexObject->getPosition()) + std::get<1>(vertexObject->getSize()) };
 
+
+	float objectWidth = std::get<0>(positionEnd) - std::get<1>(positionStart);
 	float startX = std::get<0>(positionStart);
 	float startY = std::get<1>(positionStart);
 
@@ -35,10 +37,16 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	//the tallest char
 	float allignBearing = 0;
 	std::wstring text = textObject->getText();
+	float textWidth = 0;
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
 	for (auto c = text.begin(); c != text.end(); c++) {
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		allignBearing = std::max(static_cast<float>(std::get<1>(chInfo.bearing)), allignBearing);
+		//we have to calculate size of text (it's offset of the char to next char + bearing) but for last char we don't use offset but just it's width + bearing
+		if (std::next(c) != text.end())
+			textWidth += ((chInfo.advance >> 6) + std::get<0>(chInfo.bearing)) * textObject->getScale();
+		else
+			textWidth += std::get<0>(chInfo.size) * textObject->getScale();
 	}
 
 	float allignHeight = 0;
@@ -47,6 +55,10 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		allignHeight = std::max(allignBearing - static_cast<float>(std::get<1>(chInfo.bearing)) + 
 												static_cast<float>(std::get<1>(chInfo.size)), allignHeight);
 	}
+
+	int widthAllign = (objectWidth - textWidth) / 2;
+	if (widthAllign < 0)
+		widthAllign = 0;
 
 	int yAllign = 0;
 	int xAllign = 0;
@@ -57,11 +69,13 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		GLfloat h = std::get<1>(chInfo.size) * textObject->getScale();
 		GLfloat yPos = 0;
 		GLfloat xPos = 0;
-		xPos = startX + std::get<0>(chInfo.bearing) * textObject->getScale() + xAllign;
+
+		xPos = startX + xAllign + widthAllign;
 		if (xPos + w >= std::get<0>(positionEnd)) {
 			yAllign += (allignHeight) * lineSpacingCoeff * textObject->getScale();
 			xAllign = 0;
-			xPos = startX + std::get<0>(chInfo.bearing) * textObject->getScale();
+			textWidth = 0;
+			xPos = startX;
 		}
 		//allign by the tallest char (bearing is the upper part of symbol)
 		yPos = startY + (allignBearing - std::get<1>(chInfo.bearing)) * textObject->getScale() + yAllign;
@@ -88,7 +102,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		textObject->getBufferManager()->deactivateBuffer();
 		//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		xAllign += (chInfo.advance >> 6) * textObject->getScale(); // Bitshift by 6 to get value in pixels (2^6 = 64)
+		xAllign += ((chInfo.advance >> 6) + std::get<0>(chInfo.bearing)) * textObject->getScale(); // Bitshift by 6 to get value in pixels (2^6 = 64)
 	}
 }
 

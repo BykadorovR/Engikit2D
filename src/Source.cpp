@@ -38,35 +38,10 @@ void surfaceCreated() {
 	//TODO: shaders should be global
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	{
-		std::shared_ptr<Entity> sprite = activeScene->createEntity();
-		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-		sprite->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
-		auto textureComponent = sprite->createComponent<TextureComponent>();
-		textureComponent->initialize(bufferManager);
-		textureComponent->setColorMask({ 0, 0, 0, 0 });
-		textureComponent->setColorAddition({ 1, 1, 0, 1 });
-	}
-	{
-		std::shared_ptr<Entity> sprite = activeScene->createEntity();
-		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-		sprite->createComponent<ObjectComponent>()->initialize({ 300, 300 }, { 100, 100 }, bufferManager, shader);
-		auto textureComponent = sprite->createComponent<TextureComponent>();
-		textureComponent->initialize(textureRaw->getTextureID(), bufferManager);
-	}
-	{
-		std::shared_ptr<Entity> text = activeScene->createEntity();
-		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-		//TODO: make glyphs loader global
-		text->createComponent<ObjectComponent>()->initialize({ 200, 100 }, { 100, 100 }, bufferManager, shader);
-		text->createComponent<TextComponent>()->initialize(L"230фAqwr~!@$$(*_0afaAШЩГИТS1Жопа", glyphsLoader, bufferManager);
-		text->getComponent<TextComponent>()->setColor({ 1, 1, 1, 1 });
-		text->getComponent<TextComponent>()->setScale(0.8);
-	}
-	{
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
-		button->initialize({ 400, 400 }, { 100, 100 }, textureRaw->getTextureID(), L"Button", {1, 0, 1, 1}, 1.3f, glyphsLoader, shader);
+		button->initialize({ 400, 400 }, { 100, 100 }, textureRaw->getTextureID(), L"Button", {1, 0, 1, 1}, 1, glyphsLoader, shader);
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();
