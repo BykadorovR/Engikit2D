@@ -62,6 +62,8 @@ public:
 	float getScale();
 	bool setColor(std::vector<float> color);
 	std::vector<float> getColor();
+	bool setPageNumber(int page);
+	int getPageNumber();
 	std::shared_ptr<BufferManager> getBufferManager();
 private:
 	//if focus == true all keys will be handled as text for this TextComponent

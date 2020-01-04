@@ -18,6 +18,10 @@ bool Label::setScale(float scale) {
 	return false;
 }
 
+bool Label::setPageNumber(int pageNumber) {
+	_entity->getComponent<TextComponent>()->setPageNumber(pageNumber);
+	return false;
+}
 
 LabelFactory::LabelFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;

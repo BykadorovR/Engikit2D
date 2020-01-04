@@ -127,6 +127,15 @@ float TextComponent::getScale() {
 	return _scale;
 }
 
+bool TextComponent::setPageNumber(int page) {
+	_page = page;
+	return false;
+}
+
+int TextComponent::getPageNumber() {
+	return _page;
+}
+
 bool TextComponent::setColor(std::vector<float> color) {
 	_color = color;
 	return false;

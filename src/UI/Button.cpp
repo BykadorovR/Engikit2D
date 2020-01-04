@@ -28,6 +28,10 @@ bool Button::setBack(std::shared_ptr<Back> back) {
 	return false;
 }
 
+std::shared_ptr<Label> Button::getLabel() {
+	return _label;
+}
+
 ButtonFactory::ButtonFactory(std::shared_ptr<Scene> activeScene) {
 	_backFactory = std::make_shared<BackFactory>(activeScene);
 	_labelFactory = std::make_shared<LabelFactory>(activeScene);

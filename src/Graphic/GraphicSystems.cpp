@@ -59,6 +59,23 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 	}
 }
 
+struct Word {
+	Word() {
+		_size = 0;
+	}
+
+	std::vector<std::wstring> _text;
+	int _size;
+};
+
+struct Line {
+	Line() {
+		_size = 0;
+	
+	}
+	std::vector<Word> _text;
+	int _size;
+};
 
 //TODO: add possibility to choose allignment (center, left, right)
 void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
@@ -72,9 +89,13 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	float objectWidth = std::get<0>(positionEnd) - std::get<1>(positionStart);
 	float startX = std::get<0>(positionStart);
 	float startY = std::get<1>(positionStart);
+	
+	wchar_t delimiter = *(L" ");
+	CharacterInfo delimiterInfo = textObject->getLoader()->getCharacters()[delimiter];
+	int delimiterSize = ((delimiterInfo.advance >> 6) + std::get<0>(delimiterInfo.bearing)) * textObject->getScale();
 
 	std::vector<std::tuple<std::wstring, int> > words;
-	words.push_back({ L"", 0 });
+	words.push_back({L"", 0});
 	int wordIndex = 0;
 
 	//the tallest char
@@ -86,7 +107,8 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		allignBearingY = std::max(static_cast<float>(std::get<1>(chInfo.bearing)), allignBearingY);
 		
 		//Split the text to words to avoid situation when 1 word is splited to two lines
-		if (*c == *(L" ")) {
+		if (*c == delimiter) {
+			//end of word
 			words.push_back({ L"", 0 });
 			wordIndex++;
 		}
@@ -107,40 +129,65 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 												static_cast<float>(std::get<1>(chInfo.size)), allignHeight);
 	}
 
+	std::vector<int> widthLine;
+	widthLine.push_back(0);
+	int heightText = 0;
+
+	//calculate line width + line heights. Also split words to lines (insert delimiters to correct words)
 	float xPos = startX;
 	float yPos = startY;
+	int lineIndex = 0;
+	for (auto word = words.begin(); word != words.end(); word++) {
+		if (xPos + std::get<1>(*word) >= std::get<0>(positionEnd)) {
+			yPos += (allignHeight)* lineSpacingCoeff * textObject->getScale();
+			xPos = startX;
+		}
+
+		if (std::next(word) != words.end() &&
+			xPos + std::get<1>(*word) + std::get<1>(*std::next(word)) + delimiterSize < std::get<0>(positionEnd)) {
+			std::get<0>(*word) += delimiter;
+			std::get<1>(*word) += delimiterSize;
+			widthLine[lineIndex] += std::get<1>(*word);
+		}
+		else {
+			widthLine[lineIndex] += std::get<1>(*word);
+			widthLine.push_back(0);
+			lineIndex++;
+		}
+
+		xPos += std::get<1>(*word);
+	}
+
+	xPos = startX;
+	yPos = startY;
+	lineIndex = 0;
 	//need to find overall width for row
-	int widthLine = 0;
 	int widthAllign = 0;
 	for (auto word = words.begin(); word != words.end(); word++) {
 		std::wstring currentText = std::get<0>(*word);
 		int currentWordSize = std::get<1>(*word);
-
-		if (xPos + currentWordSize >= std::get<0>(positionEnd)) {
-			yPos += (allignHeight) * lineSpacingCoeff * textObject->getScale();
-			xPos = startX;
-			widthLine = 0;
-		}
-		
-		if (!widthLine) {
-			while (std::next(word) != words.end() && widthLine + std::get<1>(*std::next(word)) <= objectWidth)
-				widthLine += std::get<1>(*std::next(word));
-
-			widthAllign = (objectWidth - widthLine) / 2;
-			if (widthAllign < 0)
-				widthAllign = 0;
-		}
-
-		
-
+			
+		widthAllign = (objectWidth - widthLine[lineIndex]) / 2;
+		if (widthAllign < 0)
+			widthAllign = 0;
 
 		if (yPos + allignHeight >= std::get<1>(positionEnd)) {
 			//TODO: Need to change _page variable
 			break;
 		}
 
-		renderChar(currentText, { xPos, yPos }, allignBearingY, vertexObject, textObject);
+		if (lineIndex >= textObject->getPageNumber())
+			renderChar(currentText, { xPos + widthAllign, yPos }, allignBearingY, vertexObject, textObject);
+
 		xPos += currentWordSize;
+
+		//criteria of line break
+		if (currentText.back() != delimiter) {
+			xPos = startX;
+			if (lineIndex >= textObject->getPageNumber())
+				yPos += (allignHeight)* lineSpacingCoeff * textObject->getScale();
+			lineIndex++;
+		}
 	}
 
 	
