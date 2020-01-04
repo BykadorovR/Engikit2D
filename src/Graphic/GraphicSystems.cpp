@@ -78,6 +78,7 @@ struct Line {
 };
 
 //TODO: add possibility to choose allignment (center, left, right)
+//TODO: Need to split text to words and lines only once! at init
 void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
 	const float lineSpacingCoeff = 1;
 
