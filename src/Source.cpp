@@ -40,9 +40,9 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
-		button->getLabel()->setPageNumber(2);
+		button->getLabel()->setPageNumber(1);
 		//TODO: rewrite to Back options and LabelOptions
-		button->initialize({ 400, 400 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name me Hello. me Qwert me", {1, 0, 1, 1}, 0.85, glyphsLoader, shader);
+		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name me _ello. me Qwert me Kuku BuBu Kva Kva", {1, 0, 1, 1}, 1, glyphsLoader, shader);
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();

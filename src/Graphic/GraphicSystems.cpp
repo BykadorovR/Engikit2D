@@ -31,6 +31,8 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 		GLfloat w = std::get<0>(chInfo.size) * textObject->getScale();
 		GLfloat h = std::get<1>(chInfo.size) * textObject->getScale();
 
+		xAllign += std::get<0>(chInfo.bearing);
+
 		GLfloat xPos = startX + xAllign;
 		//allign by the tallest char (bearing is the upper part of symbol)
 		GLfloat yPos = startY + (allignBearingY - std::get<1>(chInfo.bearing)) * textObject->getScale();
@@ -55,26 +57,85 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		textObject->getBufferManager()->deactivateBuffer();
 		//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		xAllign += ((chInfo.advance >> 6) + std::get<0>(chInfo.bearing)) * textObject->getScale(); // Bitshift by 6 to get value in pixels (2^6 = 64)
+		xAllign += ((chInfo.advance >> 6) - std::get<0>(chInfo.bearing)) * textObject->getScale(); // Bitshift by 6 to get value in pixels (2^6 = 64)
 	}
 }
 
-struct Word {
-	Word() {
-		_size = 0;
+struct Symbol {
+	Symbol() {
+
 	}
 
-	std::vector<std::wstring> _text;
+	Symbol(std::tuple<wchar_t, int> params) {
+		_text = std::get<0>(params);
+		_size = std::get<1>(params);
+	}
 	int _size;
+	wchar_t _text;
+};
+
+struct Word {
+	Word() {
+	}
+
+	std::wstring getText() {
+		std::wstring text;
+		for (auto symbol : _text) {
+			text += symbol._text;
+		}
+		return text;
+	}
+
+	int getSize() {
+		int size = 0;
+		for (auto symbol : _text) {
+			size += symbol._size;
+		}
+		return size;
+	}
+
+	bool clear() {
+		_text.clear();
+		return false;
+	}
+
+	bool cropTrailingSpace() {
+		if (_text.back()._text == wordsDelimiter)
+			_text.pop_back();
+		return false;
+	}
+
+	std::wstring operator+=(std::tuple<wchar_t, int> rhs) {
+		_text.push_back(rhs);
+		return getText();
+	}
+
+	std::vector<Symbol> _text;
 };
 
 struct Line {
 	Line() {
-		_size = 0;
-	
+
 	}
+
+	bool addWord(Word word) {
+		_text.push_back(word);
+		return false;
+	}
+
+	int getWidth() {
+		int width = 0;
+		for (auto word : _text) {
+			width += word.getSize();
+		}
+		return width;
+	}
+
+	std::vector<Word>& getText() {
+		return _text;
+	}
+
 	std::vector<Word> _text;
-	int _size;
 };
 
 //TODO: add possibility to choose allignment (center, left, right)
@@ -87,7 +148,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 											 std::get<1>(vertexObject->getPosition()) + std::get<1>(vertexObject->getSize()) };
 
 
-	float objectWidth = std::get<0>(positionEnd) - std::get<1>(positionStart);
+	float objectWidth = std::get<0>(positionEnd) - std::get<0>(positionStart);
 	float startX = std::get<0>(positionStart);
 	float startY = std::get<1>(positionStart);
 	
@@ -95,103 +156,66 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	CharacterInfo delimiterInfo = textObject->getLoader()->getCharacters()[delimiter];
 	int delimiterSize = ((delimiterInfo.advance >> 6) + std::get<0>(delimiterInfo.bearing)) * textObject->getScale();
 
-	std::vector<std::tuple<std::wstring, int> > words;
-	words.push_back({L"", 0});
-	int wordIndex = 0;
+	std::vector<Line> lines;
+	lines.push_back(Line());
 
+	int wordSize = 0;
 	//the tallest char
 	float allignBearingY = 0;
+	float allignBottomY = 0;
 	std::wstring text = textObject->getText();
+	Word currentWord;
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
 	for (auto c = text.begin(); c != text.end(); c++) {
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		allignBearingY = std::max(static_cast<float>(std::get<1>(chInfo.bearing)), allignBearingY);
-		
-		//Split the text to words to avoid situation when 1 word is splited to two lines
-		if (*c == delimiter) {
-			//end of word
-			words.push_back({ L"", 0 });
-			wordIndex++;
+		allignBottomY = std::max(static_cast<float>(std::get<1>(chInfo.size) - std::get<1>(chInfo.bearing)), allignBottomY);
+		int symbolSize = (chInfo.advance >> 6) * textObject->getScale();
+
+		if (*c == delimiter || std::next(c) == text.end()) {
+			//skip delimiter, add current word to next line
+			if (lines.back().getWidth() + currentWord.getSize() > objectWidth) {
+				lines.back().getText().back().cropTrailingSpace();
+				lines.push_back(Line());
+				currentWord += {*c, symbolSize};
+				lines.back().addWord(currentWord);
+			} else {
+				if (lines.back().getWidth() + currentWord.getSize() + symbolSize <= objectWidth) {
+					currentWord += {*c, symbolSize};
+				}
+				lines.back().addWord(currentWord);
+			}
+			currentWord.clear();
+			continue;
 		}
-		else {
-			std::get<0>(words[wordIndex]) += *c;
-			//we have to calculate size of word (it's offset of the char to next char + bearing) but for last char we don't use offset but just it's width + bearing
-			if (std::next(c) != text.end())
-				std::get<1>(words[wordIndex]) += ((chInfo.advance >> 6) + std::get<0>(chInfo.bearing)) * textObject->getScale();
-			else
-				std::get<1>(words[wordIndex]) += std::get<0>(chInfo.size) * textObject->getScale();
-		}
+
+		currentWord += {*c, symbolSize};
 	}
 
-	float allignHeight = 0;
-	for (auto c = text.begin(); c != text.end(); c++) {
-		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
-		allignHeight = std::max(allignBearingY - static_cast<float>(std::get<1>(chInfo.bearing)) +
-												static_cast<float>(std::get<1>(chInfo.size)), allignHeight);
-	}
-
-	std::vector<int> widthLine;
-	widthLine.push_back(0);
-	int heightText = 0;
-
-	//calculate line width + line heights. Also split words to lines (insert delimiters to correct words)
 	float xPos = startX;
 	float yPos = startY;
-	int lineIndex = 0;
-	for (auto word = words.begin(); word != words.end(); word++) {
-		if (xPos + std::get<1>(*word) >= std::get<0>(positionEnd)) {
-			yPos += (allignHeight)* lineSpacingCoeff * textObject->getScale();
-			xPos = startX;
-		}
-
-		if (std::next(word) != words.end() &&
-			xPos + std::get<1>(*word) + std::get<1>(*std::next(word)) + delimiterSize < std::get<0>(positionEnd)) {
-			std::get<0>(*word) += delimiter;
-			std::get<1>(*word) += delimiterSize;
-			widthLine[lineIndex] += std::get<1>(*word);
-		}
-		else {
-			widthLine[lineIndex] += std::get<1>(*word);
-			widthLine.push_back(0);
-			lineIndex++;
-		}
-
-		xPos += std::get<1>(*word);
-	}
-
-	xPos = startX;
-	yPos = startY;
-	lineIndex = 0;
 	//need to find overall width for row
-	int widthAllign = 0;
-	for (auto word = words.begin(); word != words.end(); word++) {
-		std::wstring currentText = std::get<0>(*word);
-		int currentWordSize = std::get<1>(*word);
-			
-		widthAllign = (objectWidth - widthLine[lineIndex]) / 2;
+	for (auto line = lines.begin() + textObject->getPageNumber(); line != lines.end(); line++) {
+		int widthAllign = (objectWidth - line->getWidth()) / 2;
 		if (widthAllign < 0)
 			widthAllign = 0;
 
-		if (yPos + allignHeight >= std::get<1>(positionEnd)) {
-			//TODO: Need to change _page variable
+		std::vector<Word> words = line->getText();
+		for (auto word = words.begin(); word != words.end(); word++) {
+			std::wstring currentText = word->getText();
+			int currentWordSize = word->getSize();
+
+			renderChar(currentText, { xPos + widthAllign, yPos }, allignBearingY, vertexObject, textObject);
+			xPos += currentWordSize;
+		}
+
+		xPos = startX;
+		yPos += (allignBearingY + allignBottomY) * lineSpacingCoeff * textObject->getScale();
+		if (yPos + (allignBearingY + allignBottomY) * lineSpacingCoeff * textObject->getScale() >= std::get<1>(positionEnd)) {
 			break;
 		}
 
-		if (lineIndex >= textObject->getPageNumber())
-			renderChar(currentText, { xPos + widthAllign, yPos }, allignBearingY, vertexObject, textObject);
-
-		xPos += currentWordSize;
-
-		//criteria of line break
-		if (currentText.back() != delimiter) {
-			xPos = startX;
-			if (lineIndex >= textObject->getPageNumber())
-				yPos += (allignHeight)* lineSpacingCoeff * textObject->getScale();
-			lineIndex++;
-		}
 	}
-
-	
 }
 
 // Called every game update
