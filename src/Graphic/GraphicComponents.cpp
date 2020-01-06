@@ -93,6 +93,143 @@ std::shared_ptr<BufferManager> TextureComponent::getBufferManager() {
 	return _bufferManager;
 }
 
+Symbol::Symbol() {
+
+}
+
+Symbol::Symbol(std::tuple<wchar_t, CharacterInfo> params) {
+	_text = std::get<0>(params);
+	_chInfo = std::get<1>(params);
+}
+
+CharacterInfo Symbol::getCharacterInfo() {
+	return _chInfo;
+}
+
+wchar_t Symbol::getText() {
+	return _text;
+}
+
+Word::Word() {
+}
+
+std::wstring Word::getText() {
+	std::wstring text;
+	for (auto symbol : _text) {
+		text += symbol.getText();
+	}
+	return text;
+}
+
+int Word::getWidth() {
+	int size = 0;
+	for (auto symbol : _text) {
+		size += symbol.getCharacterInfo()._advance >> 6;
+	}
+	return size;
+}
+
+int Word::getHeight() {
+	int size = 0;
+	for (auto symbol : _text) {
+		size = std::max(std::get<1>(symbol.getCharacterInfo()._size), size);
+	}
+	return size;
+}
+
+int Word::getHeightAdjusted(int bearingYMax) {
+	int size = 0;
+	for (auto symbol : _text) {
+		size = std::max(std::get<1>(symbol.getCharacterInfo()._size) + bearingYMax - std::get<1>(symbol.getCharacterInfo()._bearing), size);
+	}
+	return size;
+}
+
+bool Word::clear() {
+	_text.clear();
+	return false;
+}
+
+bool Word::cropTrailingSpace() {
+	if (_text.back().getText() == wordsDelimiter)
+		_text.pop_back();
+	return false;
+}
+
+int Word::getBearingYMin() {
+	int size = INT_MAX;
+	for (auto symbol : _text) {
+		size = std::min(std::get<1>(symbol.getCharacterInfo()._bearing), size);
+	}
+	return size;
+}
+
+int Word::getBearingYMax() {
+	int size = INT_MIN;
+	for (auto symbol : _text) {
+		size = std::max(std::get<1>(symbol.getCharacterInfo()._bearing), size);
+	}
+	return size;
+}
+
+std::wstring Word::operator+=(std::tuple<wchar_t, CharacterInfo> rhs) {
+	_text.push_back(rhs);
+	return getText();
+}
+
+Line::Line() {
+
+}
+
+bool Line::addWord(Word word) {
+	_text.push_back(word);
+	return false;
+}
+
+int Line::getWidth() {
+	int width = 0;
+	for (auto word : _text) {
+		width += word.getWidth();
+	}
+	return width;
+}
+
+int Line::getHeight() {
+	int height = 0;
+	for (auto word : _text) {
+		height = std::max(word.getHeight(), height);
+	}
+	return height;
+}
+
+int Line::getHeightAdjusted(int bearingYMax) {
+	int height = 0;
+	for (auto word : _text) {
+		height = std::max(word.getHeightAdjusted(bearingYMax), height);
+	}
+	return height;
+}
+
+int Line::getBearingYMin() {
+	int size = INT_MAX;
+	for (auto symbol : _text) {
+		size = std::min(symbol.getBearingYMin(), size);
+	}
+	return size;
+}
+
+int Line::getBearingYMax() {
+	int size = INT_MIN;
+	for (auto symbol : _text) {
+		size = std::max(symbol.getBearingYMax(), size);
+	}
+	return size;
+}
+
+std::vector<Word>& Line::getText() {
+	return _text;
+}
+
 TextComponent::TextComponent() {
 	_focus = false;
 	_page = 0;

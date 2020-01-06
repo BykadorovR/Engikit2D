@@ -56,6 +56,51 @@ enum TextAllignment {
 	RIGHT = 2
 };
 
+
+class Symbol {
+public:
+	Symbol();
+	Symbol(std::tuple<wchar_t, CharacterInfo> params);
+	CharacterInfo getCharacterInfo();
+	wchar_t getText();
+private:
+	CharacterInfo _chInfo;
+	wchar_t _text;
+};
+
+class Word {
+public:
+	Word();
+	std::wstring getText();
+	int getWidth();
+	int getHeight();
+	//bearingMax - bearingCurrent + height so we get size of char on screen with bearing padding
+	int getHeightAdjusted(int bearingYMax);
+	bool clear();
+	bool cropTrailingSpace();
+	int getBearingYMin();
+	int getBearingYMax();
+	std::wstring operator+=(std::tuple<wchar_t, CharacterInfo> rhs);
+private:
+	std::vector<Symbol> _text;
+};
+
+class Line {
+public:
+	Line();
+
+	bool addWord(Word word);
+	int getWidth();
+	int getHeight();
+	int getHeightAdjusted(int bearingYMax);
+	int getBearingYMin();
+	int getBearingYMax();
+	std::vector<Word>& getText();
+private:
+	std::vector<Word> _text;
+};
+
+
 class TextComponent : public Component {
 public:
 	TextComponent();

@@ -16,6 +16,7 @@ public:
 	bool setScale(float scale);
 	bool setPageNumber(int pageNumber);
 	bool setTextAllignment(std::tuple<TextAllignment, TextAllignment> allignment);
+	bool setLineSpacingCoeff(float coeff);
 };
 
 class LabelFactory : public ViewFactory {

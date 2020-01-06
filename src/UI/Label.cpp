@@ -27,6 +27,11 @@ bool Label::setTextAllignment(std::tuple<TextAllignment, TextAllignment> allignm
 	return false;
 }
 
+bool Label::setLineSpacingCoeff(float coeff) {
+	_entity->getComponent<TextComponent>()->setLineSpacingCoeff(coeff);
+	return false;
+}
+
 LabelFactory::LabelFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 }
