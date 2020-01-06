@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "Shader.h"
 #include "GlyphsLoader.h"
+#include "GraphicComponents.h"
 
 struct LabelOptions {
 
@@ -14,6 +15,7 @@ public:
 	bool setColor(std::vector<float> color);
 	bool setScale(float scale);
 	bool setPageNumber(int pageNumber);
+	bool setTextAllignment(std::tuple<TextAllignment, TextAllignment> allignment);
 };
 
 class LabelFactory : public ViewFactory {

@@ -50,6 +50,12 @@ public:
 	std::shared_ptr<BufferManager> getBufferManager();
 };
 
+enum TextAllignment {
+	LEFT = 0,
+	CENTER = 1,
+	RIGHT = 2
+};
+
 class TextComponent : public Component {
 public:
 	TextComponent();
@@ -64,6 +70,10 @@ public:
 	std::vector<float> getColor();
 	bool setPageNumber(int page);
 	int getPageNumber();
+	bool setAllignment(std::tuple<TextAllignment, TextAllignment> allignment);
+	std::tuple<TextAllignment, TextAllignment> getAllignment();
+	bool setLineSpacingCoeff(float coeff);
+	float getLineSpacingCoeff();
 	std::shared_ptr<BufferManager> getBufferManager();
 private:
 	//if focus == true all keys will be handled as text for this TextComponent
@@ -71,7 +81,9 @@ private:
 	int _page;
 	std::wstring _text;
 	float _scale;
+	float _lineSpacingCoeff;
 	std::vector<float> _color;
 	std::shared_ptr<GlyphsLoader> _glyphsLoader;
 	std::shared_ptr<BufferManager> _bufferManager;
+	std::tuple<TextAllignment, TextAllignment> _allignment;
 };

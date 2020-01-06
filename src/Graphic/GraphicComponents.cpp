@@ -101,6 +101,9 @@ TextComponent::TextComponent() {
 bool TextComponent::initialize(std::wstring text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
 	_scale = 1.f;
 	_color = {1.f, 1.f, 1.f, 1.f};
+	_lineSpacingCoeff = 1;
+	_page = 0;
+	_allignment = {TextAllignment::LEFT, TextAllignment::LEFT};
 	_text = text;
 	_glyphsLoader = glyphsLoader;
 	_bufferManager = bufferManager;
@@ -155,4 +158,22 @@ bool TextComponent::setFocus(bool focus) {
 
 bool TextComponent::getFocus() {
 	return _focus;
+}
+
+bool TextComponent::setAllignment(std::tuple<TextAllignment, TextAllignment> allignment) {
+	_allignment = allignment;
+	return false;
+}
+
+std::tuple<TextAllignment, TextAllignment> TextComponent::getAllignment() {
+	return _allignment;
+}
+
+bool TextComponent::setLineSpacingCoeff(float coeff) {
+	_lineSpacingCoeff = coeff;
+	return false;
+}
+
+float TextComponent::getLineSpacingCoeff() {
+	return _lineSpacingCoeff;
 }

@@ -13,6 +13,10 @@ std::shared_ptr<TextureAtlas> GlyphsLoader::getAtlas() {
 	return _charactersAtlas;
 }
 
+float GlyphsLoader::getLineSpace() {
+	return _lineSpace;
+}
+
 std::map<FT_ULong, CharacterInfo> GlyphsLoader::getCharacters() {
 	return _characters;
 }
@@ -35,6 +39,9 @@ void GlyphsLoader::bufferSymbols(int symbolHeight) {
 	FT_Select_Charmap(face, ft_encoding_unicode);
 
 	FT_Set_Pixel_Sizes(face, 0, symbolHeight);
+	// get the line spacing, note that it is measured in 64ths of a pixel
+	_lineSpace = face->size->metrics.height / 64;
+
 	float maxHeight = 0;
 	float atlasX = 0;
 	float atlasY = 0;

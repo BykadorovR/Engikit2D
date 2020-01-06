@@ -1,5 +1,4 @@
 #include "Label.h"
-#include "GraphicComponents.h"
 
 bool Label::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::wstring text, std::shared_ptr<GlyphsLoader> glyphs, std::shared_ptr<Shader> shader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
@@ -20,6 +19,11 @@ bool Label::setScale(float scale) {
 
 bool Label::setPageNumber(int pageNumber) {
 	_entity->getComponent<TextComponent>()->setPageNumber(pageNumber);
+	return false;
+}
+
+bool Label::setTextAllignment(std::tuple<TextAllignment, TextAllignment> allignment) {
+	_entity->getComponent<TextComponent>()->setAllignment(allignment);
 	return false;
 }
 

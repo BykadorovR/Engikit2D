@@ -8,9 +8,16 @@
 #include FT_FREETYPE_H
 
 struct CharacterInfo {
-	std::tuple<int, int> size;       // Size of glyph
-	std::tuple<int, int> bearing;    // Offset from baseline to left/top of glyph
-	GLuint advance;    // Offset to advance to next glyph
+	std::tuple<int, int> _size;       // Size of glyph
+	std::tuple<int, int> _bearing;    // Offset from baseline to left/top of glyph
+	GLuint _advance;    // Offset to advance to next glyph
+
+	CharacterInfo& operator=(const CharacterInfo& rhs) {
+		_size = rhs._size;
+		_bearing = rhs._bearing;
+		_advance = rhs._advance;
+		return *this;
+	}
 };
 
 class GlyphsLoader {
@@ -20,7 +27,9 @@ public:
 	std::map<FT_ULong, CharacterInfo> getCharacters();
 	std::map<FT_ULong, std::tuple<float, float> > getCharactersAtlasPosition();
 	std::shared_ptr<TextureAtlas> getAtlas();
+	float getLineSpace();
 private:
+	float _lineSpace;
 	int _symbolHeight;
 	std::string _fontPath;
 	std::tuple<int, int> _symbolsCodes;
