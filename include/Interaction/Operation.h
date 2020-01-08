@@ -1,9 +1,12 @@
 #pragma once
 #include <string>
+#include "Action.h"
 
 class Operation {
+protected:
+	std::vector<Action* > _actions;
 public:
-	Operation();
-	bool compare();
-	bool prepare(std::string config);
+	virtual void registerAction(Action* listener) = 0;
+	virtual void unregisterAction(Action* listener) = 0;
+	virtual ~Operation() = 0;
 };

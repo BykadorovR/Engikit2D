@@ -4,7 +4,5 @@
 class Action {
 	bool _editorMode;
 public:
-	Action();
-	bool compare();
-	bool prepare(std::string config);
+	virtual ~Action() = 0;
 };
