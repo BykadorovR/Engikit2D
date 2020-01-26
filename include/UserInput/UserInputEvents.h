@@ -33,7 +33,7 @@ public:
 /*
 GLFW callback
 */
-void mousePress(GLFWwindow* window, int button, int action, int mods);
+void mousePressed(GLFWwindow* window, int button, int action, int mods);
 
 class IMouseEvent {
 public:
@@ -46,7 +46,6 @@ Singleton
 */
 class MouseEvent {
 private:
-
 	std::vector<IMouseEvent* > _listeners;
 public:
 	static MouseEvent& instance() {
@@ -57,6 +56,6 @@ public:
 	void registerComponent(IMouseEvent* listener);
 	void unregisterComponent(IMouseEvent* listener);
 
-	void mousePress(GLFWwindow* window, int button, int action, int mods);
+	void mousePressed(GLFWwindow* window, int button, int action, int mods);
 };
 

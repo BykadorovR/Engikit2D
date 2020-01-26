@@ -14,7 +14,9 @@ public:
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader);
 	bool setLabel(std::shared_ptr<Label> label);
 	bool setBack(std::shared_ptr<Back> back);
+	bool setInteraction(std::shared_ptr<Operation> operation, std::shared_ptr<Action> action);
 	std::shared_ptr<Label> getLabel();
+	std::shared_ptr<Back> getBack();
 };
 	
 class ButtonFactory : public ViewFactory {

@@ -11,6 +11,8 @@ class Back : public View {
 public:
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, int textureID, std::shared_ptr<Shader> shader);
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> color, std::shared_ptr<Shader> shader);
+	std::tuple<float, float> getPosition();
+	std::tuple<float, float> getSize();
 };
 
 class BackFactory : public ViewFactory {

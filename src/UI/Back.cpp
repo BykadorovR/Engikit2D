@@ -17,6 +17,14 @@ bool Back::initialize(std::tuple<float, float> position, std::tuple<float, float
 	return false;
 }
 
+std::tuple<float, float> Back::getPosition() {
+	return _entity->getComponent<ObjectComponent>()->getPosition();
+}
+
+std::tuple<float, float> Back::getSize() {
+	return _entity->getComponent<ObjectComponent>()->getSize();
+}
+
 BackFactory::BackFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 }

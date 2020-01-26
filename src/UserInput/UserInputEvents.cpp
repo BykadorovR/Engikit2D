@@ -2,8 +2,8 @@
 #include "Common.h"
 #include <algorithm>
 
-void mousePress(GLFWwindow* window, int button, int action, int mods) {
-	MouseEvent::instance().mousePress(window, button, action, mods);
+void mousePressed(GLFWwindow* window, int button, int action, int mods) {
+	MouseEvent::instance().mousePressed(window, button, action, mods);
 }
 
 void keyboardPress(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -34,7 +34,7 @@ void MouseEvent::unregisterComponent(IMouseEvent* listener) {
 		_listeners.erase(std::remove(_listeners.begin(), _listeners.end(), listener), _listeners.end());
 }
 
-void MouseEvent::mousePress(GLFWwindow* window, int button, int action, int mods) {
+void MouseEvent::mousePressed(GLFWwindow* window, int button, int action, int mods) {
 	switch (button) {
 	case GLFW_MOUSE_BUTTON_LEFT:
 		OUT_STREAM("Left ");
