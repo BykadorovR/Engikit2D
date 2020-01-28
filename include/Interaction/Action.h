@@ -7,7 +7,7 @@ public:
 	virtual ~Action() = 0;
 };
 
-class ActionTest : public Action {
+class ChangeNumberAction : public Action {
 public:
 	ActionTest();
 };
