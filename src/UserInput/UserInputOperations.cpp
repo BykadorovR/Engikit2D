@@ -12,11 +12,11 @@ void KeyInputOperation::keyboardPressed(int character, int action, int mode) {
 	}
 }
 
-void KeyInputOperation::registerAction(Action* listener) {
+void KeyInputOperation::registerAction(std::shared_ptr<Action> listener) {
 	_actions.push_back(listener);
 }
 
-void KeyInputOperation::unregisterAction(Action* listener) {
+void KeyInputOperation::unregisterAction(std::shared_ptr<Action> listener) {
 	if (listener && _actions.size() > 0)
 		_actions.erase(std::remove(_actions.begin(), _actions.end(), listener), _actions.end());
 }
@@ -27,12 +27,12 @@ KeyInputOperation::~KeyInputOperation() {
 
 
 
-MouseInputOperation::MouseInputOperation(std::tuple<float, float, float, float> area) {
+MouseClickAreaOperation::MouseClickAreaOperation(std::tuple<float, float, float, float> area) {
 	_area = area;
 	MouseEvent::instance().registerComponent(this);
 }
 
-void MouseInputOperation::mouseClickDownLeft(int x, int y) {
+void MouseClickAreaOperation::mouseClickDownLeft(int x, int y) {
 	if (x > std::get<0>(_area) && x < std::get<2>(_area) &&
 		y > std::get<1>(_area) && y < std::get<3>(_area)) {
 		for (auto actionItem : _actions) {
@@ -40,19 +40,19 @@ void MouseInputOperation::mouseClickDownLeft(int x, int y) {
 	}
 }
 
-void MouseInputOperation::mouseClickDownRight(int x, int y) {
+void MouseClickAreaOperation::mouseClickDownRight(int x, int y) {
 
 }
 
-MouseInputOperation::~MouseInputOperation() {
+MouseClickAreaOperation::~MouseClickAreaOperation() {
 	MouseEvent::instance().unregisterComponent(this);
 }
 
-void MouseInputOperation::registerAction(Action* listener) {
+void MouseClickAreaOperation::registerAction(std::shared_ptr<Action> listener) {
 	_actions.push_back(listener);
 }
 
-void MouseInputOperation::unregisterAction(Action* listener) {
+void MouseClickAreaOperation::unregisterAction(std::shared_ptr<Action> listener) {
 	if (listener && _actions.size() > 0)
 		_actions.erase(std::remove(_actions.begin(), _actions.end(), listener), _actions.end());
 }

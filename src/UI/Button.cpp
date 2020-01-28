@@ -1,5 +1,4 @@
 #include "Button.h"
-#include "InteractionComponents.h"
 
 bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
@@ -35,11 +34,6 @@ std::shared_ptr<Label> Button::getLabel() {
 
 std::shared_ptr<Back> Button::getBack() {
 	return _back;
-}
-
-bool Button::setInteraction(std::shared_ptr<Operation> operation, std::shared_ptr<Action> action) {
-	_entity->getComponent<InteractionComponent>()->attachAction(operation, action);
-	return false;
 }
 
 ButtonFactory::ButtonFactory(std::shared_ptr<Scene> activeScene) {

@@ -18,6 +18,7 @@
 #include "Label.h"
 #include "Button.h"
 #include "UserInputOperations.h"
+#include "InteractionComponents.h"
 
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
@@ -48,9 +49,9 @@ void surfaceCreated() {
 			std::get<0>(button->getBack()->getPosition()) + std::get<0>(button->getBack()->getSize()),
 			std::get<1>(button->getBack()->getPosition()) + std::get<1>(button->getBack()->getSize()),
 		};
-
-		button->setInteraction(std::make_shared<MouseInputOperation>(boundingBox),
-							   std::make_shared<ActionTest>());
+		auto mouseClickAreaOperation = std::make_shared<MouseClickAreaOperation>(boundingBox);
+		mouseClickAreaOperation->registerAction(std::make_shared<ActionTest>());
+		button->getBack()->getEntity()->getComponent<InteractionComponent>()->attachOperation(mouseClickAreaOperation);
 		button->getLabel()->setPageNumber(1);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::RIGHT, TextAllignment::CENTER });

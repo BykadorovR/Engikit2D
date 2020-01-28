@@ -5,8 +5,8 @@
 
 class InteractionComponent : public Component {
 private:
-	std::map<std::shared_ptr<Operation>, std::vector<std::shared_ptr<Action> > > _interaction;
+	std::vector<std::shared_ptr<Operation> > _interaction;
 public:
 	InteractionComponent();
-	void attachAction(std::shared_ptr<Operation> operation, std::shared_ptr<Action> action);
+	void attachOperation(std::shared_ptr<Operation> operation);
 };

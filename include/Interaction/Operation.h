@@ -5,9 +5,9 @@
 
 class Operation {
 protected:
-	std::vector<Action* > _actions;
+	std::vector<std::shared_ptr<Action> > _actions;
 public:
-	virtual void registerAction(Action* listener) = 0;
-	virtual void unregisterAction(Action* listener) = 0;
+	virtual void registerAction(std::shared_ptr<Action> listener) = 0;
+	virtual void unregisterAction(std::shared_ptr<Action> listener) = 0;
 	virtual ~Operation() = 0;
 };

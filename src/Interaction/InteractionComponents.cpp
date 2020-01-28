@@ -4,6 +4,6 @@ InteractionComponent::InteractionComponent() {
 
 }
 
-void InteractionComponent::attachAction(std::shared_ptr<Operation> operation, std::shared_ptr<Action> action) {
-	_interaction[operation].push_back(action);
+void InteractionComponent::attachOperation(std::shared_ptr<Operation> operation) {
+	_interaction.push_back(operation);
 }
