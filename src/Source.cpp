@@ -51,7 +51,7 @@ void surfaceCreated() {
 		};
 		auto mouseClickAreaOperation = std::make_shared<MouseClickAreaOperation>(boundingBox);
 		mouseClickAreaOperation->registerAction(std::make_shared<ActionTest>());
-		button->getBack()->getEntity()->getComponent<InteractionComponent>()->attachOperation(mouseClickAreaOperation);
+		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(mouseClickAreaOperation);
 		button->getLabel()->setPageNumber(1);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::RIGHT, TextAllignment::CENTER });

@@ -1,6 +1,5 @@
 #pragma once
 #include "Component.h"
-#include "Action.h"
 #include "Operation.h"
 
 class InteractionComponent : public Component {
