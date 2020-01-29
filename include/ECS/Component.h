@@ -7,8 +7,11 @@
 #include "Action.h"
 
 class Component {
+private:
+	std::string _componentName;
 public:
 	Component();
-	std::string _componentName;
+	//TODO: std::tuple<float, bool>
+	virtual float getMember(std::string name) = 0;
 	virtual ~Component() = default;
 };

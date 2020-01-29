@@ -2,6 +2,13 @@
 
 MouseComponent::MouseComponent() {
 	MouseEvent::instance().registerComponent(this);
+	_classVariables = 
+	{
+		{"leftClickX", &std::get<0>(_leftClick)}, 
+		{"leftClickY", &std::get<1>(_leftClick)},
+		{"rightClickX", &std::get<0>(_rightClick)},
+		{"rightClickY", &std::get<1>(_rightClick)}
+	}
 }
 
 void MouseComponent::mouseClickDownLeft(int x, int y) {
@@ -12,12 +19,8 @@ void MouseComponent::mouseClickDownRight(int x, int y) {
 	_rightClick = { x, y };
 }
 
-std::tuple<float, float> MouseComponent::getLeftClick() {
-	return _leftClick;
-}
-
-std::tuple<float, float> MouseComponent::getRightClick() {
-	return _rightClick;
+float MouseComponent::getMember(std::string name) {
+	return *_classVariables[name];
 }
 
 MouseComponent::~MouseComponent() {

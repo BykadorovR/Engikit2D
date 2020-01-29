@@ -3,7 +3,3 @@
 Action::~Action() {
 
 }
-
-ActionTest::ActionTest() {
-
-}

@@ -1,28 +1,14 @@
 #pragma once
-#include "UserInputEvents.h"
+#include "Expression.h"
 #include "Operation.h"
-#include <tuple>
+#include <algorithm>
 
-class KeyPressedAction : Action {
-
-};
-
-class KeyInputOperation : public IKeyboardEvent, public Operation {
-	KeyInputOperation();
-	void keyboardPressed(int character, int action, int mode);
-	void registerAction(std::shared_ptr<Action> listener);
-	void unregisterAction(std::shared_ptr<Action> listener);
-	~KeyInputOperation();
-};
-
-class MouseClickAreaOperation : public IMouseEvent, public Operation {
+class SimpleOperation : public Operation {
 private:
-	std::tuple<float, float, float, float> _area;
+	std::shared_ptr<Expression> _expression;
 public:
-	MouseClickAreaOperation(std::tuple<float, float, float, float> area);
-	void mouseClickDownLeft(int x, int y);
-	void mouseClickDownRight(int x, int y);
+	void setExpression(std::shared_ptr<Expression> expression);
+	bool checkOperation();
 	void registerAction(std::shared_ptr<Action> listener);
 	void unregisterAction(std::shared_ptr<Action> listener);
-	~MouseClickAreaOperation();
 };

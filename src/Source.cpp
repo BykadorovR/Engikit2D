@@ -18,6 +18,7 @@
 #include "Label.h"
 #include "Button.h"
 #include "UserInputOperations.h"
+#include "UserInputComponents.h"
 #include "InteractionComponents.h"
 
 std::shared_ptr<Scene> activeScene;
@@ -43,15 +44,12 @@ void surfaceCreated() {
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
 		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name Me Button Bugton", {1, 0, 1, 1}, 1, glyphsLoader, shader);
-		std::tuple<float, float, float, float> boundingBox = {
-			std::get<0>(button->getBack()->getPosition()),
-			std::get<1>(button->getBack()->getPosition()),
-			std::get<0>(button->getBack()->getPosition()) + std::get<0>(button->getBack()->getSize()),
-			std::get<1>(button->getBack()->getPosition()) + std::get<1>(button->getBack()->getSize()),
-		};
-		auto mouseClickAreaOperation = std::make_shared<MouseClickAreaOperation>(boundingBox);
-		mouseClickAreaOperation->registerAction(std::make_shared<ActionTest>());
-		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(mouseClickAreaOperation);
+		button->getBack()->getEntity()->createComponent<MouseComponent>();
+		auto clickInside = std::make_shared<SimpleOperation>();
+		auto clickExpression = std::make_shared<Expression>();
+		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
+		
+		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInside);
 		button->getLabel()->setPageNumber(1);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::RIGHT, TextAllignment::CENTER });
