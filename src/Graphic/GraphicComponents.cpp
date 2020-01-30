@@ -5,6 +5,15 @@
 
 ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
+	_classVariables =
+	{
+		{"positionX", &std::get<0>(_position)},
+		{"positionY", &std::get<1>(_position)},
+		{"sizeX", &std::get<0>(_size)},
+		{"sizeY", &std::get<1>(_size)},
+		{"cameraMultiplier", &_cameraMultiplier},
+		{"scale", &_scale}
+	};
 }
 
 bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::shared_ptr<BufferManager> bufferManager, std::shared_ptr<Shader> shader) {
@@ -32,7 +41,6 @@ std::tuple<float, float> ObjectComponent::getPosition() {
 std::tuple<float, float> ObjectComponent::getSize() {
 	return _size;
 }
-
 
 TextureComponent::TextureComponent() {
 	_componentName = "TextureComponent";
