@@ -35,7 +35,7 @@ std::string Expression::getCondition() {
 	return _condition;
 }
 
-bool Expression::calculateExpression() {
+bool Expression::calculateExpression(float* evaluatedResult) {
 	//first we need to convert condition to postfix form
 	//Shunting-yard algorithm
 	std::vector<std::string> postfix;
@@ -102,7 +102,40 @@ bool Expression::calculateExpression() {
 	for (auto word = postfix.begin(); word < postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
-
+			float operand2 = result.back();
+			result.pop_back();
+			float operand1 = result.back();
+			result.pop_back();
+			if (*word == "+") {
+				result.push_back(operand1 + operand2);
+			}
+			else if (*word == "-") {
+				result.push_back(operand1 - operand2);
+			}
+			else if (*word == "*") {
+				result.push_back(operand1 * operand2);
+			}
+			else if (*word == "/") {
+				result.push_back(operand1 / operand2);
+			}
+			else if (*word == "^") {
+				result.push_back(std::pow(operand1, operand2));
+			}
+			else if (*word == "=") {
+				result.push_back(operand1 == operand2);
+			}
+			else if (*word == ">") {
+				result.push_back(operand1 > operand2);
+			}
+			else if (*word == "<") {
+				result.push_back(operand1 < operand2);
+			}
+			else if (*word == "AND") {
+				result.push_back(operand1 && operand2);
+			}
+			else if (*word == "OR") {
+				result.push_back(operand1 || operand2);
+			}
 		}
 		//word (token) is operand
 		else {
@@ -127,5 +160,6 @@ bool Expression::calculateExpression() {
 		}
 	}
 	
+	*evaluatedResult = result.back();
 	return false;
 }

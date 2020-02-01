@@ -9,12 +9,11 @@
 
 class ObjectComponent : public Component {
 private:
-	float _cameraMultiplier;
-	float _scale;
 	std::tuple<float, float> _position;
 	std::tuple<float, float> _size;
 	std::shared_ptr<BufferManager> _bufferManager;
 	std::shared_ptr<Shader> _shader;
+	float _scale;
 
 public:
 	ObjectComponent();

@@ -12,5 +12,5 @@ public:
 	std::vector<std::tuple<std::shared_ptr<Component>, std::string> > getArguments();
 	bool setCondition(std::string condition);
 	std::string getCondition();
-	bool calculateExpression();
+	bool calculateExpression(float* evaluatedResult);
 };
