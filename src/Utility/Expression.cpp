@@ -4,11 +4,11 @@
 Expression::Expression() {
 	_supportedOperations =
 	{
+		{"AND", { 0, "left" } },
+		{"OR",  { 0, "left" } },
 		{">",   { 1, "left" } },
 		{"<",   { 1, "left" } },
 		{"=",   { 1, "left" } },
-		{"AND", { 1, "left" } },
-		{"OR",  { 1, "left" } },
 		{"+",   { 2, "left" } },
 		{"-",   { 2, "left" } },
 		{"/",   { 3, "left" } },
@@ -38,7 +38,7 @@ std::string Expression::getCondition() {
 bool Expression::calculateExpression() {
 	//first we need to convert condition to postfix form
 	//Shunting-yard algorithm
-	std::string postfix;
+	std::vector<std::string> postfix;
 	std::vector<std::string> operatorStack;
 	std::vector<std::string> splitedInput;
 	//first of all we should split our operation by separator
@@ -55,18 +55,17 @@ bool Expression::calculateExpression() {
 
 	//let's form postfix notation
 	for (auto word = splitedInput.begin(); word < splitedInput.end(); word++) {
-		auto t = _supportedOperations.find(*word);
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
-			while (operatorStack.size() > 0 ||
+			//operator at the top of the operator stack is not a left parenthesis
+			while (operatorStack.size() > 0 && (operatorStack.back() != "(") &&
 				//operator at the top of the operator stack with greater precedence
-				(std::get<0>(_supportedOperations[operatorStack.back()]) > std::get<0>(_supportedOperations[*word])) ||
+				((std::get<0>(_supportedOperations[operatorStack.back()]) > std::get<0>(_supportedOperations[*word])) ||
 				//operator at the top of the operator stack has equal precedence and the token is left associative
-				(std::get<0>(_supportedOperations[operatorStack.back()]) == std::get<0>(_supportedOperations[*word]) && std::get<1>(_supportedOperations[*word]) == "left") ||
-				//operator at the top of the operator stack is not a left parenthesis
-				(operatorStack.back() != "(")) {
+				(std::get<0>(_supportedOperations[operatorStack.back()]) == std::get<0>(_supportedOperations[*word]) && std::get<1>(_supportedOperations[*word]) == "left"))) 
+			{
 				//pop operators from the operator stack onto the output queue.
-				postfix += operatorStack.back();
+				postfix.push_back(operatorStack.back());
 				operatorStack.pop_back();
 			}
 			operatorStack.push_back(*word);
@@ -76,7 +75,7 @@ bool Expression::calculateExpression() {
 		}
 		else if (*word == ")") {
 			while (operatorStack.back() != "(") {
-				postfix += operatorStack.back();
+				postfix.push_back(operatorStack.back());
 				operatorStack.pop_back();
 			}
 			//discard
@@ -86,13 +85,13 @@ bool Expression::calculateExpression() {
 		}
 		//word (token) is number or variable
 		else {
-			postfix += *word;
+			postfix.push_back(*word);
 		}
 	}
 
 	//pop remainings operators from the operator stack onto the output queue.
 	while (operatorStack.size() > 0) {
-		postfix += operatorStack.back();
+		postfix.push_back(operatorStack.back());
 		operatorStack.pop_back();
 	}
 	/*
