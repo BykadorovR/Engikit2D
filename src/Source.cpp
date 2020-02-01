@@ -54,7 +54,8 @@ void surfaceCreated() {
 		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionY");
 		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
 		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-		clickExpression->setCondition("${1} > ${3} AND ${1} < ${3} + ${5} AND ${2} > ${4} AND ${2} < {$4} + ${6}");
+		//clickExpression->setCondition("${1} > ${3} AND ${1} < ${3} + ${5} AND ${2} > ${4} AND ${2} < {$4} + ${6}");
+		clickExpression->setCondition("3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3");
 		clickExpression->calculateExpression();
 
 		clickInside->setExpression(clickExpression);

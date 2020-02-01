@@ -78,6 +78,9 @@ bool Expression::calculateExpression() {
 				postfix.push_back(operatorStack.back());
 				operatorStack.pop_back();
 			}
+			//if the stack runs out without finding a left paren, then there are mismatched parentheses
+			if (operatorStack.size() == 0)
+				return true;
 			//discard
 			if (operatorStack.back() == "(") {
 				operatorStack.pop_back();
@@ -94,17 +97,35 @@ bool Expression::calculateExpression() {
 		postfix.push_back(operatorStack.back());
 		operatorStack.pop_back();
 	}
-	/*
-	// Extraction of a sub-match
-	const std::regex varIndexRegex("\\$\\{(\\d+)\\}");
-	std::smatch match;
-	if (std::regex_search(*word, match, varIndexRegex)) {
-		std::string varIndex = match[1].str();
-		postfix += std::get<1>(_arguments[atoi(varIndex.c_str())]);
+
+	std::vector<float> result;
+	for (auto word = postfix.begin(); word < postfix.end(); word++) {
+		//word (token) is operator
+		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
+
+		}
+		//word (token) is operand
+		else {
+			// Extraction of a sub-match
+			const std::regex varIndexRegex("\\$\\{(\\d+)\\}");
+			std::smatch match;
+			if (std::regex_search(*word, match, varIndexRegex)) {
+				std::string varIndex = match[1].str();
+				std::shared_ptr<Component> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
+				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
+				auto value = object->getMember(varName);
+				if (std::get<1>(value)) {
+					result.push_back(std::get<0>(value));
+				}
+				else {
+					return true;
+				}
+			}
+			else {
+				result.push_back(atoi((*word).c_str()));
+			}
+		}
 	}
-	else {
-		postfix += *word;
-	}
-	*/
+	
 	return false;
 }
