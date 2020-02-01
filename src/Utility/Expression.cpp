@@ -9,11 +9,11 @@ std::vector<std::tuple<std::shared_ptr<Component>, std::string> > Expression::ge
 	return _arguments;
 }
 
-bool Expression::setExpression(std::string expression) {
-	_expression = expression;
+bool Expression::setCondition(std::string condition) {
+	_condition = condition;
 	return false;
 }
 
-std::string Expression::getExpression() {
-	return _expression;
+std::string Expression::getCondition() {
+	return _condition;
 }

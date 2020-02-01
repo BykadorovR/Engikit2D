@@ -46,9 +46,18 @@ void surfaceCreated() {
 		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name Me Button Bugton", {1, 0, 1, 1}, 1, glyphsLoader, shader);
 		button->getBack()->getEntity()->createComponent<MouseComponent>();
 		auto clickInside = std::make_shared<SimpleOperation>();
+
 		auto clickExpression = std::make_shared<Expression>();
 		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
+		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
+		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionY");
+		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
+		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+		clickExpression->setCondition("${1} > ${3} AND ${1} < ${3} + ${5} AND ${2} > ${4} AND ${2} < {$4} + ${6}");
 		
+		clickInside->setExpression(clickExpression);
+
 		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInside);
 		button->getLabel()->setPageNumber(1);
 		button->getLabel()->setLineSpacingCoeff(0.8);
