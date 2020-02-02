@@ -17,12 +17,16 @@
 #include "Back.h"
 #include "Label.h"
 #include "Button.h"
-#include "UserInputOperations.h"
+#include "InteractionOperations.h"
 #include "UserInputComponents.h"
 #include "InteractionComponents.h"
+#include "InteractionSystems.h"
+#include "InteractionActions.h"
 
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
+std::shared_ptr<InteractionSystem> interactionSystem;
+
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
@@ -45,21 +49,24 @@ void surfaceCreated() {
 		//TODO: rewrite to Back options and LabelOptions
 		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name Me Button Bugton", {1, 0, 1, 1}, 1, glyphsLoader, shader);
 		button->getBack()->getEntity()->createComponent<MouseComponent>();
-		auto clickInside = std::make_shared<SimpleOperation>();
+		
+		auto clickInside = std::make_shared<ExpressionOperation>();
+		clickInside->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
+		clickInside->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
+		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionY");
+		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
+		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+		clickInside->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
+		clickInside->initializeOperation();
 
-		auto clickExpression = std::make_shared<Expression>();
-		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
-		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
-		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
-		clickExpression->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-		clickExpression->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < {$3} + ${5}");
-		//clickExpression->setCondition("3 + 2 * ( 1 - 5 ) ^ 2 ^ 2 / 2 - 2");
-		float result = 0;
-		clickExpression->calculateExpression(&result);
+		auto changePosition = std::make_shared<AssignAction>();
+		changePosition->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+		changePosition->addArgument("10");
+		changePosition->setCondition("${0} SET ${0} + ${1}");
+		changePosition->initializeAction();
 
-		clickInside->setExpression(clickExpression);
+		clickInside->registerAction(changePosition);
 
 		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInside);
 		button->getLabel()->setPageNumber(1);
@@ -68,12 +75,14 @@ void surfaceCreated() {
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();
+	interactionSystem = std::make_shared<InteractionSystem>();
 }
 
 
 void drawFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	drawSystem->update(activeScene->getEntityManager());
+	interactionSystem->update(activeScene->getEntityManager());
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes

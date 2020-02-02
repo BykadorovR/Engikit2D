@@ -25,6 +25,12 @@ bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<f
 	return false;
 }
 
+bool ObjectComponent::setMember(std::string name, float value) {
+	Component::setMember(name, value);
+	getBufferManager()->changeBuffer(BufferType::Position, getPosition(), getSize(), resolution);
+	return false;
+}
+
 std::shared_ptr<Shader> ObjectComponent::getShader() {
 	return _shader;
 }

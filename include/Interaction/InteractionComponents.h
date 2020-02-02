@@ -9,4 +9,5 @@ public:
 	InteractionComponent();
 	std::tuple<float, bool> getMember(std::string name);
 	void attachOperation(std::shared_ptr<Operation> operation);
+	std::vector<std::shared_ptr<Operation> > getOperations();
 };

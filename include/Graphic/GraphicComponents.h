@@ -19,6 +19,7 @@ public:
 	ObjectComponent();
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::shared_ptr<BufferManager> bufferManager, std::shared_ptr<Shader> shader);
 	std::shared_ptr<Shader> getShader();
+	bool setMember(std::string name, float value);
 	std::shared_ptr<BufferManager> getBufferManager();
 	std::tuple<float, float> getPosition();
 	std::tuple<float, float> getSize();

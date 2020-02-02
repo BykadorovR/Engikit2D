@@ -5,6 +5,10 @@ Operation::~Operation() {
 
 }
 
+std::vector<std::shared_ptr<Action> > Operation::getActions() {
+	return _actions;
+}
+
 void Operation::registerAction(std::shared_ptr<Action> listener) {
 	_actions.push_back(listener);
 }
