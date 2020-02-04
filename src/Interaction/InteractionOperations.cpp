@@ -5,7 +5,7 @@
 ExpressionOperation::ExpressionOperation() {
 	_supportedOperations =
 	{
-		{"AND", { 0, "left" } },
+		{ "AND", { 0, "left" } },
 		{ "OR",  { 0, "left" } },
 		{ ">",   { 1, "left" } },
 		{ "<",   { 1, "left" } },

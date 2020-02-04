@@ -12,7 +12,7 @@ public:
 	AssignAction();
 	bool addArgument(std::shared_ptr<Component> argument, std::string name);
 	bool addArgument(std::string name);
-	bool setCondition(std::string condition);
+	bool setAction(std::string condition);
 
 	bool initializeAction();
 	bool doAction();

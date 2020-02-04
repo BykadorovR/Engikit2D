@@ -2,11 +2,12 @@
 #include "EntityManager.h"
 
 class System {
-private:
+protected:
 	bool _editorMode;
+	std::shared_ptr<EntityManager> _entityManager;
 public:
 	System();
 	// Called every game update
-	virtual void update(std::shared_ptr<EntityManager> entityManager) = 0;
-
+	void setEntityManager(std::shared_ptr<EntityManager> entityManager);
+	virtual ~System() = default;
 };

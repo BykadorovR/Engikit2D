@@ -25,7 +25,7 @@ bool AssignAction::addArgument(std::string name) {
 	return false;
 }
 
-bool AssignAction::setCondition(std::string condition) {
+bool AssignAction::setAction(std::string condition) {
 	return _expression->setCondition(condition);
 }
 

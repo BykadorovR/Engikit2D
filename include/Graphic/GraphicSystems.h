@@ -11,5 +11,5 @@ private:
 public:
 	DrawSystem();
 	// Called every game update
-	void update(std::shared_ptr<EntityManager> entityManager);
+	void update();
 };

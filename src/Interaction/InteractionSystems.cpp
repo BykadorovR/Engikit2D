@@ -5,14 +5,14 @@ InteractionSystem::InteractionSystem() {
 
 }
 
-void InteractionSystem::update(std::shared_ptr<EntityManager> entityManager) {
-	for (auto entity : entityManager->getEntities()) {
+void InteractionSystem::update() {
+	for (auto entity : _entityManager->getEntities()) {
 		auto interactionObjects = entity->getComponent<InteractionComponent>();
 		if (interactionObjects) {
-			std::vector<std::shared_ptr<Operation> > operations = interactionObjects->getOperations();
+			std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionObjects->getOperations();
 			for (auto operation : operations) {
-				if (operation->checkOperation()) {
-					for (auto action : operation->getActions()) {
+				if (std::get<1>(operation) == InteractionType::COMMON && std::get<0>(operation)->checkOperation()) {
+					for (auto action : std::get<0>(operation)->getActions()) {
 						action->doAction();
 					}
 				}

@@ -4,11 +4,11 @@ InteractionComponent::InteractionComponent() {
 
 }
 
-void InteractionComponent::attachOperation(std::shared_ptr<Operation> operation) {
-	_interaction.push_back(operation);
+void InteractionComponent::attachOperation(std::shared_ptr<Operation> operation, InteractionType type) {
+	_interaction.push_back({ operation, type });
 }
 
-std::vector<std::shared_ptr<Operation> > InteractionComponent::getOperations() {
+std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > InteractionComponent::getOperations() {
 	return _interaction;
 }
 

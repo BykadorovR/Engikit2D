@@ -22,10 +22,12 @@
 #include "InteractionComponents.h"
 #include "InteractionSystems.h"
 #include "InteractionActions.h"
+#include "UserInputSystems.h"
 
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
 std::shared_ptr<InteractionSystem> interactionSystem;
+std::shared_ptr<MouseSystem> mouseSystem;
 
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -49,7 +51,7 @@ void surfaceCreated() {
 		//TODO: rewrite to Back options and LabelOptions
 		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name Me Button Bugton", {1, 0, 1, 1}, 1, glyphsLoader, shader);
 		button->getBack()->getEntity()->createComponent<MouseComponent>();
-		
+
 		auto clickInside = std::make_shared<ExpressionOperation>();
 		clickInside->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
 		clickInside->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
@@ -57,32 +59,49 @@ void surfaceCreated() {
 		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionY");
 		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
 		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+		//TODO: Add constants support to operations
 		clickInside->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
 		clickInside->initializeOperation();
 
 		auto changePosition = std::make_shared<AssignAction>();
 		changePosition->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
 		changePosition->addArgument("10");
-		changePosition->setCondition("${0} SET ${0} + ${1}");
+		changePosition->setAction("${0} SET ${0} + ${1}");
 		changePosition->initializeAction();
-
 		clickInside->registerAction(changePosition);
+		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE);
 
-		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInside);
+		auto boundCheck = std::make_shared<ExpressionOperation>();
+		boundCheck->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+		boundCheck->setCondition("${0} > 350");
+		boundCheck->initializeOperation();
+
+		auto returnBack = std::make_shared<AssignAction>();
+		returnBack->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+		returnBack->addArgument("300");
+		returnBack->setAction("${0} SET ${1}");
+		returnBack->initializeAction();
+		boundCheck->registerAction(returnBack);
+		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(boundCheck, InteractionType::COMMON);
+
 		button->getLabel()->setPageNumber(1);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::RIGHT, TextAllignment::CENTER });
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();
+	drawSystem->setEntityManager(activeScene->getEntityManager());
 	interactionSystem = std::make_shared<InteractionSystem>();
+	interactionSystem->setEntityManager(activeScene->getEntityManager());
+	mouseSystem = std::make_shared<MouseSystem>();
+	mouseSystem->setEntityManager(activeScene->getEntityManager());
 }
 
 
 void drawFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	drawSystem->update(activeScene->getEntityManager());
-	interactionSystem->update(activeScene->getEntityManager());
+	drawSystem->update();
+	interactionSystem->update();
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
