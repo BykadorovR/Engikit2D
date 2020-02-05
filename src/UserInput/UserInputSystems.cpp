@@ -9,11 +9,12 @@ MouseSystem::MouseSystem() {
 
 bool MouseSystem::checkOperation() {
 	for (auto entity : _entityManager->getEntities()) {
-		auto interactionObjects = entity->getComponent<InteractionComponent>();
-		if (interactionObjects) {
-			std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionObjects->getOperations();
+		auto interactionComponent = entity->getComponent<InteractionComponent>();
+		auto mouseComponent = entity->getComponent<MouseComponent>();
+		if (interactionComponent) {
+			std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionComponent->getOperations();
 			for (auto operation : operations) {
-				if (std::get<1>(operation) == InteractionType::MOUSE && std::get<0>(operation)->checkOperation()) {
+				if (std::get<1>(operation) == InteractionType::MOUSE && mouseComponent && std::get<0>(operation)->checkOperation()) {
 					for (auto action : std::get<0>(operation)->getActions()) {
 						action->doAction();
 					}

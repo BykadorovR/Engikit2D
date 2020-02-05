@@ -100,8 +100,11 @@ void surfaceCreated() {
 
 void drawFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	drawSystem->update();
+	//Interaction should be called before graphic so we avoid use cases when sprite rendered in some coord but should be moved out due to some trigger
+	//so we observe "false" moves to coord under triger and instant move out
 	interactionSystem->update();
+
+	drawSystem->update();
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
