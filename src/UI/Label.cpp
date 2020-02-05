@@ -1,5 +1,9 @@
 #include "Label.h"
 
+Label::Label() {
+	_viewName = "Label";
+}
+
 bool Label::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::wstring text, std::shared_ptr<GlyphsLoader> glyphs, std::shared_ptr<Shader> shader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, shader);

@@ -1,6 +1,10 @@
 #include "Back.h"
 #include "GraphicComponents.h"
 
+Back::Back() {
+	_viewName = "Back";
+}
+
 bool Back::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int textureID, std::shared_ptr<Shader> shader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, shader);

@@ -1,4 +1,5 @@
 #include "Operation.h"
+#include "Entity.h"
 #include <algorithm>
 
 Operation::~Operation() {

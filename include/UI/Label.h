@@ -11,6 +11,7 @@ struct LabelOptions {
 
 class Label: public View {
 public:
+	Label();
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::wstring text, std::shared_ptr<GlyphsLoader> glyphs, std::shared_ptr<Shader> shader);
 	bool setColor(std::vector<float> color);
 	bool setScale(float scale);

@@ -2,8 +2,11 @@
 #include <string>
 
 class Action {
+protected:
 	bool _editorMode;
+	std::string _actionName;
 public:
-	virtual bool doAction() = 0;
+	Action();
+	virtual bool doAction();
 	virtual ~Action() = 0;
 };

@@ -7,8 +7,7 @@
 
 class Button : public View {
 private:
-	std::shared_ptr<Label> _label;
-	std::shared_ptr<Back> _back;
+	std::vector<std::shared_ptr<View> > _views;
 public:
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader);
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader);
@@ -16,6 +15,7 @@ public:
 	bool setBack(std::shared_ptr<Back> back);
 	std::shared_ptr<Label> getLabel();
 	std::shared_ptr<Back> getBack();
+	std::vector<std::shared_ptr<View> > getViews();
 };
 	
 class ButtonFactory : public ViewFactory {

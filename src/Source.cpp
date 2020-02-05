@@ -63,12 +63,13 @@ void surfaceCreated() {
 		clickInside->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
 		clickInside->initializeOperation();
 
-		auto changePosition = std::make_shared<AssignAction>();
-		changePosition->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-		changePosition->addArgument("10");
-		changePosition->setAction("${0} SET ${0} + ${1}");
-		changePosition->initializeAction();
-		clickInside->registerAction(changePosition);
+		for (auto view : button->getViews()) {
+			auto changePosition = std::make_shared<AssignAction>();
+			changePosition->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");
+			changePosition->setAction("${0} SET ${0} + 10");
+			changePosition->initializeAction();
+			clickInside->registerAction(changePosition);
+		}
 		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE);
 
 		auto boundCheck = std::make_shared<ExpressionOperation>();
@@ -76,12 +77,13 @@ void surfaceCreated() {
 		boundCheck->setCondition("${0} > 350");
 		boundCheck->initializeOperation();
 
-		auto returnBack = std::make_shared<AssignAction>();
-		returnBack->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-		returnBack->addArgument("300");
-		returnBack->setAction("${0} SET ${1}");
-		returnBack->initializeAction();
-		boundCheck->registerAction(returnBack);
+		for (auto view : button->getViews()) {
+			auto returnBack = std::make_shared<AssignAction>();
+			returnBack->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");
+			returnBack->setAction("${0} SET 300");
+			returnBack->initializeAction();
+			boundCheck->registerAction(returnBack);
+		}
 		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(boundCheck, InteractionType::COMMON);
 
 		button->getLabel()->setPageNumber(1);

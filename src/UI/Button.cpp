@@ -2,38 +2,50 @@
 
 bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_back->initialize(position, size, backColor, shader);
-	_label->initialize(position, size, text, glyphLoader, shader);
-	_label->setColor(textColor);
-	_label->setScale(textScale);
+	getBack()->initialize(position, size, backColor, shader);
+	getLabel()->initialize(position, size, text, glyphLoader, shader);
+	getLabel()->setColor(textColor);
+	getLabel()->setScale(textScale);
 	return false;
 }
 
 bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_back->initialize(position, size, backTextureID, shader);
-	_label->initialize(position, size, text, glyphLoader, shader);
-	_label->setColor(textColor);
-	_label->setScale(textScale);
+	getBack()->initialize(position, size, backTextureID, shader);
+	getLabel()->initialize(position, size, text, glyphLoader, shader);
+	getLabel()->setColor(textColor);
+	getLabel()->setScale(textScale);
 	return false;
 }
 
 bool Button::setLabel(std::shared_ptr<Label> label) {
-	_label = label;
+	_views.push_back(label);
 	return false;
 }
 
 bool Button::setBack(std::shared_ptr<Back> back) {
-	_back = back;
+	_views.push_back(back);
 	return false;
 }
 
 std::shared_ptr<Label> Button::getLabel() {
-	return _label;
+	for (auto view : _views) {
+		if (view->getName() == "Label")
+			return std::dynamic_pointer_cast<Label>(view);
+	}
+	return nullptr;
 }
 
 std::shared_ptr<Back> Button::getBack() {
-	return _back;
+	for (auto view : _views) {
+		if (view->getName() == "Back")
+			return std::dynamic_pointer_cast<Back>(view);
+	}
+	return nullptr;
+}
+
+std::vector<std::shared_ptr<View> > Button::getViews() {
+	return _views;
 }
 
 ButtonFactory::ButtonFactory(std::shared_ptr<Scene> activeScene) {

@@ -3,6 +3,7 @@
 #include <regex>
 
 AssignAction::AssignAction() {
+	_actionName = "AssignAction";
 	_supportedOperations =
 	{
 		{ "SET", { 1, "left" } },
@@ -17,11 +18,6 @@ AssignAction::AssignAction() {
 
 bool AssignAction::addArgument(std::shared_ptr<Component> argument, std::string name) {
 	_arguments.push_back({ argument, name });
-	return false;
-}
-
-bool AssignAction::addArgument(std::string name) {
-	_arguments.push_back({ nullptr, name });
 	return false;
 }
 
@@ -75,21 +71,18 @@ bool AssignAction::doAction() {
 				std::string varIndex = match[1].str();
 				std::shared_ptr<Component> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
 				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
-				if (object) {
-					auto value = object->getMember(varName);
-					if (std::get<1>(value)) {
-						if (std::get<0>(variableResult) == nullptr)
-							variableResult = { object, varName };
-						else
-							intermidiate.push_back(*std::get<0>(value));
-					}
-					else {
-						assert(0);
-					}
+				auto value = object->getMember(varName);
+				if (std::get<1>(value)) {
+					if (std::get<0>(variableResult) == nullptr)
+						variableResult = { object, varName };
+					else
+						intermidiate.push_back(*std::get<0>(value));
 				}
-				else
-					intermidiate.push_back(atoi(varName.c_str()));
-			} else {
+				else {
+					assert(0);
+				}
+			} 
+			else {
 				intermidiate.push_back(atoi((*word).c_str()));
 			}
 		}
