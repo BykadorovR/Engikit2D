@@ -1,5 +1,9 @@
 #include "Button.h"
 
+Button::Button(std::string name) {
+	_viewName = name;
+}
+
 bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	getBack()->initialize(position, size, backColor, shader);
@@ -18,12 +22,12 @@ bool Button::initialize(std::tuple<float, float> position, std::tuple<float, flo
 	return false;
 }
 
-bool Button::setLabel(std::shared_ptr<Label> label) {
+bool Button::setLabel(std::shared_ptr<View> label) {
 	_views.push_back(label);
 	return false;
 }
 
-bool Button::setBack(std::shared_ptr<Back> back) {
+bool Button::setBack(std::shared_ptr<View> back) {
 	_views.push_back(back);
 	return false;
 }
@@ -53,7 +57,7 @@ ButtonFactory::ButtonFactory(std::shared_ptr<Scene> activeScene) {
 	_labelFactory = std::make_shared<LabelFactory>(activeScene);
 }
 
-std::shared_ptr<View> ButtonFactory::createView() {
+std::shared_ptr<View> ButtonFactory::createView(std::string name) {
 	std::shared_ptr<Button> button = std::make_shared<Button>();
 	button->setBack(std::dynamic_pointer_cast<Back>(_backFactory->createView()));
 	button->setLabel(std::dynamic_pointer_cast<Label>(_labelFactory->createView()));

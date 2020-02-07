@@ -9,10 +9,11 @@ class Button : public View {
 private:
 	std::vector<std::shared_ptr<View> > _views;
 public:
+	Button(std::string name = "Button");
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader);
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::wstring text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader);
-	bool setLabel(std::shared_ptr<Label> label);
-	bool setBack(std::shared_ptr<Back> back);
+	bool setLabel(std::shared_ptr<View> label);
+	bool setBack(std::shared_ptr<View> back);
 	std::shared_ptr<Label> getLabel();
 	std::shared_ptr<Back> getBack();
 	std::vector<std::shared_ptr<View> > getViews();
@@ -24,5 +25,5 @@ private:
 	std::shared_ptr<BackFactory> _backFactory;
 public:
 	ButtonFactory(std::shared_ptr<Scene> activeScene);
-	std::shared_ptr<View> createView();
+	std::shared_ptr<View> createView(std::string name = "Button");
 };

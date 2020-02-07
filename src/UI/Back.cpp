@@ -1,8 +1,8 @@
 #include "Back.h"
 #include "GraphicComponents.h"
 
-Back::Back() {
-	_viewName = "Back";
+Back::Back(std::string name = "Back") {
+	_viewName = name;
 }
 
 bool Back::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int textureID, std::shared_ptr<Shader> shader) {
@@ -33,10 +33,10 @@ BackFactory::BackFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 }
 
-std::shared_ptr<View> BackFactory::createView() {
-	std::shared_ptr<Back> button = std::make_shared<Back>();
-	button->setEntity(_activeScene->createEntity());
-	button->getEntity()->createComponent<ObjectComponent>();
-	button->getEntity()->createComponent<TextureComponent>();
-	return button;
+std::shared_ptr<View> BackFactory::createView(std::string name) {
+	std::shared_ptr<Back> back = std::make_shared<Back>(name);
+	back->setEntity(_activeScene->createEntity());
+	back->getEntity()->createComponent<ObjectComponent>();
+	back->getEntity()->createComponent<TextureComponent>();
+	return back;
 }
