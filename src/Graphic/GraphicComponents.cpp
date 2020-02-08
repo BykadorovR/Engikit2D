@@ -246,6 +246,12 @@ std::vector<Word>& Line::getText() {
 TextComponent::TextComponent() {
 	_focus = false;
 	_page = 0;
+	_classVariables =
+	{
+		{"page", &_page},
+		{"totalPages", &_totalPages}
+	};
+
 }
 
 bool TextComponent::initialize(std::wstring text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {

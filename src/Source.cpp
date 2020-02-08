@@ -62,7 +62,7 @@ void surfaceCreated() {
 		//TODO: Add constants support to operations
 		clickInside->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
 		clickInside->initializeOperation();
-
+		//TODO: We should be able get ALL views from all "child" views
 		for (auto view : button->getViews()) {
 			auto changePosition = std::make_shared<AssignAction>();
 			changePosition->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");

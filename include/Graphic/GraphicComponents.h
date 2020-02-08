@@ -123,7 +123,8 @@ public:
 private:
 	//if focus == true all keys will be handled as text for this TextComponent
 	bool _focus;
-	int _page;
+	float _page;
+	float _totalPages;
 	std::wstring _text;
 	float _scale;
 	float _lineSpacingCoeff;

@@ -115,6 +115,8 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		currentWord += {*c, chInfo};
 	}
 
+	textObject->setMember("totalPages", lines.size());
+
 	if (lines.size() <= textObject->getPageNumber())
 		return;
 
