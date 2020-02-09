@@ -86,7 +86,7 @@ void surfaceCreated() {
 		}
 		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(boundCheck, InteractionType::COMMON);
 
-		button->getLabel()->setPageNumber(1);
+		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::RIGHT, TextAllignment::CENTER });
 	}

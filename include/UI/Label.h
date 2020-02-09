@@ -19,8 +19,10 @@ public:
 	bool setLineSpacingCoeff(float coeff);
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
 	bool setScrollerDown(std::shared_ptr<View> scrollerDown);
+	bool setScrollerProgress(std::shared_ptr<View> scrollerProgress);
 	std::shared_ptr<Back> getScrollerUp();
 	std::shared_ptr<Back> getScrollerDown();
+	std::shared_ptr<Back> getScrollerProgress();
 };
 
 class LabelFactory : public ViewFactory {
