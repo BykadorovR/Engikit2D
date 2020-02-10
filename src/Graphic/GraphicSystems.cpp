@@ -92,7 +92,26 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		int symbolWidth = chInfo._advance >> 6;
 
-		if (*c == delimiter || std::next(c) == text.end()) {
+		//we can't handle end in if with delimeter because the last one has logic with handling space and words before/after space, so
+		//it's differ from text end
+		if (std::next(c) == text.end()) {
+			currentWord += {*c, chInfo};
+			if ((lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
+				lines.back().getText().back().cropTrailingSpace();
+				lines.push_back(Line());
+				lines.back().addWord(currentWord);
+			}
+			else {
+				lines.back().addWord(currentWord);
+			}
+
+			allignBearingYMax = std::max(lines.back().getBearingYMax(), allignBearingYMax);
+
+			currentWord.clear();
+			break;
+		}
+
+		if (*c == delimiter) {
 			//skip delimiter, add current word to next line
 			if ((lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
 				lines.back().getText().back().cropTrailingSpace();
