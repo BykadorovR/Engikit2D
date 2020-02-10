@@ -21,7 +21,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 
 	getScrollerProgress()->initialize(scrollerProgressPosition, scrollerProgressSize, { 0.5, 0.5, 0, 1 }, shader);
 
-	getScrollerUp()->initialize(scrollerUpPosition, scrollerSize, {1, 0, 1, 1}, shader);
+	getScrollerUp()->initialize(scrollerUpPosition, scrollerSize, {1, 0, 0.5, 1}, shader);
 	getScrollerUp()->getEntity()->createComponent<MouseComponent>();
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
 	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
@@ -37,7 +37,6 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 
 	auto changePositionUp = std::make_shared<AssignAction>();
 	changePositionUp->addArgument(_entity->getComponent<TextComponent>(), "page");
-	changePositionUp->addArgument(_entity->getComponent<TextComponent>(), "totalPages");
 	changePositionUp->setAction("${0} SET ${0} - 1");
 	changePositionUp->initializeAction();
 	clickInsideUp->registerAction(changePositionUp);
@@ -51,7 +50,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	changePositionProgressUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
 	changePositionProgressUp->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");
 	changePositionProgressUp->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	changePositionProgressUp->setAction("${2} SET ${2} - ( ${6} - ( ${4} + ${5} ) ) / ${1} * ${0}");
+	changePositionProgressUp->setAction("${2} SET ${2} - ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 )");
 	changePositionProgressUp->initializeAction();
 	clickInsideUp->registerAction(changePositionProgressUp);
 
@@ -87,7 +86,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	changePositionProgressDown->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");
 	changePositionProgressDown->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
 	changePositionProgressDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	changePositionProgressDown->setAction("${2} SET ${2} + ( ${6} - ( ${4} + ${5} + ${3} ) ) / ${1} * ${0}");
+	changePositionProgressDown->setAction("${2} SET ${2} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 )");
 	changePositionProgressDown->initializeAction();
 	clickInsideDown->registerAction(changePositionProgressDown);
 

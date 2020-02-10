@@ -49,7 +49,7 @@ void surfaceCreated() {
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
-		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name Me Button Bugton", {1, 0, 1, 1}, 1, glyphsLoader, shader);
+		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name Me Button Bugton Test Text Tut Tam Syam Listaem LOL OLO KEK", {1, 0, 1, 1}, 1, glyphsLoader, shader);
 		button->getBack()->getEntity()->createComponent<MouseComponent>();
 
 		auto clickInside = std::make_shared<ExpressionOperation>();
@@ -88,7 +88,7 @@ void surfaceCreated() {
 
 		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
-		button->getLabel()->setTextAllignment({ TextAllignment::RIGHT, TextAllignment::CENTER });
+		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
 	}
 
 	drawSystem = std::make_shared<DrawSystem>();
