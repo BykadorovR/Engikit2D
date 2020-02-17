@@ -6,23 +6,23 @@
 #include "GraphicComponents.h"
 #include "Back.h"
 
+class LabelScroller : public View {
+	LabelScroller(std::string name);
+
+};
+
 class Label: public View {
-private:
-	std::vector<std::shared_ptr<View> > _views;
 public:
 	Label(std::string name);
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::wstring text, std::shared_ptr<GlyphsLoader> glyphs, std::shared_ptr<Shader> shader);
 	bool setColor(std::vector<float> color);
 	bool setScale(float scale);
+	std::tuple<float, float> getPosition();
+	std::tuple<float, float> getSize();
+
 	bool setPageNumber(int pageNumber);
 	bool setTextAllignment(std::tuple<TextAllignment, TextAllignment> allignment);
 	bool setLineSpacingCoeff(float coeff);
-	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
-	bool setScrollerDown(std::shared_ptr<View> scrollerDown);
-	bool setScrollerProgress(std::shared_ptr<View> scrollerProgress);
-	std::shared_ptr<Back> getScrollerUp();
-	std::shared_ptr<Back> getScrollerDown();
-	std::shared_ptr<Back> getScrollerProgress();
 };
 
 class LabelFactory : public ViewFactory {
