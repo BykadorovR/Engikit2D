@@ -13,6 +13,49 @@ std::string Expression::getCondition() {
 	return _condition;
 }
 
+//operation[0] - operation from back, so it's actually second operation then operation[1] - first operation
+bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr<Component>, std::string> >& intermediate, float operand[2], std::string operation) {
+	if (operation == "+")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] + operand[0]) });
+	else if (operation == "-")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] - operand[0]) });
+	else if (operation == "*")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] * operand[0]) });
+	else if (operation == "/")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] / operand[0]) });
+	else if (operation == "=")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] == operand[0]) });
+	else if (operation == ">")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] > operand[0]) });
+	else if (operation == "<")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] < operand[0]) });
+	else if (operation == "AND")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] && operand[0]) });
+	else if (operation == "OR")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] || operand[0]) });
+	else
+		return true;
+
+	return false;
+}
+
+//operation[0] - operation from back, so it's actually second operation then operation[1] - first operation
+bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_ptr<Component>, std::string> >& intermediate, std::string operand[2], std::string operation) {
+	if (operation == "+")
+		intermediate.push_back({ nullptr, operand[1] + operand[0] });
+	else if (operation == "=")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] == operand[0]) });
+	else if (operation == ">")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] > operand[0]) });
+	else if (operation == "<")
+		intermediate.push_back({ nullptr, std::to_string(operand[1] < operand[0]) });
+	else
+		return true;
+
+	return false;
+}
+
+
 bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 	//first we need to convert condition to postfix form
 	//Shunting-yard algorithm

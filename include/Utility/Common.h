@@ -12,3 +12,7 @@ std::string rawFileContent(const char* relativePath);
    os_ << s; \
    OutputDebugString( os_.str().c_str() ); \
 }
+
+bool isNumber(std::string s);
+
+std::string convertMultibyteToUTF8(std::string input);

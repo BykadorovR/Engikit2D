@@ -104,10 +104,10 @@ private:
 class TextComponent : public Component {
 public:
 	TextComponent();
-	bool initialize(std::wstring text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager);
+	bool initialize(std::string text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager);
 	bool setFocus(bool focus);
 	bool getFocus();
-	std::wstring getText();
+	std::string getText();
 	std::shared_ptr<GlyphsLoader> getLoader();
 	bool setScale(float scale);
 	float getScale();
@@ -125,7 +125,7 @@ private:
 	bool _focus;
 	float _page;
 	float _totalPages;
-	std::wstring _text;
+	std::string _text;
 	float _scale;
 	float _lineSpacingCoeff;
 	std::vector<float> _color;

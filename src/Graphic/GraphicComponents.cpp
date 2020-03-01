@@ -5,7 +5,7 @@
 
 ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
-	_classVariables =
+	_classVariablesFloat =
 	{
 		{"positionX", &std::get<0>(_position)},
 		{"positionY", &std::get<1>(_position)},
@@ -246,15 +246,20 @@ std::vector<Word>& Line::getText() {
 TextComponent::TextComponent() {
 	_focus = false;
 	_page = 0;
-	_classVariables =
+	_classVariablesFloat =
 	{
 		{"page", &_page},
 		{"totalPages", &_totalPages}
 	};
-
+	
+	_classVariablesString =
+	{
+		{"text", &_text}
+	};
+	
 }
 
-bool TextComponent::initialize(std::wstring text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
+bool TextComponent::initialize(std::string text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
 	_scale = 1.f;
 	_color = {1.f, 1.f, 1.f, 1.f};
 	_lineSpacingCoeff = 1;
@@ -273,7 +278,7 @@ std::shared_ptr<BufferManager> TextComponent::getBufferManager() {
 	return _bufferManager;
 }
 
-std::wstring TextComponent::getText() {
+std::string TextComponent::getText() {
 	return _text;
 }
 

@@ -29,6 +29,7 @@ std::shared_ptr<Scene> activeScene;
 std::shared_ptr<DrawSystem> drawSystem;
 std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
+std::shared_ptr<KeyboardSystem> keyboardSystem;
 
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -49,7 +50,7 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-		label->initialize({ 50, 50 }, { 100, 100 }, L"I me name Me Button Bugton Test Text Tut Tam Syam Listaem LOL OLO KEK", glyphsLoader, shader);
+		label->initialize({ 50, 50 }, { 100, 100 }, "I me name Me ЛОЛО Bugton Test Text Tut Tam Syam Listaem LOL OLO KEK", glyphsLoader, shader);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
@@ -58,8 +59,20 @@ void surfaceCreated() {
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
-		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), L"I me name Me Button Bugton Test Text Tut Tam Syam Listaem LOL OLO KEK", {1, 0, 1, 1}, 1, glyphsLoader, shader);
+		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), "I me name ЖЕПА Button Bugton Test Text Tut Tam Syam Listaem LOL OLO KEK", {1, 0, 1, 1}, 1, glyphsLoader, shader);
 		button->getBack()->getEntity()->createComponent<MouseComponent>();
+		button->getBack()->getEntity()->createComponent<KeyboardComponent>();
+
+		auto changeText = std::make_shared<ExpressionOperation>();
+		changeText->setCondition("1");
+		changeText->initializeOperation();
+		auto editText = std::make_shared<AssignAction>();
+		editText->addArgument(button->getBack()->getEntity()->getComponent<KeyboardComponent>(), "symbol");
+		editText->addArgument(button->getLabel()->getEntity()->getComponent<TextComponent>(), "text");
+		editText->setAction("${1} SET ${0}");
+		editText->initializeAction();
+		changeText->registerAction(editText);
+		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD);
 
 		auto clickInside = std::make_shared<ExpressionOperation>();
 		clickInside->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
@@ -106,6 +119,9 @@ void surfaceCreated() {
 	interactionSystem->setEntityManager(activeScene->getEntityManager());
 	mouseSystem = std::make_shared<MouseSystem>();
 	mouseSystem->setEntityManager(activeScene->getEntityManager());
+	keyboardSystem = std::make_shared<KeyboardSystem>();
+	keyboardSystem->setEntityManager(activeScene->getEntityManager());
+
 }
 
 

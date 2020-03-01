@@ -1,6 +1,7 @@
 #include "InteractionActions.h"
 #include <assert.h>
 #include <regex>
+#include "Common.h"
 
 AssignAction::AssignAction() {
 	_actionName = "AssignAction";
@@ -30,36 +31,67 @@ bool AssignAction::initializeAction() {
 }
 
 bool AssignAction::doAction() {
-	std::vector<float> intermidiate;
-	std::tuple<std::shared_ptr<Component>, std::string> variableResult = { nullptr, "" };
+	std::vector<std::tuple<std::shared_ptr<Component>, std::string> > intermediate;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
-			float operand2 = intermidiate.back();
-			intermidiate.pop_back();
-			float operand1;
-			if (intermidiate.size() > 0) {
-				operand1 = intermidiate.back();
-				intermidiate.pop_back();
+			std::tuple<std::shared_ptr<Component>, std::string> operandTuple[2];
+			VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
+			bool operandConst[2] = { false, false };
+
+			for (int i = 0; i < 2; i++) {
+				operandTuple[i] = intermediate.back();
+				intermediate.pop_back();
+				if (std::get<0>(operandTuple[i]) == nullptr) {
+					operandConst[i] = true;
+					if (isNumber(std::get<1>(operandTuple[i])))
+						operandType[i] = VariableType::varFloat;
+					else
+						operandType[i] = VariableType::varString;
+				}
+				else {
+					operandType[i] = std::get<0>(operandTuple[i])->getVariableType(std::get<1>(operandTuple[i]));
+				}
 			}
-			
-			if (*word == "+") {
-				intermidiate.push_back(operand1 + operand2);
+
+			if (operandType[0] == operandType[1] && operandType[1] == VariableType::varFloat) {
+				float operand[2];
+				for (int i = 0; i < 2; i++) {
+					if (operandConst[i])
+						operand[i] = stof(std::get<1>(operandTuple[i]));
+					else {
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
+						if (std::get<1>(operandValue))
+							operand[i] = *std::get<0>(operandValue);
+						else
+							return true;
+					}
+				}
+				//operand[0] - second operand, operand[1] - first operand
+				//operandTuple vice versa
+				if (*word == "SET") {
+					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0]);
+				} else
+					_expression->arithmeticOperationFloat(intermediate, operand, *word);
 			}
-			else if (*word == "-") {
-				intermidiate.push_back(operand1 - operand2);
-			}
-			else if (*word == "*") {
-				intermidiate.push_back(operand1 * operand2);
-			}
-			else if (*word == "/") {
-				intermidiate.push_back(operand1 / operand2);
-			}
-			else if (*word == "^") {
-				intermidiate.push_back(std::pow(operand1, operand2));
-			}
-			else if (*word == "SET") {
-				std::get<0>(variableResult)->setMember(std::get<1>(variableResult), operand2);
+			else if (operandType[0] == operandType[1] && operandType[1] == VariableType::varString) {
+				std::string operand[2];
+				for (int i = 0; i < 2; i++) {
+					if (operandConst[i])
+						operand[i] = stof(std::get<1>(operandTuple[i]));
+					else {
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
+						if (std::get<1>(operandValue))
+							operand[i] = *std::get<0>(operandValue);
+						else
+							return true;
+					}
+				}
+				if (*word == "SET") {
+					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0]);
+				}
+				else
+					_expression->arithmeticOperationString(intermediate, operand, *word);
 			}
 		}
 		//word (token) is operand
@@ -71,19 +103,10 @@ bool AssignAction::doAction() {
 				std::string varIndex = match[1].str();
 				std::shared_ptr<Component> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
 				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
-				auto value = object->getMember(varName);
-				if (std::get<1>(value)) {
-					if (std::get<0>(variableResult) == nullptr)
-						variableResult = { object, varName };
-					else
-						intermidiate.push_back(*std::get<0>(value));
-				}
-				else {
-					assert(0);
-				}
-			} 
+				intermediate.push_back({ object, varName });
+			}
 			else {
-				intermidiate.push_back(atoi((*word).c_str()));
+				intermediate.push_back({ nullptr, *word });
 			}
 		}
 	}

@@ -1,7 +1,10 @@
+#include "Common.h"
 #include "GraphicSystems.h"
 #include "TextureManager.h"
 #include <algorithm>
 #include "State.h"
+#include <locale>
+#include <codecvt>
 
 DrawSystem::DrawSystem() {
 }
@@ -85,8 +88,14 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 
 	int wordSize = 0;
 	int allignBearingYMax = 0;
-	std::wstring text = textObject->getText();
+	//std::wstring text = textObject->getText();
 	Word currentWord;
+
+	std::string UTF8String = convertMultibyteToUTF8(textObject->getText());
+
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	std::wstring text = converter.from_bytes(UTF8String);
+	//std::wstring text = std::wstring(test.begin(), test.end());
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
 	for (auto c = text.begin(); c != text.end(); c++) {
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
@@ -105,7 +114,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 				lines.back().addWord(currentWord);
 			}
 
-			allignBearingYMax = std::max(lines.back().getBearingYMax(), allignBearingYMax);
+			allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
 
 			currentWord.clear();
 			break;
@@ -125,7 +134,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 				lines.back().addWord(currentWord);
 			}
 
-			allignBearingYMax = std::max(lines.back().getBearingYMax(), allignBearingYMax);
+			allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
 
 			currentWord.clear();
 			continue;
