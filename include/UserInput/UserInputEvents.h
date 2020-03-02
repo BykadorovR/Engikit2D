@@ -6,10 +6,12 @@
 GLFW callback
 */
 void keyboardPress(GLFWwindow* window, int key, int scancode, int action, int mods);
+void textInput(GLFWwindow* window, unsigned int codepoint);
 
 class IKeyboardEvent {
 public:
-	virtual void keyboardPressed(int character, int action, int mode) = 0;
+	virtual void keyboardPressed(int key, int action, int mode) = 0;
+	virtual void textInput(unsigned int character) = 0;
 };
 
 /*
@@ -28,6 +30,7 @@ public:
 	void unregisterComponent(IKeyboardEvent* listener);
 
 	void keyboardPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
+	void textInput(GLFWwindow* window, unsigned int codepoint);
 };
 
 /*

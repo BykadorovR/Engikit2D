@@ -10,6 +10,10 @@ void keyboardPress(GLFWwindow* window, int key, int scancode, int action, int mo
 	KeyboardEvent::instance().keyboardPressed(window, key, scancode, action, mods);
 }
 
+void textInput(GLFWwindow* window, unsigned int codepoint) {
+	KeyboardEvent::instance().textInput(window, codepoint);
+}
+
 void KeyboardEvent::registerComponent(IKeyboardEvent* listener) {
 	_listeners.push_back(listener);
 }
@@ -22,6 +26,12 @@ void KeyboardEvent::unregisterComponent(IKeyboardEvent* listener) {
 void KeyboardEvent::keyboardPressed(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	for (auto listener : _listeners) {
 		listener->keyboardPressed(key, action, mods);
+	}
+}
+
+void KeyboardEvent::textInput(GLFWwindow* window, unsigned int codepoint) {
+	for (auto listener : _listeners) {
+		listener->textInput(codepoint);
 	}
 }
 

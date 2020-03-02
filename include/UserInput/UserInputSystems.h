@@ -19,7 +19,8 @@ private:
 public:
 	KeyboardSystem();
 
-	void keyboardPressed(int character, int action, int mode);
+	void keyboardPressed(int key, int action, int mode);
+	void textInput(unsigned int character);
 
 	~KeyboardSystem();
 };

@@ -91,10 +91,10 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	//std::wstring text = textObject->getText();
 	Word currentWord;
 
-	std::string UTF8String = convertMultibyteToUTF8(textObject->getText());
+	//std::string UTF8String = convertMultibyteToUTF8(textObject->getText());
 
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	std::wstring text = converter.from_bytes(UTF8String);
+	std::wstring text = converter.from_bytes(textObject->getText());
 	//std::wstring text = std::wstring(test.begin(), test.end());
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
 	for (auto c = text.begin(); c != text.end(); c++) {

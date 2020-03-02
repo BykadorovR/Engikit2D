@@ -72,10 +72,16 @@ bool KeyboardSystem::checkOperation() {
 	return false;
 }
 
-void KeyboardSystem::keyboardPressed(int character, int action, int mode) {
-	auto c = (wchar_t)character;
+void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
+	//Here should be handled HARDWARE keys, so "W" key is "W" on ALL keyboard layouts
+}
+
+void KeyboardSystem::textInput(unsigned int character) {
+	//Here we handle UTF8 characters pressed. IMPORTANT: it's keyboard layout dependent function! So "W" on US and French keyboards are on different places
+	//We don't need to convert character from multibyte to UTF8 because it's already UTF8
+	auto k = (wchar_t)character;
 	std::wstring wideText;
-	wideText.push_back(c);
+	wideText.push_back(k);
 
 	std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converter;
 	std::string text = converter.to_bytes(wideText);

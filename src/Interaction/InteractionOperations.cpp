@@ -76,7 +76,7 @@ bool ExpressionOperation::checkOperation() {
 				std::string operand[2];
 				for (int i = 0; i < 2; i++) {
 					if (operandConst[i])
-						operand[i] = stof(std::get<1>(operandTuple[i]));
+						operand[i] = std::get<1>(operandTuple[i]);
 					else {
 						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
 						if (std::get<1>(operandValue))

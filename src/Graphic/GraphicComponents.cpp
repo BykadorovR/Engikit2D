@@ -1,7 +1,9 @@
 #include "GraphicComponents.h"
 #include "TextureManager.h"
 #include "State.h"
-#include <algorithm>
+#include "Common.h"
+#include <locale>
+#include <codecvt>
 
 ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
@@ -145,7 +147,7 @@ int Word::getWidth() {
 int Word::getHeight() {
 	int size = 0;
 	for (auto symbol : _text) {
-		size = std::max(std::get<1>(symbol.getCharacterInfo()._size), size);
+		size = max(std::get<1>(symbol.getCharacterInfo()._size), size);
 	}
 	return size;
 }
@@ -153,7 +155,7 @@ int Word::getHeight() {
 int Word::getHeightAdjusted(int bearingYMax) {
 	int size = 0;
 	for (auto symbol : _text) {
-		size = std::max(std::get<1>(symbol.getCharacterInfo()._size) + bearingYMax - std::get<1>(symbol.getCharacterInfo()._bearing), size);
+		size = max(std::get<1>(symbol.getCharacterInfo()._size) + bearingYMax - std::get<1>(symbol.getCharacterInfo()._bearing), size);
 	}
 	return size;
 }
@@ -172,7 +174,7 @@ bool Word::cropTrailingSpace() {
 int Word::getBearingYMin() {
 	int size = INT_MAX;
 	for (auto symbol : _text) {
-		size = std::min(std::get<1>(symbol.getCharacterInfo()._bearing), size);
+		size = min(std::get<1>(symbol.getCharacterInfo()._bearing), size);
 	}
 	return size;
 }
@@ -180,7 +182,7 @@ int Word::getBearingYMin() {
 int Word::getBearingYMax() {
 	int size = INT_MIN;
 	for (auto symbol : _text) {
-		size = std::max(std::get<1>(symbol.getCharacterInfo()._bearing), size);
+		size = max(std::get<1>(symbol.getCharacterInfo()._bearing), size);
 	}
 	return size;
 }
@@ -210,7 +212,7 @@ int Line::getWidth() {
 int Line::getHeight() {
 	int height = 0;
 	for (auto word : _text) {
-		height = std::max(word.getHeight(), height);
+		height = max(word.getHeight(), height);
 	}
 	return height;
 }
@@ -218,7 +220,7 @@ int Line::getHeight() {
 int Line::getHeightAdjusted(int bearingYMax) {
 	int height = 0;
 	for (auto word : _text) {
-		height = std::max(word.getHeightAdjusted(bearingYMax), height);
+		height = max(word.getHeightAdjusted(bearingYMax), height);
 	}
 	return height;
 }
@@ -226,7 +228,7 @@ int Line::getHeightAdjusted(int bearingYMax) {
 int Line::getBearingYMin() {
 	int size = INT_MAX;
 	for (auto symbol : _text) {
-		size = std::min(symbol.getBearingYMin(), size);
+		size = min(symbol.getBearingYMin(), size);
 	}
 	return size;
 }
@@ -234,7 +236,7 @@ int Line::getBearingYMin() {
 int Line::getBearingYMax() {
 	int size = INT_MIN;
 	for (auto symbol : _text) {
-		size = std::max(symbol.getBearingYMax(), size);
+		size = max(symbol.getBearingYMax(), size);
 	}
 	return size;
 }
@@ -265,7 +267,10 @@ bool TextComponent::initialize(std::string text, std::shared_ptr<GlyphsLoader> g
 	_lineSpacingCoeff = 1;
 	_page = 0;
 	_allignment = {TextAllignment::LEFT, TextAllignment::LEFT};
-	_text = text;
+	//All strings are stored as UTF8, so first we should convert it
+	std::string UTF8String = convertMultibyteToUTF8(text);
+
+	_text = UTF8String;
 	_glyphsLoader = glyphsLoader;
 	_bufferManager = bufferManager;
 

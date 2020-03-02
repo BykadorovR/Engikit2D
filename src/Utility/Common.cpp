@@ -5,6 +5,7 @@
 #include "assert.h"
 #include <cctype>
 #include "Windows.h"
+#include <locale>
 
 std::string rawFileContent(const char* relativePath) {
 	std::string content;
@@ -24,11 +25,10 @@ std::string rawFileContent(const char* relativePath) {
 
 bool isNumber(std::string s) {
 	std::size_t char_pos(0);
-
+	std::locale loc;
 	if (s[char_pos] == '+' || s[char_pos] == '-') ++char_pos; // skip the sign if exist
-
 	int nunmberDigits, numberPoints;
-	for (nunmberDigits = 0, numberPoints = 0; std::isdigit(s[char_pos]) || s[char_pos] == '.'; ++char_pos) {
+	for (nunmberDigits = 0, numberPoints = 0; std::isdigit(s[char_pos], loc) || s[char_pos] == '.'; ++char_pos) {
 		s[char_pos] == '.' ? ++numberPoints : ++nunmberDigits;
 	}
 	if (numberPoints > 1 || nunmberDigits < 1) // no more than one point, at least one digit
