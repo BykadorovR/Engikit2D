@@ -95,20 +95,30 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	std::wstring text = converter.from_bytes(textObject->getText());
-	//std::wstring text = std::wstring(test.begin(), test.end());
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
 	for (auto c = text.begin(); c != text.end(); c++) {
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		int symbolWidth = chInfo._advance >> 6;
 
-		//we can't handle end in if with delimeter because the last one has logic with handling space and words before/after space, so
+		//word is larger than line size, let's split word to lines
+		if ((lines.back().getWidth() + currentWord.getWidth() + symbolWidth) * textObject->getScale() > objectWidth) {
+			lines.back().addWord(currentWord);
+			currentWord.clear();
+			allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
+			lines.push_back(Line());
+		}
+
+		/*
+		//we can't handle end with delimeter because the last one has logic with handling space and words before/after space, so
 		//it's differ from text end
 		if (std::next(c) == text.end()) {
 			currentWord += {*c, chInfo};
 			if ((lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
-				lines.back().getText().back().cropTrailingSpace();
-				lines.push_back(Line());
-				lines.back().addWord(currentWord);
+				if (lines.back().getWidth() > 0) {
+					lines.back().getText().back().cropTrailingSpace();
+					lines.push_back(Line());
+					lines.back().addWord(currentWord);
+				}
 			}
 			else {
 				lines.back().addWord(currentWord);
@@ -119,6 +129,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 			currentWord.clear();
 			break;
 		}
+		*/
 
 		if (*c == delimiter) {
 			//skip delimiter, add current word to next line
@@ -141,6 +152,11 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		}
 
 		currentWord += {*c, chInfo};
+	}
+
+	if (currentWord.getWidth() > 0) {
+		lines.back().addWord(currentWord);
+		allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
 	}
 
 	textObject->setMember("totalPages", lines.size());
