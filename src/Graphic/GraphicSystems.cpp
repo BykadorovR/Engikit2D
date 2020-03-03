@@ -88,11 +88,8 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 
 	int wordSize = 0;
 	int allignBearingYMax = 0;
-	//std::wstring text = textObject->getText();
+	
 	Word currentWord;
-
-	//std::string UTF8String = convertMultibyteToUTF8(textObject->getText());
-
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	std::wstring text = converter.from_bytes(textObject->getText());
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
@@ -100,40 +97,9 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
 		int symbolWidth = chInfo._advance >> 6;
 
-		//word is larger than line size, let's split word to lines
-		if ((lines.back().getWidth() + currentWord.getWidth() + symbolWidth) * textObject->getScale() > objectWidth) {
-			lines.back().addWord(currentWord);
-			currentWord.clear();
-			allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
-			lines.push_back(Line());
-		}
-
-		/*
-		//we can't handle end with delimeter because the last one has logic with handling space and words before/after space, so
-		//it's differ from text end
-		if (std::next(c) == text.end()) {
-			currentWord += {*c, chInfo};
-			if ((lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
-				if (lines.back().getWidth() > 0) {
-					lines.back().getText().back().cropTrailingSpace();
-					lines.push_back(Line());
-					lines.back().addWord(currentWord);
-				}
-			}
-			else {
-				lines.back().addWord(currentWord);
-			}
-
-			allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
-
-			currentWord.clear();
-			break;
-		}
-		*/
-
 		if (*c == delimiter) {
 			//skip delimiter, add current word to next line
-			if ((lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
+			if (lines.back().getWidth() > 0 && (lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
 				lines.back().getText().back().cropTrailingSpace();
 				lines.push_back(Line());
 				currentWord += {*c, chInfo};
@@ -155,7 +121,15 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	}
 
 	if (currentWord.getWidth() > 0) {
-		lines.back().addWord(currentWord);
+		if (lines.back().getWidth() > 0 && (lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
+			lines.back().getText().back().cropTrailingSpace();
+			lines.push_back(Line());
+			lines.back().addWord(currentWord);
+		}
+		else {
+			lines.back().addWord(currentWord);
+		}
+
 		allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
 	}
 
