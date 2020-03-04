@@ -115,10 +115,27 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 
 			currentWord.clear();
 			continue;
+		} else if ((currentWord.getWidth() + symbolWidth) * textObject->getScale() > objectWidth) {
+			if (lines.back().getWidth() > 0) {
+				lines.back().getText().back().cropTrailingSpace();
+				lines.push_back(Line());
+				lines.back().addWord(currentWord);
+				currentWord.clear();
+				lines.push_back(Line());
+				currentWord += {*c, chInfo};
+			}
+			else {
+				lines.back().addWord(currentWord);
+				allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
+				lines.push_back(Line());
+				currentWord.clear();
+				currentWord += {*c, chInfo};
+			}
+			continue;
 		}
 
 		currentWord += {*c, chInfo};
-	}
+	} 
 
 	if (currentWord.getWidth() > 0) {
 		if (lines.back().getWidth() > 0 && (lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
