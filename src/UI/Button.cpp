@@ -4,19 +4,19 @@ Button::Button(std::string name) {
 	_viewName = name;
 }
 
-bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader) {
+bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	getBack()->initialize(position, size, backColor, shader);
-	getLabel()->initialize(position, size, text, glyphLoader, shader);
+	getBack()->initialize(position, size, backColor);
+	getLabel()->initialize(position, size, text, glyphLoader);
 	getLabel()->setColor(textColor);
 	getLabel()->setScale(textScale);
 	return false;
 }
 
-bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader, std::shared_ptr<Shader> shader) {
+bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	getBack()->initialize(position, size, backTextureID, shader);
-	getLabel()->initialize(position, size, text, glyphLoader, shader);
+	getBack()->initialize(position, size, backTextureID);
+	getLabel()->initialize(position, size, text, glyphLoader);
 	getLabel()->setColor(textColor);
 	getLabel()->setScale(textScale);
 	return false;

@@ -14,7 +14,7 @@ class LabelScroller : public View {
 class Label: public View {
 public:
 	Label(std::string name);
-	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs, std::shared_ptr<Shader> shader);
+	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs);
 	bool setColor(std::vector<float> color);
 	bool setScale(float scale);
 	std::tuple<float, float> getPosition();

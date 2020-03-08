@@ -1,12 +1,13 @@
 #include "Label.h"
+#include "Shader.h"
 
 Label::Label(std::string name = "Label") {
 	_viewName = name;
 }
 
-bool Label::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs, std::shared_ptr<Shader> shader) {
+bool Label::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, shader);
+	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextComponent>()->initialize(text, glyphs, bufferManager);
 	//TODO: how to pass texture here?
 	return false;

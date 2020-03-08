@@ -5,16 +5,16 @@ Back::Back(std::string name = "Back") {
 	_viewName = name;
 }
 
-bool Back::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int textureID, std::shared_ptr<Shader> shader) {
+bool Back::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int textureID) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, shader);
+	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextureComponent>()->initialize(textureID, bufferManager);
 	return false;
 }
 
-bool Back::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> color, std::shared_ptr<Shader> shader) {
+bool Back::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> color) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, shader);
+	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextureComponent>()->initialize(bufferManager);
 	_entity->getComponent<TextureComponent>()->setColorMask({ 0, 0, 0, 0 });
 	_entity->getComponent<TextureComponent>()->setColorAddition(color);

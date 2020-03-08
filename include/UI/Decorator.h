@@ -7,7 +7,7 @@ private:
 	std::vector<std::shared_ptr<View> > _views;
 public:
 	ScrollerDecorator(std::string name);
-	bool initialize(std::shared_ptr<Label> label, std::shared_ptr<Shader> shader);
+	bool initialize(std::shared_ptr<Label> label);
 
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
 	bool setScrollerDown(std::shared_ptr<View> scrollerDown);

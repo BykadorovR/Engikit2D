@@ -47,19 +47,20 @@ void surfaceCreated() {
 
 	//TODO: shaders should be global
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	ShaderStore::instance()->addShader("texture", shader);
 	{
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-		label->initialize({ 50, 50 }, { 100, 100 }, "I", glyphsLoader, shader);
+		label->initialize({ 50, 50 }, { 100, 100 }, "I", glyphsLoader);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
-		scrollerDecorator->initialize(label, shader);
+		scrollerDecorator->initialize(label);
 
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
-		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), "Жепа", {1, 0, 1, 1}, 1, glyphsLoader, shader);
+		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), "Жепа", {1, 0, 1, 1}, 1, glyphsLoader);
 		button->getBack()->getEntity()->createComponent<MouseComponent>();
 		button->getBack()->getEntity()->createComponent<KeyboardComponent>();
 

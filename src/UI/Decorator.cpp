@@ -1,5 +1,6 @@
 #include "Decorator.h"
 #include "Back.h"
+#include "Shader.h"
 #include "InteractionOperations.h"
 #include "UserInputComponents.h"
 #include "InteractionActions.h"
@@ -10,7 +11,7 @@ ScrollerDecorator::ScrollerDecorator(std::string name = "ScrollerDecorator") {
 	_viewName = name;
 }
 
-bool ScrollerDecorator::initialize(std::shared_ptr<Label> label, std::shared_ptr<Shader> shader) {
+bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	auto position = label->getPosition();
 	auto size = label->getSize();
 	std::tuple<float, float> scrollerSize = { 20, 20 };
@@ -19,9 +20,9 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label, std::shared_ptr
 	std::tuple<float, float> scrollerProgressSize = { 20, 10 };
 	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
 
-	getScrollerProgress()->initialize(scrollerProgressPosition, scrollerProgressSize, { 0.5, 0.5, 0, 1 }, shader);
+	getScrollerProgress()->initialize(scrollerProgressPosition, scrollerProgressSize, { 0.5, 0.5, 0, 1 });
 
-	getScrollerUp()->initialize(scrollerUpPosition, scrollerSize, { 1, 0, 0.5, 1 }, shader);
+	getScrollerUp()->initialize(scrollerUpPosition, scrollerSize, { 1, 0, 0.5, 1 });
 	getScrollerUp()->getEntity()->createComponent<MouseComponent>();
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
 	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
@@ -56,7 +57,7 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label, std::shared_ptr
 
 	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE);
 
-	getScrollerDown()->initialize(scrollerDownPosition, scrollerSize, { 0, 1, 1, 1 }, shader);
+	getScrollerDown()->initialize(scrollerDownPosition, scrollerSize, { 0, 1, 1, 1 });
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	auto clickInsideDown = std::make_shared<ExpressionOperation>();
 	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<MouseComponent>(), "leftClickX");

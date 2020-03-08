@@ -1,6 +1,7 @@
 #pragma once
 #include <GL/glew.h>
 #include <string>
+#include <map>
 
 class Shader {
 public:
@@ -18,4 +19,23 @@ private:
 	GLuint buildProgramFromAsset(const char* vertex_shader_path, const char* fragment_shader_path);
 	/* Should be called just before using a program to draw, if validation is needed. */
 	GLint validateProgram(const GLuint program);
+};
+
+class ShaderStore {
+private:
+	std::map<std::string, std::shared_ptr<Shader> > _shaders;
+public:
+	static ShaderStore* instance() {
+		static ShaderStore shaderStore;
+		return &shaderStore;
+	}
+
+	bool addShader(std::string name, std::shared_ptr<Shader> shader) {
+		_shaders.insert({ name, shader });
+		return false;
+	}
+
+	std::shared_ptr<Shader> getShader(std::string name) {
+		return _shaders[name];
+	}
 };
