@@ -51,7 +51,7 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-		label->initialize({ 50, 50 }, { 100, 100 }, "Hello", glyphsLoader);
+		label->initialize({ 50, 50 }, { 100, 100 }, "Hello  Привествую здесь всех на нашем корабле", glyphsLoader);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());

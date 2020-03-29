@@ -1,6 +1,9 @@
 #pragma once
 #include "Action.h"
 #include "Expression.h"
+#include "Scene.h"
+#include "Decorator.h"
+
 
 class AssignAction : public Action {
 private:
@@ -14,5 +17,27 @@ public:
 	bool setAction(std::string condition);
 
 	bool initializeAction();
+	bool doAction();
+};
+
+class LabelDecoratorDoAction : public Action {
+private:
+	std::shared_ptr<Scene> _activeScene;
+	//TODO: extend for any decorator
+	std::shared_ptr<ScrollerDecorator> _decorator;
+	std::shared_ptr<Label> _label;
+public:
+	LabelDecoratorDoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
+	bool doAction();
+};
+
+class LabelDecoratorUndoAction : public Action {
+private:
+	std::shared_ptr<Scene> _activeScene;
+	//TODO: extend for any decorator
+	std::shared_ptr<ScrollerDecorator> _decorator;
+	std::shared_ptr<Label> _label;
+public:
+	LabelDecoratorUndoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
 	bool doAction();
 };

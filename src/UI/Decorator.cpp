@@ -134,6 +134,10 @@ std::shared_ptr<Back> ScrollerDecorator::getScrollerProgress() {
 	return nullptr;
 }
 
+std::vector<std::shared_ptr<View> > ScrollerDecorator::getViews() {
+	return _views;
+}
+
 ScrollerDecoratorFactory::ScrollerDecoratorFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 	_backFactory = std::make_shared<BackFactory>(activeScene);

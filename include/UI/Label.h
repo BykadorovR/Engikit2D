@@ -5,6 +5,7 @@
 #include "GlyphsLoader.h"
 #include "GraphicComponents.h"
 #include "Back.h"
+#include "Action.h"
 
 class Label: public View {
 public:

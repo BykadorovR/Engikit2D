@@ -113,3 +113,27 @@ bool AssignAction::doAction() {
 
 	return false;
 }
+
+LabelDecoratorDoAction::LabelDecoratorDoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
+	_decorator = decorator;
+	_activeScene = activeScene;
+}
+
+bool LabelDecoratorDoAction::doAction() {
+	for (auto view : _decorator->getViews()) {
+		_activeScene->unregisterEntity(view->getEntity());
+	}
+	return false;
+}
+
+LabelDecoratorUndoAction::LabelDecoratorUndoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
+	_decorator = decorator;
+	_activeScene = activeScene;
+}
+
+bool LabelDecoratorUndoAction::doAction() {
+	for (auto view : _decorator->getViews()) {
+		_activeScene->unregisterEntity(view->getEntity());
+	}
+	return false;
+}

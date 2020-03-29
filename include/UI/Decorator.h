@@ -9,6 +9,7 @@ public:
 	ScrollerDecorator(std::string name);
 	bool initialize(std::shared_ptr<Label> label);
 
+	std::vector<std::shared_ptr<View> > getViews();
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
 	bool setScrollerDown(std::shared_ptr<View> scrollerDown);
 	bool setScrollerProgress(std::shared_ptr<View> scrollerProgress);
