@@ -137,7 +137,9 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		currentWord += {*c, chInfo};
 	} 
 
+	//drain last word
 	if (currentWord.getWidth() > 0) {
+		//if no space for word on current line, need to create new one
 		if (lines.back().getWidth() > 0 && (lines.back().getWidth() + currentWord.getWidth()) * textObject->getScale() > objectWidth) {
 			lines.back().getText().back().cropTrailingSpace();
 			lines.push_back(Line());

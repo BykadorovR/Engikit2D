@@ -51,7 +51,7 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-		label->initialize({ 50, 50 }, { 100, 100 }, "I", glyphsLoader);
+		label->initialize({ 50, 50 }, { 100, 100 }, "Hello", glyphsLoader);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
@@ -61,7 +61,6 @@ void surfaceCreated() {
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
 		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), "Жепа", {1, 0, 1, 1}, 1, glyphsLoader);
-		button->getBack()->getEntity()->createComponent<MouseComponent>();
 		button->getBack()->getEntity()->createComponent<KeyboardComponent>();
 
 		auto changeText = std::make_shared<ExpressionOperation>();
@@ -75,25 +74,13 @@ void surfaceCreated() {
 		changeText->registerAction(editText);
 		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD);
 
-		auto clickInside = std::make_shared<ExpressionOperation>();
-		clickInside->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
-		clickInside->addArgument(button->getBack()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
-		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
-		clickInside->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-		//TODO: Add constants support to operations
-		clickInside->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
-		clickInside->initializeOperation();
-		//TODO: We should be able get ALL views from all "child" views
 		for (auto view : button->getViews()) {
 			auto changePosition = std::make_shared<AssignAction>();
 			changePosition->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");
 			changePosition->setAction("${0} SET ${0} + 10");
 			changePosition->initializeAction();
-			clickInside->registerAction(changePosition);
+			button->addClickAction(changePosition);
 		}
-		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE);
 
 		auto boundCheck = std::make_shared<ExpressionOperation>();
 		boundCheck->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");

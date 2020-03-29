@@ -6,11 +6,6 @@
 #include "GraphicComponents.h"
 #include "Back.h"
 
-class LabelScroller : public View {
-	LabelScroller(std::string name);
-
-};
-
 class Label: public View {
 public:
 	Label(std::string name);
