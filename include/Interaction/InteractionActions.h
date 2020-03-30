@@ -27,7 +27,9 @@ private:
 	std::shared_ptr<ScrollerDecorator> _decorator;
 	std::shared_ptr<Label> _label;
 public:
-	LabelDecoratorDoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
+	LabelDecoratorDoAction();
+	
+	bool initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
 	bool doAction();
 };
 
@@ -38,6 +40,8 @@ private:
 	std::shared_ptr<ScrollerDecorator> _decorator;
 	std::shared_ptr<Label> _label;
 public:
-	LabelDecoratorUndoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
+	LabelDecoratorUndoAction();
+
+	bool initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
 	bool doAction();
 };

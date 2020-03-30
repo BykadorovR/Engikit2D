@@ -114,21 +114,29 @@ bool AssignAction::doAction() {
 	return false;
 }
 
-LabelDecoratorDoAction::LabelDecoratorDoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
+LabelDecoratorDoAction::LabelDecoratorDoAction() {	
+}
+
+bool LabelDecoratorDoAction::initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
 	_decorator = decorator;
 	_activeScene = activeScene;
+	return false;
 }
 
 bool LabelDecoratorDoAction::doAction() {
 	for (auto view : _decorator->getViews()) {
-		_activeScene->unregisterEntity(view->getEntity());
+		_activeScene->registerEntity(view->getEntity());
 	}
 	return false;
 }
 
-LabelDecoratorUndoAction::LabelDecoratorUndoAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
+LabelDecoratorUndoAction::LabelDecoratorUndoAction() {
+}
+
+bool LabelDecoratorUndoAction::initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
 	_decorator = decorator;
 	_activeScene = activeScene;
+	return false;
 }
 
 bool LabelDecoratorUndoAction::doAction() {

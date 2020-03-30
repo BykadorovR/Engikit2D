@@ -57,6 +57,16 @@ void surfaceCreated() {
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
 		scrollerDecorator->initialize(label);
 
+		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
+		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
+		decoratorAddCheck->setCondition("${0} > 4");
+		decoratorAddCheck->initializeOperation();
+
+		auto decoratorAddAction = std::make_shared<LabelDecoratorDoAction>();
+		decoratorAddAction->initializeAction(scrollerDecorator, activeScene);
+		decoratorAddCheck->registerAction(decoratorAddAction);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON);
+
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
