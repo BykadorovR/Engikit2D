@@ -1,3 +1,4 @@
+#include "GraphicComponents.h"
 #include "UserInputSystems.h"
 #include "Operation.h"
 #include "InteractionComponents.h"
@@ -74,6 +75,24 @@ bool KeyboardSystem::checkOperation() {
 
 void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
 	//Here should be handled HARDWARE keys, so "W" key is "W" on ALL keyboard layouts
+	//first update coords in keyboard components
+	if (action == GLFW_PRESS) {
+		for (auto entity : _entityManager->getEntities()) {
+			auto keyboardComponent = entity->getComponent<KeyboardComponent>();
+			if (keyboardComponent) {
+				switch (key) {
+				case GLFW_KEY_BACKSPACE:
+					auto textComponent = entity->getComponent<TextComponent>();
+					if (textComponent && textComponent->getFocus()) {
+						auto stringWithoutLastChar = textComponent->getText();
+						stringWithoutLastChar.pop_back();
+						textComponent->setMember("text", stringWithoutLastChar);
+					}
+					break;
+				}
+			}
+		}
+	}
 }
 
 void KeyboardSystem::textInput(unsigned int character) {
@@ -85,7 +104,7 @@ void KeyboardSystem::textInput(unsigned int character) {
 
 	std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converter;
 	std::string text = converter.to_bytes(wideText);
-	//first update coords in mouse components
+	//first update coords in keyboard components
 	for (auto entity : _entityManager->getEntities()) {
 		auto keyboardComponent = entity->getComponent<KeyboardComponent>();
 		if (keyboardComponent) {

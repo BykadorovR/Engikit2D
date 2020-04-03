@@ -251,7 +251,8 @@ TextComponent::TextComponent() {
 	_classVariablesFloat =
 	{
 		{"page", &_page},
-		{"totalPages", &_totalPages}
+		{"totalPages", &_totalPages},
+		{"focus", &_focus}
 	};
 	
 	_classVariablesString =

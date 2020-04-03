@@ -51,11 +51,24 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-		label->initialize({ 50, 50 }, { 100, 100 }, "Hello  Привествую здесь всех на нашем корабле", glyphsLoader);
+		label->initialize({ 50, 50 }, { 100, 100 }, "Hello", glyphsLoader);
+		label->getEntity()->createComponent<KeyboardComponent>();
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
 		scrollerDecorator->initialize(label);
+
+		auto changeText = std::make_shared<ExpressionOperation>();
+		changeText->addArgument(label->getEntity()->getComponent<TextComponent>(), "focus");
+		changeText->setCondition("${0} = 1");
+		changeText->initializeOperation();
+		auto editText = std::make_shared<AssignAction>();
+		editText->addArgument(label->getEntity()->getComponent<KeyboardComponent>(), "symbol");
+		editText->addArgument(label->getEntity()->getComponent<TextComponent>(), "text");
+		editText->setAction("${1} SET ${1} + ${0}");
+		editText->initializeAction();
+		changeText->registerAction(editText);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD);
 
 		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
 		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
@@ -67,22 +80,21 @@ void surfaceCreated() {
 		decoratorAddCheck->registerAction(decoratorAddAction);
 		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON);
 
+		auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
+		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
+		decoratorRemoveCheck->setCondition("${0} < 4");
+		decoratorRemoveCheck->initializeOperation();
+
+		auto decoratorRemoveAction = std::make_shared<LabelDecoratorUndoAction>();
+		decoratorRemoveAction->initializeAction(scrollerDecorator, activeScene);
+		decoratorRemoveCheck->registerAction(decoratorRemoveAction);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON);
+
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
 		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), "Жепа", {1, 0, 1, 1}, 1, glyphsLoader);
 		button->getBack()->getEntity()->createComponent<KeyboardComponent>();
-
-		auto changeText = std::make_shared<ExpressionOperation>();
-		changeText->setCondition("1");
-		changeText->initializeOperation();
-		auto editText = std::make_shared<AssignAction>();
-		editText->addArgument(button->getBack()->getEntity()->getComponent<KeyboardComponent>(), "symbol");
-		editText->addArgument(button->getLabel()->getEntity()->getComponent<TextComponent>(), "text");
-		editText->setAction("${1} SET ${1} + ${0}");
-		editText->initializeAction();
-		changeText->registerAction(editText);
-		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD);
 
 		for (auto view : button->getViews()) {
 			auto changePosition = std::make_shared<AssignAction>();

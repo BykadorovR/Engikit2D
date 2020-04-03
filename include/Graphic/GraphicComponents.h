@@ -122,7 +122,7 @@ public:
 	std::shared_ptr<BufferManager> getBufferManager();
 private:
 	//if focus == true all keys will be handled as text for this TextComponent
-	bool _focus;
+	float _focus;
 	float _page;
 	float _totalPages;
 	std::string _text;
