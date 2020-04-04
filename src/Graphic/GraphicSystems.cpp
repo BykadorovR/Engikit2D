@@ -152,11 +152,6 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
 	}
 
-	textObject->setMember("totalPages", lines.size());
-
-	if (lines.size() <= textObject->getPageNumber())
-		return;
-
 	//Calculate real height of text
 	float linesInObject = objectHeight / ((scaledLineSpacing)* textObject->getLineSpacingCoeff() * textObject->getScale());
 	float realLinesNumber = (lines.size() - textObject->getPageNumber()) >= floor(linesInObject) ? floor(linesInObject) : (lines.size() - textObject->getPageNumber());
@@ -164,9 +159,18 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	for (auto line = lines.begin() + textObject->getPageNumber(); line != lines.begin() + textObject->getPageNumber() + realLinesNumber; line++) {
 		float currentLineSize = line->getHeightAdjusted(allignBearingYMax);
 		realLinesHeight += currentLineSize;
+		//if line isn't the last need to add distance between lines
 		if (std::next(line) != lines.begin() + textObject->getPageNumber() + realLinesNumber)
 			realLinesHeight += scaledLineSpacing * textObject->getLineSpacingCoeff() - currentLineSize;
 	}
+
+	OUT_STREAM("All pages: " + std::to_string(lines.size()) + "\n");
+	OUT_STREAM("Current page: " + std::to_string(textObject->getPageNumber()) + "\n");
+	textObject->setMember("totalPages", lines.size());
+	textObject->setMember("lineHeight", scaledLineSpacing);
+
+	if (lines.size() <= textObject->getPageNumber())
+		return;
 
 	//calculate allignment
 	float heightAllign = 0;

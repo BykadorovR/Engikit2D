@@ -125,6 +125,7 @@ private:
 	float _focus;
 	float _page;
 	float _totalPages;
+	float _lineHeight;
 	std::string _text;
 	float _scale;
 	float _lineSpacingCoeff;

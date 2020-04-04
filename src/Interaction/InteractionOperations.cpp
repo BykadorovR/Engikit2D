@@ -25,11 +25,8 @@ bool ExpressionOperation::addArgument(std::shared_ptr<Component> argument, std::
 	return false;
 }
 
-bool ExpressionOperation::setCondition(std::string condition) {
-	return _expression->setCondition(condition);
-}
-
-bool ExpressionOperation::initializeOperation() {
+bool ExpressionOperation::initializeOperation(std::string condition) {
+	_expression->setCondition(condition);
 	return _expression->prepareExpression(_postfix);
 }
 

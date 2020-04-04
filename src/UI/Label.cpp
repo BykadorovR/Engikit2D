@@ -17,6 +17,33 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	//TODO: how to pass texture here?
 
 	_entity->createComponent<MouseComponent>();
+	_entity->createComponent<KeyboardComponent>();
+	
+	auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
+	textOutOfBoundsDown->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
+	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "lineHeight");
+	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "page");
+	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "totalPages");
+	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "spacingCoeff");
+	textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0}");
+
+	auto changePageDown = std::make_shared<AssignAction>();
+	changePageDown->addArgument(_entity->getComponent<TextComponent>(), "page");
+	changePageDown->initializeAction("${0} SET ${0} + 1");
+	textOutOfBoundsDown->registerAction(changePageDown);
+	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD);
+
+	auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
+	textOutOfBoundsUp->addArgument(_entity->getComponent<TextComponent>(), "page");
+	textOutOfBoundsUp->addArgument(_entity->getComponent<TextComponent>(), "totalPages");
+	textOutOfBoundsUp->initializeOperation("${1} - ${0} < 1");
+
+	auto changePageUp = std::make_shared<AssignAction>();
+	changePageUp->addArgument(_entity->getComponent<TextComponent>(), "page");
+	changePageUp->initializeAction("${0} SET ${0} - 1");
+	textOutOfBoundsUp->registerAction(changePageUp);
+	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON);
+
 	auto clickInside = std::make_shared<ExpressionOperation>();
 	clickInside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickX");
 	clickInside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickY");
@@ -25,13 +52,11 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	clickInside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeX");
 	clickInside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
 	//TODO: Add constants support to operations
-	clickInside->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
-	clickInside->initializeOperation();
+	clickInside->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
 
 	auto changeFocusOn = std::make_shared<AssignAction>();
 	changeFocusOn->addArgument(_entity->getComponent<TextComponent>(), "focus");
-	changeFocusOn->setAction("${0} SET 1");
-	changeFocusOn->initializeAction();
+	changeFocusOn->initializeAction("${0} SET 1");
 	clickInside->registerAction(changeFocusOn);
 
 	_entity->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE);
@@ -45,13 +70,11 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeX");
 	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
 	//TODO: Add constants support to operations
-	clickOutside->setCondition("${0} < ${2} OR ${0} > ${2} + ${4} OR ${1} < ${3} OR ${1} > ${3} + ${5}");
-	clickOutside->initializeOperation();
+	clickOutside->initializeOperation("${0} < ${2} OR ${0} > ${2} + ${4} OR ${1} < ${3} OR ${1} > ${3} + ${5}");
 
 	auto changeFocusOff = std::make_shared<AssignAction>();
 	changeFocusOff->addArgument(_entity->getComponent<TextComponent>(), "focus");
-	changeFocusOff->setAction("${0} SET 0");
-	changeFocusOff->initializeAction();
+	changeFocusOff->initializeAction("${0} SET 0");
 	clickOutside->registerAction(changeFocusOff);
 
 	_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE);

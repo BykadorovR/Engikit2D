@@ -60,20 +60,22 @@ void surfaceCreated() {
 
 		auto changeText = std::make_shared<ExpressionOperation>();
 		changeText->addArgument(label->getEntity()->getComponent<TextComponent>(), "focus");
-		changeText->setCondition("${0} = 1");
-		changeText->initializeOperation();
+		changeText->initializeOperation("${0} = 1");
 		auto editText = std::make_shared<AssignAction>();
 		editText->addArgument(label->getEntity()->getComponent<KeyboardComponent>(), "symbol");
 		editText->addArgument(label->getEntity()->getComponent<TextComponent>(), "text");
-		editText->setAction("${1} SET ${1} + ${0}");
-		editText->initializeAction();
+		editText->initializeAction("${1} SET ${1} + ${0}");
 		changeText->registerAction(editText);
 		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD);
 
 		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
+		decoratorAddCheck->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "lineHeight");
+		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
-		decoratorAddCheck->setCondition("${0} > 4");
-		decoratorAddCheck->initializeOperation();
+		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
+		//decoratorAddCheck->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0}");
+		decoratorAddCheck->initializeOperation("${2} > 0");
 
 		auto decoratorAddAction = std::make_shared<LabelDecoratorDoAction>();
 		decoratorAddAction->initializeAction(scrollerDecorator, activeScene);
@@ -81,9 +83,11 @@ void surfaceCreated() {
 		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON);
 
 		auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
+		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
+		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "lineHeight");
 		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
-		decoratorRemoveCheck->setCondition("${0} < 4");
-		decoratorRemoveCheck->initializeOperation();
+		decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
 
 		auto decoratorRemoveAction = std::make_shared<LabelDecoratorUndoAction>();
 		decoratorRemoveAction->initializeAction(scrollerDecorator, activeScene);
@@ -91,7 +95,9 @@ void surfaceCreated() {
 		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON);
 
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
+		
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
+		
 		//TODO: rewrite to Back options and LabelOptions
 		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), "Жепа", {1, 0, 1, 1}, 1, glyphsLoader);
 		button->getBack()->getEntity()->createComponent<KeyboardComponent>();
@@ -99,21 +105,18 @@ void surfaceCreated() {
 		for (auto view : button->getViews()) {
 			auto changePosition = std::make_shared<AssignAction>();
 			changePosition->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");
-			changePosition->setAction("${0} SET ${0} + 10");
-			changePosition->initializeAction();
+			changePosition->initializeAction("${0} SET ${0} + 10");
 			button->addClickAction(changePosition);
 		}
 
 		auto boundCheck = std::make_shared<ExpressionOperation>();
 		boundCheck->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-		boundCheck->setCondition("${0} > 350");
-		boundCheck->initializeOperation();
+		boundCheck->initializeOperation("${0} > 350");
 
 		for (auto view : button->getViews()) {
 			auto returnBack = std::make_shared<AssignAction>();
 			returnBack->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");
-			returnBack->setAction("${0} SET 300");
-			returnBack->initializeAction();
+			returnBack->initializeAction("${0} SET 300");
 			boundCheck->registerAction(returnBack);
 		}
 		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(boundCheck, InteractionType::COMMON);

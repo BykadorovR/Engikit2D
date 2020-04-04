@@ -24,6 +24,7 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 
 	getScrollerUp()->initialize(scrollerUpPosition, scrollerSize, { 1, 0, 0.5, 1 });
 	getScrollerUp()->getEntity()->createComponent<MouseComponent>();
+	
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
 	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
 	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
@@ -33,27 +34,12 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
 	clickInsideUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 	//TODO: Add constants support to operations
-	clickInsideUp->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5} AND ${6} > 0");
-	clickInsideUp->initializeOperation();
+	clickInsideUp->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5} AND ${6} > 0");
 
 	auto changePositionUp = std::make_shared<AssignAction>();
 	changePositionUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
-	changePositionUp->setAction("${0} SET ${0} - 1");
-	changePositionUp->initializeAction();
+	changePositionUp->initializeAction("${0} SET ${0} - 1");
 	clickInsideUp->registerAction(changePositionUp);
-
-	auto changePositionProgressUp = std::make_shared<AssignAction>();
-	changePositionProgressUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
-	changePositionProgressUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
-	changePositionProgressUp->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	changePositionProgressUp->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	changePositionProgressUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	changePositionProgressUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	changePositionProgressUp->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	changePositionProgressUp->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	changePositionProgressUp->setAction("${2} SET ${2} - ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 )");
-	changePositionProgressUp->initializeAction();
-	clickInsideUp->registerAction(changePositionProgressUp);
 
 	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE);
 
@@ -69,29 +55,33 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	clickInsideDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 	clickInsideDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
 	//TODO: Add constants support to operations
-	clickInsideDown->setCondition("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5} AND ${6} < ${7} - 1");
-	clickInsideDown->initializeOperation();
+	clickInsideDown->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5} AND ${6} < ${7} - 1");
 
 	auto changePositionDown = std::make_shared<AssignAction>();
 	changePositionDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 	changePositionDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
-	changePositionDown->setAction("${0} SET ${0} + 1");
-	changePositionDown->initializeAction();
+	changePositionDown->initializeAction("${0} SET ${0} + 1");
 	clickInsideDown->registerAction(changePositionDown);
-
-	auto changePositionProgressDown = std::make_shared<AssignAction>();
-	changePositionProgressDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
-	changePositionProgressDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
-	changePositionProgressDown->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	changePositionProgressDown->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	changePositionProgressDown->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	changePositionProgressDown->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	changePositionProgressDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	changePositionProgressDown->setAction("${2} SET ${2} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 )");
-	changePositionProgressDown->initializeAction();
-	clickInsideDown->registerAction(changePositionProgressDown);
-
 	getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE);
+
+	auto positionDecorator = std::make_shared<ExpressionOperation>();
+	positionDecorator->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
+	//to avoid division by zero
+	positionDecorator->initializeOperation("${0} > 1");
+
+	auto changePosition = std::make_shared<AssignAction>();
+	changePosition->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");							//0
+	changePosition->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");					//1 
+	changePosition->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "positionY");  //2
+	changePosition->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "sizeY");		//3
+	changePosition->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");		//4
+	changePosition->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");			//5
+	changePosition->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");		//6
+	changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 ) * ${0}");
+	positionDecorator->registerAction(changePosition);
+
+	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON);
+
 	return false;
 }
 

@@ -13,8 +13,7 @@ private:
 public:
 	ExpressionOperation();
 	bool addArgument(std::shared_ptr<Component> argument, std::string name);
-	bool setCondition(std::string condition);
-
-	bool initializeOperation();
+	
+	bool initializeOperation(std::string condition);
 	bool checkOperation();
 };

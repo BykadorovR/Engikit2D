@@ -1,4 +1,5 @@
 #include "Expression.h"
+#include <assert.h>
 
 Expression::Expression(std::map<std::string, std::tuple<int, std::string> > supportedOperations) {
 	_supportedOperations = supportedOperations;
@@ -21,8 +22,10 @@ bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr
 		intermediate.push_back({ nullptr, std::to_string(operand[1] - operand[0]) });
 	else if (operation == "*")
 		intermediate.push_back({ nullptr, std::to_string(operand[1] * operand[0]) });
-	else if (operation == "/")
+	else if (operation == "/") {
+		assert(operand[0] != 0, "Division by zero");
 		intermediate.push_back({ nullptr, std::to_string(operand[1] / operand[0]) });
+	}
 	else if (operation == "=")
 		intermediate.push_back({ nullptr, std::to_string(operand[1] == operand[0]) });
 	else if (operation == ">")

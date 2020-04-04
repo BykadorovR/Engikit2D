@@ -14,9 +14,8 @@ private:
 public:
 	AssignAction();
 	bool addArgument(std::shared_ptr<Component> argument, std::string name);
-	bool setAction(std::string condition);
-
-	bool initializeAction();
+	
+	bool initializeAction(std::string condition);
 	bool doAction();
 };
 

@@ -246,13 +246,19 @@ std::vector<Word>& Line::getText() {
 }
 
 TextComponent::TextComponent() {
-	_focus = false;
+	_focus = 0;
 	_page = 0;
+	_lineHeight = 0;
+	_totalPages = 1;
+
 	_classVariablesFloat =
 	{
 		{"page", &_page},
 		{"totalPages", &_totalPages},
-		{"focus", &_focus}
+		{"focus", &_focus},
+		{"lineHeight", &_lineHeight},
+		{"spacingCoeff", &_lineSpacingCoeff},
+		{"scale", &_scale}
 	};
 	
 	_classVariablesString =

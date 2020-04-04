@@ -22,11 +22,9 @@ bool AssignAction::addArgument(std::shared_ptr<Component> argument, std::string 
 	return false;
 }
 
-bool AssignAction::setAction(std::string condition) {
-	return _expression->setCondition(condition);
-}
 
-bool AssignAction::initializeAction() {
+bool AssignAction::initializeAction(std::string condition) {
+	_expression->setCondition(condition);
 	return _expression->prepareExpression(_postfix);
 }
 
