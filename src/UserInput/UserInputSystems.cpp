@@ -85,8 +85,15 @@ void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
 					auto textComponent = entity->getComponent<TextComponent>();
 					if (textComponent && textComponent->getFocus()) {
 						auto stringWithoutLastChar = textComponent->getText();
-						stringWithoutLastChar.pop_back();
-						textComponent->setMember("text", stringWithoutLastChar);
+						//First convert to wstring
+						std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converterToW;
+						std::wstring intermediate = converterToW.from_bytes(stringWithoutLastChar);
+						//remove last symbol
+						intermediate.pop_back();
+						//remove wstring back to string
+						std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterFromW;
+						std::string result = converterFromW.to_bytes(intermediate);
+						textComponent->setMember("text", result);
 					}
 					break;
 				}

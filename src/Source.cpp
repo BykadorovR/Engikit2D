@@ -74,7 +74,6 @@ void surfaceCreated() {
 		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
 		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
-		//decoratorAddCheck->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0}");
 		decoratorAddCheck->initializeOperation("${2} > 0");
 
 		auto decoratorAddAction = std::make_shared<LabelDecoratorDoAction>();
