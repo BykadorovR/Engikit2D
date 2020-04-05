@@ -31,7 +31,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	changePageDown->addArgument(_entity->getComponent<TextComponent>(), "page");
 	changePageDown->initializeAction("${0} SET ${0} + 1");
 	textOutOfBoundsDown->registerAction(changePageDown);
-	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD);
+	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
 
 	auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
 	textOutOfBoundsUp->addArgument(_entity->getComponent<TextComponent>(), "page");
@@ -42,7 +42,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	changePageUp->addArgument(_entity->getComponent<TextComponent>(), "page");
 	changePageUp->initializeAction("${0} SET ${0} - 1");
 	textOutOfBoundsUp->registerAction(changePageUp);
-	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON);
+	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON_START);
 
 	auto clickInside = std::make_shared<ExpressionOperation>();
 	clickInside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickX");
@@ -59,7 +59,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	changeFocusOn->initializeAction("${0} SET 1");
 	clickInside->registerAction(changeFocusOn);
 
-	_entity->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE);
+	_entity->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE_START);
 	
 	_entity->createComponent<MouseComponent>();
 	auto clickOutside = std::make_shared<ExpressionOperation>();
@@ -77,7 +77,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	changeFocusOff->initializeAction("${0} SET 0");
 	clickOutside->registerAction(changeFocusOff);
 
-	_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE);
+	_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE_START);
 	
 	return false;
 }

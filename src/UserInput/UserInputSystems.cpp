@@ -10,25 +10,6 @@ MouseSystem::MouseSystem() {
 	MouseEvent::instance().registerComponent(this);
 }
 
-bool MouseSystem::checkOperation() {
-	for (auto entity : _entityManager->getEntities()) {
-		auto interactionComponent = entity->getComponent<InteractionComponent>();
-		auto mouseComponent = entity->getComponent<MouseComponent>();
-		if (interactionComponent) {
-			std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionComponent->getOperations();
-			for (auto operation : operations) {
-				if (std::get<1>(operation) == InteractionType::MOUSE && mouseComponent && std::get<0>(operation)->checkOperation()) {
-					for (auto action : std::get<0>(operation)->getActions()) {
-						action->doAction();
-					}
-				}
-			}
-		}
-	}
-	//TODO: Add enumeration for return values
-	return false;
-}
-
 void MouseSystem::mouseClickDownLeft(int x, int y) {
 	//first update coords in mouse components
 	for (auto entity : _entityManager->getEntities()) {
@@ -39,8 +20,30 @@ void MouseSystem::mouseClickDownLeft(int x, int y) {
 		}
 	}
 
-	//check mouse related operations
-	checkOperation();
+	_needUpdate = { true, true };
+}
+
+void MouseSystem::update(InteractionType type) {
+	if (std::get<0>(_needUpdate) || std::get<1>(_needUpdate)) {
+		for (auto entity : _entityManager->getEntities()) {
+			auto interactionComponent = entity->getComponent<InteractionComponent>();
+			auto mouseComponent = entity->getComponent<MouseComponent>();
+			if (interactionComponent) {
+				std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionComponent->getOperations();
+				for (auto operation : operations) {
+					if (std::get<1>(operation) == type && mouseComponent && std::get<0>(operation)->checkOperation()) {
+						for (auto action : std::get<0>(operation)->getActions()) {
+							action->doAction();
+						}
+					}
+				}
+			}
+		}
+		if (type == InteractionType::MOUSE_START)
+			std::get<0>(_needUpdate) = false;
+		else if (type == InteractionType::MOUSE_END)
+			std::get<1>(_needUpdate) = false;
+	}
 }
 
 void MouseSystem::mouseClickDownRight(int x, int y) {
@@ -52,25 +55,6 @@ MouseSystem::~MouseSystem() {
 
 KeyboardSystem::KeyboardSystem() {
 	KeyboardEvent::instance().registerComponent(this);
-}
-
-bool KeyboardSystem::checkOperation() {
-	for (auto entity : _entityManager->getEntities()) {
-		auto interactionComponent = entity->getComponent<InteractionComponent>();
-		auto keyboardComponent = entity->getComponent<KeyboardComponent>();
-		if (interactionComponent) {
-			std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionComponent->getOperations();
-			for (auto operation : operations) {
-				if (std::get<1>(operation) == InteractionType::KEYBOARD && keyboardComponent && std::get<0>(operation)->checkOperation()) {
-					for (auto action : std::get<0>(operation)->getActions()) {
-						action->doAction();
-					}
-				}
-			}
-		}
-	}
-	//TODO: Add enumeration for return values
-	return false;
 }
 
 void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
@@ -120,7 +104,30 @@ void KeyboardSystem::textInput(unsigned int character) {
 	}
 
 	//check keyboard related operations
-	checkOperation();
+	_needUpdate = { true, true };
+}
+
+void KeyboardSystem::update(InteractionType type) {
+	if (std::get<0>(_needUpdate) || std::get<1>(_needUpdate)) {
+		for (auto entity : _entityManager->getEntities()) {
+			auto interactionComponent = entity->getComponent<InteractionComponent>();
+			auto keyboardComponent = entity->getComponent<KeyboardComponent>();
+			if (interactionComponent) {
+				std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionComponent->getOperations();
+				for (auto operation : operations) {
+					if (std::get<1>(operation) == type && keyboardComponent && std::get<0>(operation)->checkOperation()) {
+						for (auto action : std::get<0>(operation)->getActions()) {
+							action->doAction();
+						}
+					}
+				}
+			}
+		}
+		if (type == InteractionType::KEYBOARD_START)
+			std::get<0>(_needUpdate) = false;
+		else if (type == InteractionType::KEYBOARD_END)
+			std::get<1>(_needUpdate) = false;
+	}
 }
 
 KeyboardSystem::~KeyboardSystem() {

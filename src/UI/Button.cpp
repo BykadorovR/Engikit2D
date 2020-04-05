@@ -16,7 +16,7 @@ bool Button::_initialize() {
 	_clickInside->addArgument(getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
 	//TODO: Add constants support to operations
 	_clickInside->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
-	_entity->createComponent<InteractionComponent>()->attachOperation(_clickInside, InteractionType::MOUSE);
+	_entity->createComponent<InteractionComponent>()->attachOperation(_clickInside, InteractionType::MOUSE_START);
 
 	return false;
 }

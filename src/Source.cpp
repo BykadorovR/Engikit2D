@@ -66,7 +66,7 @@ void surfaceCreated() {
 		editText->addArgument(label->getEntity()->getComponent<TextComponent>(), "text");
 		editText->initializeAction("${1} SET ${1} + ${0}");
 		changeText->registerAction(editText);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD_START);
 
 		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
 		decoratorAddCheck->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
@@ -79,7 +79,7 @@ void surfaceCreated() {
 		auto decoratorAddAction = std::make_shared<LabelDecoratorDoAction>();
 		decoratorAddAction->initializeAction(scrollerDecorator, activeScene);
 		decoratorAddCheck->registerAction(decoratorAddAction);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
 
 		auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
 		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
@@ -91,7 +91,7 @@ void surfaceCreated() {
 		auto decoratorRemoveAction = std::make_shared<LabelDecoratorUndoAction>();
 		decoratorRemoveAction->initializeAction(scrollerDecorator, activeScene);
 		decoratorRemoveCheck->registerAction(decoratorRemoveAction);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
 
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		
@@ -118,21 +118,21 @@ void surfaceCreated() {
 			returnBack->initializeAction("${0} SET 300");
 			boundCheck->registerAction(returnBack);
 		}
-		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(boundCheck, InteractionType::COMMON);
+		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(boundCheck, InteractionType::COMMON_START);
 
 		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
 	}
 
-	drawSystem = std::make_shared<DrawSystem>();
-	drawSystem->setEntityManager(activeScene->getEntityManager());
 	interactionSystem = std::make_shared<InteractionSystem>();
 	interactionSystem->setEntityManager(activeScene->getEntityManager());
 	mouseSystem = std::make_shared<MouseSystem>();
 	mouseSystem->setEntityManager(activeScene->getEntityManager());
 	keyboardSystem = std::make_shared<KeyboardSystem>();
 	keyboardSystem->setEntityManager(activeScene->getEntityManager());
+	drawSystem = std::make_shared<DrawSystem>();
+	drawSystem->setEntityManager(activeScene->getEntityManager());
 
 }
 
@@ -141,9 +141,15 @@ void drawFrame() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//Interaction should be called before graphic so we avoid use cases when sprite rendered in some coord but should be moved out due to some trigger
 	//so we observe "false" moves to coord under triger and instant move out
-	interactionSystem->update();
+	interactionSystem->update(InteractionType::COMMON_START);
+	mouseSystem->update(InteractionType::MOUSE_START);
+	keyboardSystem->update(InteractionType::KEYBOARD_START);
 
 	drawSystem->update();
+
+	keyboardSystem->update(InteractionType::KEYBOARD_END);
+	mouseSystem->update(InteractionType::MOUSE_END);
+	interactionSystem->update(InteractionType::COMMON_END);
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes

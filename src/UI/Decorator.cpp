@@ -41,7 +41,7 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	changePositionUp->initializeAction("${0} SET ${0} - 1");
 	clickInsideUp->registerAction(changePositionUp);
 
-	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE);
+	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
 
 	getScrollerDown()->initialize(scrollerDownPosition, scrollerSize, { 0, 1, 1, 1 });
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
@@ -62,7 +62,7 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	changePositionDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
 	changePositionDown->initializeAction("${0} SET ${0} + 1");
 	clickInsideDown->registerAction(changePositionDown);
-	getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE);
+	getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
 
 	auto positionDecorator = std::make_shared<ExpressionOperation>();
 	positionDecorator->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
@@ -80,7 +80,7 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 ) * ${0}");
 	positionDecorator->registerAction(changePosition);
 
-	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON);
+	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
 
 	return false;
 }
