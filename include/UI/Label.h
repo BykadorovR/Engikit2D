@@ -13,6 +13,7 @@ public:
 	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs);
 	bool setColor(std::vector<float> color);
 	bool setScale(float scale);
+	bool setEditable(bool editable);
 	std::tuple<float, float> getPosition();
 	std::tuple<float, float> getSize();
 

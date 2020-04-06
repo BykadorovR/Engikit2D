@@ -250,6 +250,7 @@ TextComponent::TextComponent() {
 	_page = 0;
 	_lineHeight = 0;
 	_totalPages = 1;
+	_editable = 0;
 
 	_classVariablesFloat =
 	{
@@ -258,7 +259,8 @@ TextComponent::TextComponent() {
 		{"focus", &_focus},
 		{"lineHeight", &_lineHeight},
 		{"spacingCoeff", &_lineSpacingCoeff},
-		{"scale", &_scale}
+		{"scale", &_scale},
+		{"editable", &_editable}
 	};
 	
 	_classVariablesString =

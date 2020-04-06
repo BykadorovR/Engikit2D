@@ -52,31 +52,17 @@ void surfaceCreated() {
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize({ 50, 50 }, { 100, 100 }, "Hello", glyphsLoader);
-		label->getEntity()->createComponent<KeyboardComponent>();
+		label->setEditable(true);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
 		scrollerDecorator->initialize(label);
 
-		auto changeText = std::make_shared<ExpressionOperation>();
-		changeText->addArgument(label->getEntity()->getComponent<TextComponent>(), "focus");
-		changeText->initializeOperation("${0} = 1");
-		auto editText = std::make_shared<AssignAction>();
-		editText->addArgument(label->getEntity()->getComponent<KeyboardComponent>(), "symbol");
-		editText->addArgument(label->getEntity()->getComponent<TextComponent>(), "text");
-		editText->initializeAction("${1} SET ${1} + ${0}");
-		changeText->registerAction(editText);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD_START);
-
 		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
-		decoratorAddCheck->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "lineHeight");
 		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
-		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
-		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
-		decoratorAddCheck->initializeOperation("${2} > 0");
+		decoratorAddCheck->initializeOperation("${0} > 0");
 
-		auto decoratorAddAction = std::make_shared<LabelDecoratorDoAction>();
+		auto decoratorAddAction = std::make_shared<LabelDecoratorRegisterAction>();
 		decoratorAddAction->initializeAction(scrollerDecorator, activeScene);
 		decoratorAddCheck->registerAction(decoratorAddAction);
 		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
@@ -88,13 +74,12 @@ void surfaceCreated() {
 		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
 		decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
 
-		auto decoratorRemoveAction = std::make_shared<LabelDecoratorUndoAction>();
+		auto decoratorRemoveAction = std::make_shared<LabelDecoratorUnregisterAction>();
 		decoratorRemoveAction->initializeAction(scrollerDecorator, activeScene);
 		decoratorRemoveCheck->registerAction(decoratorRemoveAction);
 		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
 
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
-		
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		
 		//TODO: rewrite to Back options and LabelOptions

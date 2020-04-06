@@ -19,28 +19,24 @@ public:
 	bool doAction();
 };
 
-class LabelDecoratorDoAction : public Action {
+class LabelDecoratorRegisterAction : public Action {
 private:
 	std::shared_ptr<Scene> _activeScene;
 	//TODO: extend for any decorator
 	std::shared_ptr<ScrollerDecorator> _decorator;
 	std::shared_ptr<Label> _label;
 public:
-	LabelDecoratorDoAction();
-	
 	bool initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
 	bool doAction();
 };
 
-class LabelDecoratorUndoAction : public Action {
+class LabelDecoratorUnregisterAction : public Action {
 private:
 	std::shared_ptr<Scene> _activeScene;
 	//TODO: extend for any decorator
 	std::shared_ptr<ScrollerDecorator> _decorator;
 	std::shared_ptr<Label> _label;
 public:
-	LabelDecoratorUndoAction();
-
 	bool initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
 	bool doAction();
 };

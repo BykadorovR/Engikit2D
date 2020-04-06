@@ -19,6 +19,17 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
 	
+	auto changeText = std::make_shared<ExpressionOperation>();
+	changeText->addArgument(_entity->getComponent<TextComponent>(), "focus");
+	changeText->addArgument(_entity->getComponent<TextComponent>(), "editable");
+	changeText->initializeOperation("${0} = 1 AND ${1} = 1");
+	auto editText = std::make_shared<AssignAction>();
+	editText->addArgument(_entity->getComponent<KeyboardComponent>(), "symbol");
+	editText->addArgument(_entity->getComponent<TextComponent>(), "text");
+	editText->initializeAction("${1} SET ${1} + ${0}");
+	changeText->registerAction(editText);
+	_entity->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD_START);
+
 	auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
 	textOutOfBoundsDown->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
 	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "lineHeight");
@@ -79,6 +90,11 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 
 	_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE_START);
 	
+	return false;
+}
+
+bool Label::setEditable(bool editable) {
+	_entity->getComponent<TextComponent>()->setMember("editable", editable);
 	return false;
 }
 
