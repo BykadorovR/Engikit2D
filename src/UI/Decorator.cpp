@@ -7,13 +7,11 @@
 #include "InteractionComponents.h"
 
 
-ScrollerDecorator::ScrollerDecorator(std::string name) {
+ScrollerDecorator::ScrollerDecorator(std::string name = "ScrollerDecorator") {
 	_viewName = name;
 }
 
 bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
-	_parent = label;
-
 	auto position = label->getPosition();
 	auto size = label->getSize();
 	std::tuple<float, float> scrollerSize = { 20, 20 };
@@ -126,6 +124,10 @@ std::shared_ptr<Back> ScrollerDecorator::getScrollerProgress() {
 	return nullptr;
 }
 
+std::vector<std::shared_ptr<View> > ScrollerDecorator::getViews() {
+	return _views;
+}
+
 ScrollerDecoratorFactory::ScrollerDecoratorFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 	_backFactory = std::make_shared<BackFactory>(activeScene);
@@ -139,19 +141,4 @@ std::shared_ptr<View> ScrollerDecoratorFactory::createView(std::string name) {
 	scrollerDecorator->setScrollerDown(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerDown")));
 	scrollerDecorator->setScrollerProgress(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerProgress")));
 	return scrollerDecorator;
-}
-
-AppearanceDecorator::AppearanceDecorator(std::string name) {
-	_viewName = name;
-}
-
-
-bool AppearanceDecorator::initialize(std::shared_ptr<View> parentView) {
-	_parent = parentView;
-}
-
-
-bool AppearanceDecorator::addAppearanceCondition(std::tuple<std::shared_ptr<Operation>, ViewAppearanceState> appearanceCondition) {
-	_appearanceConditions.push_back(appearanceCondition);
-	return false;
 }

@@ -16,7 +16,3 @@ bool View::setEntity(std::shared_ptr<Entity> entity) {
 std::shared_ptr<Entity> View::getEntity() {
 	return _entity;
 }
-
-std::vector<std::shared_ptr<View> > View::getViews() {
-	return _views;
-}

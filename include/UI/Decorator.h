@@ -3,10 +3,13 @@
 #include "View.h"
 
 class ScrollerDecorator : public View {
+private:
+	std::vector<std::shared_ptr<View> > _views;
 public:
-	ScrollerDecorator(std::string name = "ScrollerDecorator");
+	ScrollerDecorator(std::string name);
 	bool initialize(std::shared_ptr<Label> label);
 
+	std::vector<std::shared_ptr<View> > getViews();
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
 	bool setScrollerDown(std::shared_ptr<View> scrollerDown);
 	bool setScrollerProgress(std::shared_ptr<View> scrollerProgress);
@@ -22,23 +25,4 @@ private:
 public:
 	ScrollerDecoratorFactory(std::shared_ptr<Scene> activeScene);
 	std::shared_ptr<View> createView(std::string name = "ScrollerDecorator");
-};
-
-enum ViewAppearanceState {
-	REGISTER = 0,
-	UNREGISTER = 1
-};
-
-class AppearanceDecorator : public View {
-private:
-	//conditions for view register/unregister
-	std::vector<std::tuple<std::shared_ptr<Operation>, ViewAppearanceState> > _appearanceConditions;
-public:
-	AppearanceDecorator(std::string name = "AppearanceDecorator");
-	bool initialize(std::shared_ptr<View> parentView);
-
-	bool addAppearanceCondition(std::tuple<std::shared_ptr<Operation>, ViewAppearanceState> appearanceCondition);
-
-	bool registerViewAction();
-	bool unregisterViewAction();
 };
