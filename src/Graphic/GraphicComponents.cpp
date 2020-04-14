@@ -13,7 +13,8 @@ ObjectComponent::ObjectComponent() {
 		{"positionY", &std::get<1>(_position)},
 		{"sizeX", &std::get<0>(_size)},
 		{"sizeY", &std::get<1>(_size)},
-		{"scale", &_scale}
+		{"scale", &_scale},
+		{"visible", &_visible}
 	};
 }
 

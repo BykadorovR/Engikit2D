@@ -14,6 +14,7 @@ private:
 	std::shared_ptr<BufferManager> _bufferManager;
 	std::shared_ptr<Shader> _shader;
 	float _scale;
+	float _visible;
 
 public:
 	ObjectComponent();

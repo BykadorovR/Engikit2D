@@ -26,6 +26,7 @@
 #include "Decorator.h"
 
 std::shared_ptr<Scene> activeScene;
+std::shared_ptr<StateSystem> stateSystem;
 std::shared_ptr<DrawSystem> drawSystem;
 std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
@@ -53,6 +54,7 @@ void surfaceCreated() {
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize({ 50, 50 }, { 100, 100 }, "Hello", glyphsLoader);
 		label->setEditable(true);
+		label->getEntity()->getComponent<ObjectComponent>()->setMember("visible", 0);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
@@ -110,6 +112,8 @@ void surfaceCreated() {
 		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
 	}
 
+	stateSystem = std::make_shared<StateSystem>();
+	stateSystem->setEntityManager(activeScene->getEntityManager());
 	interactionSystem = std::make_shared<InteractionSystem>();
 	interactionSystem->setEntityManager(activeScene->getEntityManager());
 	mouseSystem = std::make_shared<MouseSystem>();
@@ -127,6 +131,7 @@ void drawFrame() {
 	//Interaction should be called before graphic so we avoid use cases when sprite rendered in some coord but should be moved out due to some trigger
 	//so we observe "false" moves to coord under triger and instant move out
 	interactionSystem->update(InteractionType::COMMON_START);
+	stateSystem->update(InteractionType::COMMON_START);
 	mouseSystem->update(InteractionType::MOUSE_START);
 	keyboardSystem->update(InteractionType::KEYBOARD_START);
 
@@ -134,6 +139,7 @@ void drawFrame() {
 
 	keyboardSystem->update(InteractionType::KEYBOARD_END);
 	mouseSystem->update(InteractionType::MOUSE_END);
+	stateSystem->update(InteractionType::COMMON_END);
 	interactionSystem->update(InteractionType::COMMON_END);
 }
 

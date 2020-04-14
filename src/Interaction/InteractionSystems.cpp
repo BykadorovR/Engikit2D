@@ -1,9 +1,6 @@
+#include "GraphicComponents.h"
 #include "InteractionSystems.h"
 #include "InteractionComponents.h"
-
-InteractionSystem::InteractionSystem() {
-
-}
 
 void InteractionSystem::update(InteractionType type) {
 	for (auto entity : _entityManager->getEntities()) {
@@ -16,6 +13,22 @@ void InteractionSystem::update(InteractionType type) {
 						action->doAction();
 					}
 				}
+			}
+		}
+	}
+}
+
+void StateSystem::update(InteractionType type) {
+	for (auto entity : _entityManager->getEntities()) {
+		auto objectComponent = entity->getComponent<ObjectComponent>();
+		if (objectComponent) {
+			//if not visible and registered
+			bool value = *std::get<0>(objectComponent->getMemberFloat("visible"));
+			if (value == false && entity->getIndex() != -1) {
+				_entityManager->unregisterEntity(entity);
+			}
+			else if (value && entity->getIndex() == -1) {
+				_entityManager->registerEntity(entity);
 			}
 		}
 	}
