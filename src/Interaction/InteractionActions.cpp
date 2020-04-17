@@ -111,29 +111,3 @@ bool AssignAction::doAction() {
 
 	return false;
 }
-
-bool LabelDecoratorRegisterAction::initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
-	_decorator = decorator;
-	_activeScene = activeScene;
-	return false;
-}
-
-bool LabelDecoratorRegisterAction::doAction() {
-	for (auto view : _decorator->getViews()) {
-		_activeScene->registerEntity(view->getEntity());
-	}
-	return false;
-}
-
-bool LabelDecoratorUnregisterAction::initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene) {
-	_decorator = decorator;
-	_activeScene = activeScene;
-	return false;
-}
-
-bool LabelDecoratorUnregisterAction::doAction() {
-	for (auto view : _decorator->getViews()) {
-		_activeScene->unregisterEntity(view->getEntity());
-	}
-	return false;
-}

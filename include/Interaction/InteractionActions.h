@@ -18,25 +18,3 @@ public:
 	bool initializeAction(std::string condition);
 	bool doAction();
 };
-
-class LabelDecoratorRegisterAction : public Action {
-private:
-	std::shared_ptr<Scene> _activeScene;
-	//TODO: extend for any decorator
-	std::shared_ptr<ScrollerDecorator> _decorator;
-	std::shared_ptr<Label> _label;
-public:
-	bool initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
-	bool doAction();
-};
-
-class LabelDecoratorUnregisterAction : public Action {
-private:
-	std::shared_ptr<Scene> _activeScene;
-	//TODO: extend for any decorator
-	std::shared_ptr<ScrollerDecorator> _decorator;
-	std::shared_ptr<Label> _label;
-public:
-	bool initializeAction(std::shared_ptr<ScrollerDecorator> decorator, std::shared_ptr<Scene> activeScene);
-	bool doAction();
-};

@@ -54,32 +54,10 @@ void surfaceCreated() {
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize({ 50, 50 }, { 100, 100 }, "Hello", glyphsLoader);
 		label->setEditable(true);
-		label->getEntity()->getComponent<ObjectComponent>()->setMember("visible", 0);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
 		scrollerDecorator->initialize(label);
-
-		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
-		decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
-		decoratorAddCheck->initializeOperation("${0} > 0");
-
-		auto decoratorAddAction = std::make_shared<LabelDecoratorRegisterAction>();
-		decoratorAddAction->initializeAction(scrollerDecorator, activeScene);
-		decoratorAddCheck->registerAction(decoratorAddAction);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
-
-		auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
-		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
-		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "lineHeight");
-		decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
-		decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
-
-		auto decoratorRemoveAction = std::make_shared<LabelDecoratorUnregisterAction>();
-		decoratorRemoveAction->initializeAction(scrollerDecorator, activeScene);
-		decoratorRemoveCheck->registerAction(decoratorRemoveAction);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
 
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());

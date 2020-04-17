@@ -81,6 +81,33 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	positionDecorator->registerAction(changePosition);
 
 	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
+	
+	auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
+	decoratorAddCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
+	decoratorAddCheck->initializeOperation("${0} > 0");
+
+	for (auto view : getViews()) {
+		auto registerDecoratorAction = std::make_shared<AssignAction>();
+		registerDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
+		registerDecoratorAction->initializeAction("${0} SET 1");
+		decoratorAddCheck->registerAction(registerDecoratorAction);
+		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_START);
+	}
+
+	auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
+	decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
+	decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "lineHeight");
+	decoratorRemoveCheck->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
+	decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
+
+	for (auto view : getViews()) {
+		auto unregisterDecoratorAction = std::make_shared<AssignAction>();
+		unregisterDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
+		unregisterDecoratorAction->initializeAction("${0} SET 0");
+		decoratorRemoveCheck->registerAction(unregisterDecoratorAction);
+		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
+	}
 
 	return false;
 }
