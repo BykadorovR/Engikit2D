@@ -217,15 +217,18 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 // Called every game update
 void DrawSystem::update() {
 	for (auto entity : _entityManager->getEntities()) {
-		auto vertexObject = entity->getComponent<ObjectComponent>();
+		if (std::get<1>(entity) == EntityState::ENTITY_UNREGISTERED)
+			continue;
+
+		auto vertexObject = std::get<0>(entity)->getComponent<ObjectComponent>();
 		if (vertexObject)
 			vertexUpdate(vertexObject);
 
-		auto textureObject = entity->getComponent<TextureComponent>();
+		auto textureObject = std::get<0>(entity)->getComponent<TextureComponent>();
 		if (textureObject)
 			textureUpdate(textureObject);
 
-		auto textObject = entity->getComponent<TextComponent>();
+		auto textObject = std::get<0>(entity)->getComponent<TextComponent>();
 		if (textObject)
 			textUpdate(vertexObject, textObject);
 	}

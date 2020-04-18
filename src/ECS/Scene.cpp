@@ -12,17 +12,17 @@ std::shared_ptr<Entity> Scene::createEntity() {
 	return entity;
 }
 
-bool Scene::unregisterEntity(int entityID) {
+bool Scene::removeEntity(int entityID) {
 	auto entity = _entityManager->getEntities()[entityID];
-	return _entityManager->unregisterEntity(entity);
+	return _entityManager->removeEntity(std::get<0>(entity));
 }
 
-bool Scene::unregisterEntity(const std::shared_ptr<Entity>& entity) {
-	return _entityManager->unregisterEntity(entity);
+bool Scene::removeEntity(const std::shared_ptr<Entity>& entity) {
+	return _entityManager->removeEntity(entity);
 }
 
-bool Scene::registerEntity(std::shared_ptr<Entity> entity) {
-	return _entityManager->registerEntity(entity);
+bool Scene::addEntity(std::shared_ptr<Entity> entity) {
+	return _entityManager->addEntity(entity);
 }
 
 std::shared_ptr<EntityManager> Scene::getEntityManager() {
@@ -31,14 +31,6 @@ std::shared_ptr<EntityManager> Scene::getEntityManager() {
 
 std::shared_ptr<SystemManager> Scene::getSystemManager() {
 	return _systemManager;
-}
-
-bool Scene::isEntityAttached(std::shared_ptr<Entity> entity) {
-	for (auto &attached : _entityManager->getEntities()) {
-		if (entity == attached)
-			return true;
-	}
-	return false;
 }
 
 std::string Scene::getName() {

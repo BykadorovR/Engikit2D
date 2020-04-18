@@ -4,13 +4,20 @@
 
 #include "Entity.h"
 
+enum EntityState {
+	ENTITY_REGISTERED = 0,
+	ENTITY_UNREGISTERED
+};
+
 class EntityManager {
 public:
-	std::shared_ptr<Entity> create(std::shared_ptr<Entity> _entity = nullptr);
-	bool unregisterEntity(const std::shared_ptr<Entity>& entity);
+	std::shared_ptr<Entity> create();
+	bool unregisterEntity(std::shared_ptr<Entity> entity);
 	bool registerEntity(std::shared_ptr<Entity> entity);
-	std::vector<std::shared_ptr<Entity> > getEntities();
+	bool removeEntity(const std::shared_ptr<Entity>& entity);
+	bool addEntity(std::shared_ptr<Entity> entity);
+	std::vector<std::tuple<std::shared_ptr<Entity>, EntityState > > getEntities();
 
 private:
-	std::vector<std::shared_ptr<Entity> > _entities;
+	std::vector<std::tuple<std::shared_ptr<Entity>, EntityState > > _entities;
 };

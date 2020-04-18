@@ -13,12 +13,11 @@ public:
 	Scene(std::string name);
 
 	std::shared_ptr<Entity> createEntity();
-	bool unregisterEntity(int entityID);
-	bool unregisterEntity(const std::shared_ptr<Entity>& entity);
-	bool registerEntity(std::shared_ptr<Entity> entity);
+	bool removeEntity(int entityID);
+	bool removeEntity(const std::shared_ptr<Entity>& entity);
+	bool addEntity(std::shared_ptr<Entity> entity);
 
 	std::shared_ptr<EntityManager> getEntityManager();
 	std::shared_ptr<SystemManager> getSystemManager();
 	std::string getName();
-	bool isEntityAttached(std::shared_ptr<Entity> entity);
 };

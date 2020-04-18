@@ -21,9 +21,15 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
 
 	getScrollerProgress()->initialize(scrollerProgressPosition, scrollerProgressSize, { 0.5, 0.5, 0, 1 });
+	getScrollerProgress()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerUp()->initialize(scrollerUpPosition, scrollerSize, { 1, 0, 0.5, 1 });
 	getScrollerUp()->getEntity()->createComponent<MouseComponent>();
+	getScrollerUp()->getEntity()->createComponent<KeyboardComponent>();
+
+	getScrollerDown()->initialize(scrollerDownPosition, scrollerSize, { 0, 1, 1, 1 });
+	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
+	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
 	
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
 	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
@@ -40,11 +46,8 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	changePositionUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 	changePositionUp->initializeAction("${0} SET ${0} - 1");
 	clickInsideUp->registerAction(changePositionUp);
-
 	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
 
-	getScrollerDown()->initialize(scrollerDownPosition, scrollerSize, { 0, 1, 1, 1 });
-	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	auto clickInsideDown = std::make_shared<ExpressionOperation>();
 	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
 	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
@@ -91,7 +94,7 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 		registerDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
 		registerDecoratorAction->initializeAction("${0} SET 1");
 		decoratorAddCheck->registerAction(registerDecoratorAction);
-		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_START);
+		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_END);
 	}
 
 	auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();

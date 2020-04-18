@@ -13,7 +13,10 @@ MouseSystem::MouseSystem() {
 void MouseSystem::mouseClickDownLeft(int x, int y) {
 	//first update coords in mouse components
 	for (auto entity : _entityManager->getEntities()) {
-		auto mouseComponent = entity->getComponent<MouseComponent>();
+		if (std::get<1>(entity) == EntityState::ENTITY_UNREGISTERED)
+			continue;
+
+		auto mouseComponent = std::get<0>(entity)->getComponent<MouseComponent>();
 		if (mouseComponent) {
 			mouseComponent->setMember("leftClickX", x);
 			mouseComponent->setMember("leftClickY", y);
@@ -26,8 +29,11 @@ void MouseSystem::mouseClickDownLeft(int x, int y) {
 void MouseSystem::update(InteractionType type) {
 	if (std::get<0>(_needUpdate) || std::get<1>(_needUpdate)) {
 		for (auto entity : _entityManager->getEntities()) {
-			auto interactionComponent = entity->getComponent<InteractionComponent>();
-			auto mouseComponent = entity->getComponent<MouseComponent>();
+			if (std::get<1>(entity) == EntityState::ENTITY_UNREGISTERED)
+				continue;
+
+			auto interactionComponent = std::get<0>(entity)->getComponent<InteractionComponent>();
+			auto mouseComponent = std::get<0>(entity)->getComponent<MouseComponent>();
 			if (interactionComponent) {
 				std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionComponent->getOperations();
 				for (auto operation : operations) {
@@ -62,11 +68,14 @@ void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
 	//first update coords in keyboard components
 	if (action == GLFW_PRESS) {
 		for (auto entity : _entityManager->getEntities()) {
-			auto keyboardComponent = entity->getComponent<KeyboardComponent>();
+			if (std::get<1>(entity) == EntityState::ENTITY_UNREGISTERED)
+				continue;
+
+			auto keyboardComponent = std::get<0>(entity)->getComponent<KeyboardComponent>();
 			if (keyboardComponent) {
 				switch (key) {
 				case GLFW_KEY_BACKSPACE:
-					auto textComponent = entity->getComponent<TextComponent>();
+					auto textComponent = std::get<0>(entity)->getComponent<TextComponent>();
 					if (textComponent && textComponent->getFocus()) {
 						auto stringWithoutLastChar = textComponent->getText();
 						//First convert to wstring
@@ -97,7 +106,7 @@ void KeyboardSystem::textInput(unsigned int character) {
 	std::string text = converter.to_bytes(wideText);
 	//first update coords in keyboard components
 	for (auto entity : _entityManager->getEntities()) {
-		auto keyboardComponent = entity->getComponent<KeyboardComponent>();
+		auto keyboardComponent = std::get<0>(entity)->getComponent<KeyboardComponent>();
 		if (keyboardComponent) {
 			keyboardComponent->setMember("symbol", text);
 		}
@@ -110,8 +119,8 @@ void KeyboardSystem::textInput(unsigned int character) {
 void KeyboardSystem::update(InteractionType type) {
 	if (std::get<0>(_needUpdate) || std::get<1>(_needUpdate)) {
 		for (auto entity : _entityManager->getEntities()) {
-			auto interactionComponent = entity->getComponent<InteractionComponent>();
-			auto keyboardComponent = entity->getComponent<KeyboardComponent>();
+			auto interactionComponent = std::get<0>(entity)->getComponent<InteractionComponent>();
+			auto keyboardComponent = std::get<0>(entity)->getComponent<KeyboardComponent>();
 			if (interactionComponent) {
 				std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionComponent->getOperations();
 				for (auto operation : operations) {
