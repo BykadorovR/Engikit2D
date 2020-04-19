@@ -31,16 +31,36 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
 	
+	auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
+	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "lineHeight");
+	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
+	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
+	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
+	textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0}");
+
+	auto changePageDown = std::make_shared<AssignAction>();
+	changePageDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
+	changePageDown->initializeAction("${0} SET ${0} + 1");
+	textOutOfBoundsDown->registerAction(changePageDown);
+	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
+
+	auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
+	textOutOfBoundsUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
+	textOutOfBoundsUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
+	textOutOfBoundsUp->initializeOperation("${1} - ${0} < 1");
+
+	auto changePageUp = std::make_shared<AssignAction>();
+	changePageUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
+	changePageUp->initializeAction("${0} SET ${0} - 1");
+	textOutOfBoundsUp->registerAction(changePageUp);
+	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON_START);
+
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
-	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
-	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
-	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
-	clickInsideUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	clickInsideUp->addArgument(getScrollerUp()->getEntity());
 	clickInsideUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 	//TODO: Add constants support to operations
-	clickInsideUp->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5} AND ${6} > 0");
+	clickInsideUp->initializeOperation("CLICK #{0} AND ${0} > 0");
 
 	auto changePositionUp = std::make_shared<AssignAction>();
 	changePositionUp->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
@@ -49,16 +69,11 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
 
 	auto clickInsideDown = std::make_shared<ExpressionOperation>();
-	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<MouseComponent>(), "leftClickX");
-	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<MouseComponent>(), "leftClickY");
-	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
-	clickInsideDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	clickInsideDown->addArgument(getScrollerDown()->getEntity());
 	clickInsideDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 	clickInsideDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
 	//TODO: Add constants support to operations
-	clickInsideDown->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5} AND ${6} < ${7} - 1");
+	clickInsideDown->initializeOperation("CLICK #{0} AND ${0} < ${1} - 1");
 
 	auto changePositionDown = std::make_shared<AssignAction>();
 	changePositionDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");

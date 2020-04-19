@@ -10,6 +10,11 @@ Label::Label(std::string name = "Label") {
 	_viewName = name;
 }
 
+/*
+List of operation-actions:
+1) if "focus && editable" then "add symbol to text"
+2) 
+*/
 bool Label::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs) {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, ShaderStore::instance()->getShader("texture"));
@@ -19,6 +24,7 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
 	
+	//--- 1
 	auto changeText = std::make_shared<ExpressionOperation>();
 	changeText->addArgument(_entity->getComponent<TextComponent>(), "focus");
 	changeText->addArgument(_entity->getComponent<TextComponent>(), "editable");
@@ -29,41 +35,12 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	editText->initializeAction("${1} SET ${1} + ${0}");
 	changeText->registerAction(editText);
 	_entity->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD_START);
-
-	auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
-	textOutOfBoundsDown->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
-	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "lineHeight");
-	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "page");
-	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "totalPages");
-	textOutOfBoundsDown->addArgument(_entity->getComponent<TextComponent>(), "spacingCoeff");
-	textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0}");
-
-	auto changePageDown = std::make_shared<AssignAction>();
-	changePageDown->addArgument(_entity->getComponent<TextComponent>(), "page");
-	changePageDown->initializeAction("${0} SET ${0} + 1");
-	textOutOfBoundsDown->registerAction(changePageDown);
-	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
-
-	auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
-	textOutOfBoundsUp->addArgument(_entity->getComponent<TextComponent>(), "page");
-	textOutOfBoundsUp->addArgument(_entity->getComponent<TextComponent>(), "totalPages");
-	textOutOfBoundsUp->initializeOperation("${1} - ${0} < 1");
-
-	auto changePageUp = std::make_shared<AssignAction>();
-	changePageUp->addArgument(_entity->getComponent<TextComponent>(), "page");
-	changePageUp->initializeAction("${0} SET ${0} - 1");
-	textOutOfBoundsUp->registerAction(changePageUp);
-	_entity->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON_START);
+	//--- 1
 
 	auto clickInside = std::make_shared<ExpressionOperation>();
-	clickInside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickX");
-	clickInside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickY");
-	clickInside->addArgument(_entity->getComponent<ObjectComponent>(), "positionX");
-	clickInside->addArgument(_entity->getComponent<ObjectComponent>(), "positionY");
-	clickInside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeX");
-	clickInside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
+	clickInside->addArgument(_entity);
 	//TODO: Add constants support to operations
-	clickInside->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
+	clickInside->initializeOperation("CLICK #{0}");
 
 	auto changeFocusOn = std::make_shared<AssignAction>();
 	changeFocusOn->addArgument(_entity->getComponent<TextComponent>(), "focus");

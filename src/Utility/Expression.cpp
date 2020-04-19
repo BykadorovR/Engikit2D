@@ -1,5 +1,7 @@
 #include "Expression.h"
 #include <assert.h>
+#include "UserInputComponents.h"
+#include "GraphicComponents.h"
 
 Expression::Expression(std::map<std::string, std::tuple<int, std::string> > supportedOperations) {
 	_supportedOperations = supportedOperations;
@@ -58,6 +60,36 @@ bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_pt
 	return false;
 }
 
+bool Expression::entityOperation(std::vector<std::tuple<std::shared_ptr<Component>, std::string> >& intermediate, std::shared_ptr<Entity> entity, std::string operation) {
+	if (operation == "CLICK") {
+		auto mouseComponent = entity->getComponent<MouseComponent>();
+		auto objectComponent = entity->getComponent<ObjectComponent>();
+		if (mouseComponent && objectComponent) {
+			float x = std::get<0>(objectComponent->getPosition());
+			float y = std::get<1>(objectComponent->getPosition());
+			float width = std::get<0>(objectComponent->getSize());
+			float height = std::get<1>(objectComponent->getSize());
+			auto clickX = mouseComponent->getMemberFloat("leftClickX");
+			auto clickY = mouseComponent->getMemberFloat("leftClickY");
+			if (!std::get<1>(clickX) || !std::get<1>(clickY))
+				intermediate.push_back({ nullptr, std::to_string(false) });
+			
+			if (*std::get<0>(clickX) > x && *std::get<0>(clickX) < x + width && *std::get<0>(clickY) > y && *std::get<0>(clickY) < y + height) {
+				intermediate.push_back({ nullptr, std::to_string(true) });
+			} else {
+				intermediate.push_back({ nullptr, std::to_string(false) });
+			}
+		}
+		else {
+			//set false as result
+			intermediate.push_back({ nullptr, std::to_string(false) });
+		}
+	}
+	else {
+		return true;
+	}
+	return false;
+}
 
 bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 	//first we need to convert condition to postfix form

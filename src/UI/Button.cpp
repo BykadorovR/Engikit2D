@@ -7,15 +7,11 @@ Button::Button(std::string name) {
 }
 
 bool Button::_initialize() {
+	getBack()->getEntity()->createComponent<MouseComponent>();
 	_clickInside = std::make_shared<ExpressionOperation>();
-	_clickInside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickX");
-	_clickInside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickY");
-	_clickInside->addArgument(getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-	_clickInside->addArgument(getBack()->getEntity()->getComponent<ObjectComponent>(), "positionY");
-	_clickInside->addArgument(getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
-	_clickInside->addArgument(getBack()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	_clickInside->addArgument(getBack()->getEntity());
 	//TODO: Add constants support to operations
-	_clickInside->initializeOperation("${0} > ${2} AND ${0} < ${2} + ${4} AND ${1} > ${3} AND ${1} < ${3} + ${5}");
+	_clickInside->initializeOperation("CLICK #{0}");
 	_entity->createComponent<InteractionComponent>()->attachOperation(_clickInside, InteractionType::MOUSE_START);
 
 	return false;

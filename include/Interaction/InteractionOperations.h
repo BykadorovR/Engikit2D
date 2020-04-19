@@ -2,6 +2,7 @@
 #include "Expression.h"
 #include "Operation.h"
 #include <algorithm>
+#include "Entity.h"
 
 class ExpressionOperation : public Operation {
 private:
@@ -10,9 +11,11 @@ private:
 	std::vector<std::string> _postfix;
 	std::map<std::string, std::tuple<int, std::string> > _supportedOperations;
 	std::vector<std::tuple<std::shared_ptr<Component>, std::string> > _arguments;
+	std::vector<std::shared_ptr<Entity> > _entities;
 public:
 	ExpressionOperation();
 	bool addArgument(std::shared_ptr<Component> argument, std::string name);
+	bool addArgument(std::shared_ptr<Entity> entity);
 	
 	bool initializeOperation(std::string condition);
 	bool checkOperation();
