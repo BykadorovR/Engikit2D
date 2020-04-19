@@ -37,7 +37,8 @@ bool ScrollerDecorator::initialize(std::shared_ptr<Label> label) {
 	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
 	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "totalPages");
 	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
-	textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0}");
+	textOutOfBoundsDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "focus");
+	textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0} AND ${5} = 1");
 
 	auto changePageDown = std::make_shared<AssignAction>();
 	changePageDown->addArgument(label->getEntity()->getComponent<TextComponent>(), "page");
