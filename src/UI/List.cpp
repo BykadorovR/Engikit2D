@@ -28,7 +28,10 @@ bool List::setBack(std::shared_ptr<View> back) {
 
 bool List::addItem(std::string text) {
 	auto view = _itemFactory->createView();
-	std::tuple<float, float> position;
+	std::tuple<float, float> startPosition = getBack()->getPosition();
+	std::tuple<float, float> size = {};
+	if (_views.size() > 1)
+		startPosition = _views.back()->getEntity()->getComponent<ObjectComponent>()->getPosition();
 	view->getEntity()->getComponent<TextComponent>()->setText(text);
 	_views.push_back(view);
 	return false;
