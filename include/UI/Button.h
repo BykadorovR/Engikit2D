@@ -11,12 +11,11 @@ class Button : public View {
 private:
 	std::vector<std::shared_ptr<View> > _views;
 	std::shared_ptr<ExpressionOperation> _clickInside;
-
-	bool _initialize();
 public:
 	Button(std::string name = "Button");
-	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader);
-	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader);
+	bool initialize();
+
+	bool setTexture(int textureID);
 	bool addClickAction(std::shared_ptr<Action> action);
 	bool setLabel(std::shared_ptr<View> label);
 	bool setBack(std::shared_ptr<View> back);
@@ -32,5 +31,5 @@ private:
 	std::shared_ptr<Scene> _activeScene;
 public:
 	ButtonFactory(std::shared_ptr<Scene> activeScene);
-	std::shared_ptr<View> createView(std::string name = "Button");
+	std::shared_ptr<View> createView(std::string name = "Button", std::shared_ptr<View> parent = nullptr);
 };

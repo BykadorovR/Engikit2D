@@ -2,7 +2,12 @@
 #include <algorithm>
 #include "Texture.h"
 
-GlyphsLoader::GlyphsLoader(std::string fontPath, std::tuple<int, int> symbolsCodes) {
+GlyphsLoader& GlyphsLoader::instance() {
+	static GlyphsLoader object;
+	return object;
+}
+
+void GlyphsLoader::initialize(std::string fontPath, std::tuple<int, int> symbolsCodes) {
 	//Need to create atlas without TextureManager so it can't be used outside
 	_charactersAtlas = std::make_shared<TextureAtlas>(GL_RGBA, std::tuple<float, float>(256, 256));
 	_symbolsCodes = symbolsCodes;

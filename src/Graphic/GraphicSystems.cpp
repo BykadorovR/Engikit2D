@@ -30,7 +30,7 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 	float startX = std::get<0>(wordPosition);
 	float startY = std::get<1>(wordPosition);
 	for (auto c = word.begin(); c != word.end(); c++) {
-		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
+		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 		GLfloat w = std::get<0>(chInfo._size) * textObject->getScale();
 		GLfloat h = std::get<1>(chInfo._size) * textObject->getScale();
 
@@ -42,11 +42,11 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 		//First of all we should change vertex buffer by changing size and position
 		vertexObject->getBufferManager()->changeBuffer(BufferType::Position, { xPos, yPos }, { w, h }, resolution);
 
-		std::tuple<float, float> characterAtlasPosition = textObject->getLoader()->getCharactersAtlasPosition()[*c];
+		std::tuple<float, float> characterAtlasPosition = GlyphsLoader::instance().getCharactersAtlasPosition()[*c];
 		//Now we should change texture buffer by passing position of current glyph in atlas to OpenGL API
 		textObject->getBufferManager()->changeBuffer(BufferType::Texture, characterAtlasPosition,
 			{ std::get<0>(chInfo._size), std::get<1>(chInfo._size) },
-			textObject->getLoader()->getAtlas()->getSize());
+			GlyphsLoader::instance().getAtlas()->getSize());
 
 		glUniform1f(/*u_AdjustX*/       2, 0);
 		glUniform1f(/*u_AdjustY*/       3, 0);
@@ -55,7 +55,7 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 		std::vector<float> colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
 		glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&colorAddition[0]));
 
-		glBindTexture(GL_TEXTURE_2D, textObject->getLoader()->getAtlas()->getTextureObject());
+		glBindTexture(GL_TEXTURE_2D, GlyphsLoader::instance().getAtlas()->getTextureObject());
 		textObject->getBufferManager()->activateBuffer();
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 		textObject->getBufferManager()->deactivateBuffer();
@@ -77,10 +77,10 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	float startX = std::get<0>(positionStart);
 	float startY = std::get<1>(positionStart);
 	
-	int scaledLineSpacing = textObject->getLoader()->getLineSpace();
+	int scaledLineSpacing = GlyphsLoader::instance().getLineSpace();
 
 	wchar_t delimiter = *(L" ");
-	CharacterInfo delimiterInfo = textObject->getLoader()->getCharacters()[delimiter];
+	CharacterInfo delimiterInfo = GlyphsLoader::instance().getCharacters()[delimiter];
 	int delimiterSize = ((delimiterInfo._advance >> 6) + std::get<0>(delimiterInfo._bearing)) * textObject->getScale();
 
 	std::vector<Line> lines;
@@ -94,7 +94,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	std::wstring text = converter.from_bytes(textObject->getText());
 	//let's find the char with the biggest upper part (not size but height) and the biggest overall size
 	for (auto c = text.begin(); c != text.end(); c++) {
-		CharacterInfo chInfo = textObject->getLoader()->getCharacters()[*c];
+		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 		int symbolWidth = chInfo._advance >> 6;
 
 		if (*c == delimiter) {

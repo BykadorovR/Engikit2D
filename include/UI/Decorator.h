@@ -4,10 +4,11 @@
 
 class ScrollerDecorator : public View {
 private:
+	std::shared_ptr<View> _parent;
 	std::vector<std::shared_ptr<View> > _views;
 public:
-	ScrollerDecorator(std::string name);
-	bool initialize(std::shared_ptr<Label> label);
+	ScrollerDecorator(std::string name = "ScrollerDecorator", std::shared_ptr<View> parent = nullptr);
+	bool initialize();
 
 	std::vector<std::shared_ptr<View> > getViews();
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
@@ -24,5 +25,5 @@ private:
 	std::shared_ptr<BackFactory> _backFactory;
 public:
 	ScrollerDecoratorFactory(std::shared_ptr<Scene> activeScene);
-	std::shared_ptr<View> createView(std::string name = "ScrollerDecorator");
+	std::shared_ptr<View> createView(std::string name = "ScrollerDecorator", std::shared_ptr<View> parent = nullptr);
 };

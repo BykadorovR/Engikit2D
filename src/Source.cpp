@@ -41,10 +41,10 @@ void surfaceCreated() {
 	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
 	atlas->initialize();
 
-	std::shared_ptr<GlyphsLoader> glyphsLoader = std::make_shared<GlyphsLoader>("../data/fonts/arial.ttf",
+	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf",
 		std::make_tuple<int, int>(static_cast<int>(*(L"А")),
 			static_cast<int>(*(L"я"))));
-	glyphsLoader->bufferSymbols(24);
+	GlyphsLoader::instance().bufferSymbols(24);
 
 	//TODO: shaders should be global
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
@@ -52,19 +52,26 @@ void surfaceCreated() {
 	{
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-		label->initialize({ 50, 50 }, { 100, 100 }, "Hello", glyphsLoader);
+		label->initialize();
+		label->setPosition({ 50, 50 });
+		label->setSize({ 100, 100 });
+		label->setText("Hello");
 		label->setEditable(true);
 
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
-		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView());
-		scrollerDecorator->initialize(label);
+		std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
+		scrollerDecorator->initialize();
 
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		
 		//TODO: rewrite to Back options and LabelOptions
-		button->initialize({ 300, 200 }, { 100, 100 }, textureRaw->getTextureID(), "Жепа", {1, 0, 1, 1}, 1, glyphsLoader);
-		button->getBack()->getEntity()->createComponent<KeyboardComponent>();
+		button->initialize();
+		button->getBack()->setPosition({ 300, 200 });
+		button->getBack()->setSize({ 100, 100 });
+		button->getLabel()->setPosition({ 300, 200 });
+		button->getLabel()->setSize({ 100, 100 });
+		button->setTexture(textureRaw->getTextureID());
 
 		for (auto view : button->getViews()) {
 			auto changePosition = std::make_shared<AssignAction>();

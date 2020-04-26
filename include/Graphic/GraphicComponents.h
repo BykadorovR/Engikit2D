@@ -41,7 +41,7 @@ private:
 public:
 	TextureComponent();
 	bool initialize(std::shared_ptr<BufferManager> bufferManager);
-	bool initialize(int textureID, std::shared_ptr<BufferManager> bufferManager);
+	bool setTexture(int textureID);
 	bool setColorMask(std::vector<float> colorMask);
 	std::vector<float> getColorMask();
 	bool setColorAddition(std::vector<float> colorAddition);
@@ -105,11 +105,11 @@ private:
 class TextComponent : public Component {
 public:
 	TextComponent();
-	bool initialize(std::string text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager);
+	bool initialize(std::shared_ptr<BufferManager> bufferManager);
 	bool setFocus(bool focus);
 	bool getFocus();
 	std::string getText();
-	std::shared_ptr<GlyphsLoader> getLoader();
+	bool setText(std::string text);
 	bool setScale(float scale);
 	float getScale();
 	bool setColor(std::vector<float> color);
@@ -132,7 +132,6 @@ private:
 	float _scale;
 	float _lineSpacingCoeff;
 	std::vector<float> _color;
-	std::shared_ptr<GlyphsLoader> _glyphsLoader;
 	std::shared_ptr<BufferManager> _bufferManager;
 	std::tuple<TextAllignment, TextAllignment> _allignment;
 };

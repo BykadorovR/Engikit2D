@@ -6,33 +6,32 @@ Button::Button(std::string name) {
 	_viewName = name;
 }
 
-bool Button::_initialize() {
+/*
+List of operation-actions:
+1) if "click inside" then "action, set via addClickAction() method"
+*/
+bool Button::initialize() {
+	getBack()->initialize();
+	getBack()->setColorMask({0, 0, 0, 0});
+	getBack()->setColorAddition({1, 0, 1, 1});
+	getLabel()->initialize();
+	getLabel()->setText("Text");
+	getLabel()->setColor({1, 1, 1, 1});
+	getLabel()->setScale(1);
+
+	//--- 1
 	getBack()->getEntity()->createComponent<MouseComponent>();
 	_clickInside = std::make_shared<ExpressionOperation>();
 	_clickInside->addArgument(getBack()->getEntity());
-	//TODO: Add constants support to operations
 	_clickInside->initializeOperation("CLICK #{0}");
-	_entity->createComponent<InteractionComponent>()->attachOperation(_clickInside, InteractionType::MOUSE_START);
-
+	getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(_clickInside, InteractionType::MOUSE_START);
+	//--- 1
 	return false;
 }
 
-bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> backColor, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader) {
-	getBack()->initialize(position, size, backColor);
-	getLabel()->initialize(position, size, text, glyphLoader);
-	getLabel()->setColor(textColor);
-	getLabel()->setScale(textScale);
-
-	return _initialize();
-}
-
-bool Button::initialize(std::tuple<float, float> position, std::tuple<float, float> size, int backTextureID, std::string text, std::vector<float> textColor, float textScale, std::shared_ptr<GlyphsLoader> glyphLoader) {
-	getBack()->initialize(position, size, backTextureID);
-	getLabel()->initialize(position, size, text, glyphLoader);
-	getLabel()->setColor(textColor);
-	getLabel()->setScale(textScale);
-
-	return _initialize();
+bool Button::setTexture(int textureID) {
+	getBack()->setTexture(textureID);
+	return false;
 }
 
 bool Button::addClickAction(std::shared_ptr<Action> action) {
@@ -76,11 +75,8 @@ ButtonFactory::ButtonFactory(std::shared_ptr<Scene> activeScene) {
 	_labelFactory = std::make_shared<LabelFactory>(activeScene);
 }
 
-std::shared_ptr<View> ButtonFactory::createView(std::string name) {
+std::shared_ptr<View> ButtonFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<Button> button = std::make_shared<Button>();
-	button->setEntity(_activeScene->createEntity());
-	button->getEntity()->createComponent<MouseComponent>();
-
 	button->setBack(std::dynamic_pointer_cast<Back>(_backFactory->createView()));
 	button->setLabel(std::dynamic_pointer_cast<Label>(_labelFactory->createView()));
 	return button;

@@ -22,7 +22,8 @@ struct CharacterInfo {
 
 class GlyphsLoader {
 public:
-	GlyphsLoader(std::string fontPath, std::tuple<int, int> symbolsCodes);
+	static GlyphsLoader& instance();
+	void initialize(std::string fontPath, std::tuple<int, int> symbolsCodes);
 	void bufferSymbols(int symbolHeight);
 	std::map<FT_ULong, CharacterInfo> getCharacters();
 	std::map<FT_ULong, std::tuple<float, float> > getCharactersAtlasPosition();

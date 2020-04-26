@@ -10,10 +10,13 @@
 class Label: public View {
 public:
 	Label(std::string name);
-	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs);
+	bool initialize();
+	bool setText(std::string text);
 	bool setColor(std::vector<float> color);
 	bool setScale(float scale);
 	bool setEditable(bool editable);
+	bool setPosition(std::tuple<float, float> position);
+	bool setSize(std::tuple<float, float> size);
 	std::tuple<float, float> getPosition();
 	std::tuple<float, float> getSize();
 
@@ -28,5 +31,5 @@ private:
 	std::shared_ptr<BackFactory> _backFactory;
 public:
 	LabelFactory(std::shared_ptr<Scene> activeScene);
-	std::shared_ptr<View> createView(std::string name = "Label");
+	std::shared_ptr<View> createView(std::string name = "Label", std::shared_ptr<View> parent = nullptr);
 };

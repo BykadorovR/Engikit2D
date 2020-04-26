@@ -10,8 +10,13 @@ struct BackOptions {
 class Back : public View {
 public:
 	Back(std::string name);
-	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, int textureID);
-	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<float> color);
+	bool initialize();
+	bool setColorMask(std::vector<float> mask);
+	bool setColorAddition(std::vector<float> addition);
+	bool setTexture(int textureID);
+	bool setPosition(std::tuple<float, float> position);
+	bool setSize(std::tuple<float, float> size);
+
 	std::tuple<float, float> getPosition();
 	std::tuple<float, float> getSize();
 };
@@ -21,5 +26,5 @@ private:
 	std::shared_ptr<Scene> _activeScene;
 public:
 	BackFactory(std::shared_ptr<Scene> activeScene);
-	std::shared_ptr<View> createView(std::string name = "Back");
+	std::shared_ptr<View> createView(std::string name = "Back", std::shared_ptr<View> parent = nullptr);
 };

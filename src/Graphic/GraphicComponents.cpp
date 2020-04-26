@@ -74,20 +74,17 @@ std::vector<float> TextureComponent::getColorAddition() {
 
 bool TextureComponent::initialize(std::shared_ptr<BufferManager> bufferManager) {
 	_textureID = -1;
+	_invisible = false;
 	_bufferManager = bufferManager;
-	_colorMask = { 1.0f, 1.0f, 1.0f, 1.0f };
-	_colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
 	return false;
 }
 
-bool TextureComponent::initialize(int textureID, std::shared_ptr<BufferManager> bufferManager) {
+bool TextureComponent::setTexture(int textureID) {
 	_textureID = textureID;
-	_bufferManager = bufferManager;
 	auto textureAtlas = TextureManager::instance()->getTextureAtlas(textureID);
 	auto textureInfo = textureAtlas->getTexture(textureID);
 	auto texture = std::get<0>(textureInfo);
 	auto texturePosition = std::get<1>(textureInfo);
-
 	//pos in atlas, tile size
 	_bufferManager->addBuffer(BufferType::Texture, texturePosition, texture->getRealImageSize(), textureAtlas->getSize());
 	_colorMask = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -271,26 +268,29 @@ TextComponent::TextComponent() {
 	
 }
 
-bool TextComponent::initialize(std::string text, std::shared_ptr<GlyphsLoader> glyphsLoader, std::shared_ptr<BufferManager> bufferManager) {
+bool TextComponent::initialize(std::shared_ptr<BufferManager> bufferManager) {
 	_scale = 1.f;
 	_color = {1.f, 1.f, 1.f, 1.f};
 	_lineSpacingCoeff = 1;
 	_page = 0;
 	_allignment = {TextAllignment::LEFT, TextAllignment::LEFT};
-	//All strings are stored as UTF8, so first we should convert it
-	std::string UTF8String = convertMultibyteToUTF8(text);
-
-	_text = UTF8String;
-	_glyphsLoader = glyphsLoader;
 	_bufferManager = bufferManager;
 
 	//Texture buffer with temporal values, should be changed in runtime
-	_bufferManager->addBuffer(BufferType::Texture, { 0, 0 }, { 0, 0 }, _glyphsLoader->getAtlas()->getSize());
+	_bufferManager->addBuffer(BufferType::Texture, { 0, 0 }, { 0, 0 }, GlyphsLoader::instance().getAtlas()->getSize());
 	return false;
 }
 
 std::shared_ptr<BufferManager> TextComponent::getBufferManager() {
 	return _bufferManager;
+}
+
+bool TextComponent::setText(std::string text) {
+	//All strings are stored as UTF8, so first we should convert it
+	std::string UTF8String = convertMultibyteToUTF8(text);
+	_text = UTF8String;
+	return false;
+
 }
 
 std::string TextComponent::getText() {
@@ -322,10 +322,6 @@ bool TextComponent::setColor(std::vector<float> color) {
 
 std::vector<float> TextComponent::getColor() {
 	return _color;
-}
-
-std::shared_ptr<GlyphsLoader> TextComponent::getLoader() {
-	return _glyphsLoader;
 }
 
 bool TextComponent::setFocus(bool focus) {

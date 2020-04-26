@@ -1,5 +1,6 @@
 #include "Label.h"
 #include "Shader.h"
+#include "State.h"
 #include "UserInputComponents.h"
 #include "InteractionOperations.h"
 #include "UserInputComponents.h"
@@ -13,13 +14,13 @@ Label::Label(std::string name = "Label") {
 /*
 List of operation-actions:
 1) if "focus && editable" then "add symbol to text"
-2) 
+2) if "clicked inside" then "set focus"
+3) if "clicked outside" then "unset focus"
 */
-bool Label::initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::string text, std::shared_ptr<GlyphsLoader> glyphs) {
+bool Label::initialize() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_entity->getComponent<ObjectComponent>()->initialize(position, size, bufferManager, ShaderStore::instance()->getShader("texture"));
-	_entity->getComponent<TextComponent>()->initialize(text, glyphs, bufferManager);
-	//TODO: how to pass texture here?
+	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(resolution), std::get<1>(resolution) }, {100, 100}, bufferManager, ShaderStore::instance()->getShader("texture"));
+	_entity->getComponent<TextComponent>()->initialize(bufferManager);
 
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
@@ -37,19 +38,19 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	_entity->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD_START);
 	//--- 1
 
+	//--- 2
 	auto clickInside = std::make_shared<ExpressionOperation>();
 	clickInside->addArgument(_entity);
 	//TODO: Add constants support to operations
 	clickInside->initializeOperation("CLICK #{0}");
-
 	auto changeFocusOn = std::make_shared<AssignAction>();
 	changeFocusOn->addArgument(_entity->getComponent<TextComponent>(), "focus");
 	changeFocusOn->initializeAction("${0} SET 1");
 	clickInside->registerAction(changeFocusOn);
-
 	_entity->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE_START);
-	
-	_entity->createComponent<MouseComponent>();
+	//--- 2
+
+	//--- 3
 	auto clickOutside = std::make_shared<ExpressionOperation>();
 	clickOutside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickX");
 	clickOutside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickY");
@@ -57,16 +58,31 @@ bool Label::initialize(std::tuple<float, float> position, std::tuple<float, floa
 	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "positionY");
 	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeX");
 	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
-	//TODO: Add constants support to operations
 	clickOutside->initializeOperation("${0} < ${2} OR ${0} > ${2} + ${4} OR ${1} < ${3} OR ${1} > ${3} + ${5}");
-
 	auto changeFocusOff = std::make_shared<AssignAction>();
 	changeFocusOff->addArgument(_entity->getComponent<TextComponent>(), "focus");
 	changeFocusOff->initializeAction("${0} SET 0");
 	clickOutside->registerAction(changeFocusOff);
-
 	_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE_START);
-	
+	//--- 3
+
+	return false;
+}
+
+bool Label::setPosition(std::tuple<float, float> position) {
+	_entity->getComponent<ObjectComponent>()->setMember("positionX", std::get<0>(position));
+	_entity->getComponent<ObjectComponent>()->setMember("positionY", std::get<1>(position));
+	return false;
+}
+
+bool Label::setSize(std::tuple<float, float> size) {
+	_entity->getComponent<ObjectComponent>()->setMember("sizeX", std::get<0>(size));
+	_entity->getComponent<ObjectComponent>()->setMember("sizeY", std::get<1>(size));
+	return false;
+}
+
+bool Label::setText(std::string text) {
+	_entity->getComponent<TextComponent>()->setText(text);
 	return false;
 }
 
@@ -113,7 +129,7 @@ LabelFactory::LabelFactory(std::shared_ptr<Scene> activeScene) {
 	_backFactory = std::make_shared<BackFactory>(activeScene);
 }
 
-std::shared_ptr<View> LabelFactory::createView(std::string name) {
+std::shared_ptr<View> LabelFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<Label> label = std::make_shared<Label>(name);
 	label->setEntity(_activeScene->createEntity());
 	label->getEntity()->createComponent<ObjectComponent>();
