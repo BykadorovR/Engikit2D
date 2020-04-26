@@ -2,17 +2,25 @@
 #include "View.h"
 #include "Scene.h"
 #include "GlyphsLoader.h"
+#include "Back.h"
 
 class List : public View {
+	std::vector<std::shared_ptr<View> > _views;
+	std::shared_ptr<ViewFactory> _itemFactory;
 public:
-	List(std::string name);
-	bool initialize(std::tuple<float, float> position, std::tuple<float, float> size, std::vector<std::string> items);
+	List(std::string name, std::shared_ptr<ViewFactory> itemFactory);
+	bool initialize();
+	std::shared_ptr<Back> getBack();
+	bool setBack(std::shared_ptr<View> back);
+	bool addItem(std::string item);
 };
 
 class ListFactory : public ViewFactory {
 private:
 	std::shared_ptr<Scene> _activeScene;
+	std::shared_ptr<BackFactory> _backFactory;
+	std::shared_ptr<ViewFactory> _itemFactory;
 public:
-	ListFactory(std::shared_ptr<Scene> activeScene);
-	std::shared_ptr<View> createView(std::string name = "List");
+	ListFactory(std::shared_ptr<Scene> activeScene, std::shared_ptr<ViewFactory> itemFactory);
+	std::shared_ptr<View> createView(std::string name = "List", std::shared_ptr<View> parent = nullptr);
 };

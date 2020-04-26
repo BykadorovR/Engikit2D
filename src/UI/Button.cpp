@@ -77,7 +77,7 @@ ButtonFactory::ButtonFactory(std::shared_ptr<Scene> activeScene) {
 
 std::shared_ptr<View> ButtonFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<Button> button = std::make_shared<Button>();
-	button->setBack(std::dynamic_pointer_cast<Back>(_backFactory->createView()));
-	button->setLabel(std::dynamic_pointer_cast<Label>(_labelFactory->createView()));
+	button->setBack(_backFactory->createView());
+	button->setLabel(_labelFactory->createView());
 	return button;
 }

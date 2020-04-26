@@ -14,9 +14,13 @@ ScrollerDecorator::ScrollerDecorator(std::string name, std::shared_ptr<View> par
 
 /*
 List of operation-actions:
-1) if "focus && editable" then "add symbol to text"
-2) if "clicked inside" then "set focus"
-3) if "clicked outside" then "unset focus"
+1) if "text out of bounds down" (typing) then "scroll text down"
+2) if "text out of bounds up" (removing) then "scroll text up"
+3) if "click to scroller up" then "scroll text up"
+4) if "click to scroller down" then "scroll text down"
+5) if "text size > 1" then "change scroller position dynamically depending on current page"
+6) if "current page > 1" then "show decorator"
+7) if "page == 0 and text size < view height" then "hide decorator"
 */
 bool ScrollerDecorator::initialize() {
 	auto position = _parent->getEntity()->getComponent<ObjectComponent>()->getPosition();
@@ -59,56 +63,57 @@ bool ScrollerDecorator::initialize() {
 	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
 	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "focus");
 	textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0} AND ${5} = 1");
-	//--- 1
-
 	auto changePageDown = std::make_shared<AssignAction>();
 	changePageDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	changePageDown->initializeAction("${0} SET ${0} + 1");
 	textOutOfBoundsDown->registerAction(changePageDown);
 	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
+	//--- 1
 
+	//--- 2
 	auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
 	textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
 	textOutOfBoundsUp->initializeOperation("${1} - ${0} < 1");
-
 	auto changePageUp = std::make_shared<AssignAction>();
 	changePageUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	changePageUp->initializeAction("${0} SET ${0} - 1");
 	textOutOfBoundsUp->registerAction(changePageUp);
 	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON_START);
+	//--- 2
 
+	//--- 3
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
 	clickInsideUp->addArgument(getScrollerUp()->getEntity());
 	clickInsideUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	//TODO: Add constants support to operations
 	clickInsideUp->initializeOperation("CLICK #{0} AND ${0} > 0");
-
 	auto changePositionUp = std::make_shared<AssignAction>();
 	changePositionUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	changePositionUp->initializeAction("${0} SET ${0} - 1");
 	clickInsideUp->registerAction(changePositionUp);
 	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
+	//--- 3
 
+	//--- 4
 	auto clickInsideDown = std::make_shared<ExpressionOperation>();
 	clickInsideDown->addArgument(getScrollerDown()->getEntity());
 	clickInsideDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	clickInsideDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
 	//TODO: Add constants support to operations
 	clickInsideDown->initializeOperation("CLICK #{0} AND ${0} < ${1} - 1");
-
 	auto changePositionDown = std::make_shared<AssignAction>();
 	changePositionDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	changePositionDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
 	changePositionDown->initializeAction("${0} SET ${0} + 1");
 	clickInsideDown->registerAction(changePositionDown);
 	getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
+	//--- 4
 
+	//--- 5
 	auto positionDecorator = std::make_shared<ExpressionOperation>();
 	positionDecorator->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
 	//to avoid division by zero
 	positionDecorator->initializeOperation("${0} > 1");
-
 	auto changePosition = std::make_shared<AssignAction>();
 	changePosition->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");							//0
 	changePosition->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");					//1 
@@ -119,13 +124,13 @@ bool ScrollerDecorator::initialize() {
 	changePosition->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");		//6
 	changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 ) * ${0}");
 	positionDecorator->registerAction(changePosition);
-
 	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
-	
+	//--- 5
+
+	//--- 6
 	auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
 	decoratorAddCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	decoratorAddCheck->initializeOperation("${0} > 0");
-
 	for (auto view : getViews()) {
 		auto registerDecoratorAction = std::make_shared<AssignAction>();
 		registerDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
@@ -133,14 +138,15 @@ bool ScrollerDecorator::initialize() {
 		decoratorAddCheck->registerAction(registerDecoratorAction);
 		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_END);
 	}
+	//--- 6
 
+	//--- 7
 	auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
 	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<ObjectComponent>(), "sizeY");
 	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
 	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "lineHeight");
 	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
 	decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
-
 	for (auto view : getViews()) {
 		auto unregisterDecoratorAction = std::make_shared<AssignAction>();
 		unregisterDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
@@ -148,6 +154,7 @@ bool ScrollerDecorator::initialize() {
 		decoratorRemoveCheck->registerAction(unregisterDecoratorAction);
 		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
 	}
+	//--- 7
 
 	return false;
 }

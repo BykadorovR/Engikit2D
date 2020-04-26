@@ -16,5 +16,6 @@ public:
 };
 
 class ViewFactory {
+public:
 	virtual std::shared_ptr<View> createView(std::string name = "View", std::shared_ptr<View> parent = nullptr) = 0;
 };
