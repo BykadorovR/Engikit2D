@@ -24,6 +24,7 @@
 #include "InteractionActions.h"
 #include "UserInputSystems.h"
 #include "Decorator.h"
+#include "List.h"
 
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<StateSystem> stateSystem;
@@ -51,6 +52,10 @@ void surfaceCreated() {
 	ShaderStore::instance()->addShader("texture", shader);
 	{
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
+		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
+		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
+		list->initialize();
+
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
@@ -67,9 +72,9 @@ void surfaceCreated() {
 		
 		//TODO: rewrite to Back options and LabelOptions
 		button->initialize();
-		button->getBack()->setPosition({ 300, 200 });
+		button->getBack()->setPosition({ 100, 200 });
 		button->getBack()->setSize({ 100, 100 });
-		button->getLabel()->setPosition({ 300, 200 });
+		button->getLabel()->setPosition({ 100, 200 });
 		button->getLabel()->setSize({ 100, 100 });
 		button->setTexture(textureRaw->getTextureID());
 

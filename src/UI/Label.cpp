@@ -19,7 +19,7 @@ List of operation-actions:
 */
 bool Label::initialize() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(resolution), std::get<1>(resolution) }, {100, 100}, bufferManager, ShaderStore::instance()->getShader("texture"));
+	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(resolution) / 2, std::get<1>(resolution) / 2}, {100, 100}, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextComponent>()->initialize(bufferManager);
 
 	_entity->createComponent<MouseComponent>();

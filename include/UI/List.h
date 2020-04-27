@@ -6,13 +6,18 @@
 
 class List : public View {
 	std::vector<std::shared_ptr<View> > _views;
-	std::shared_ptr<ViewFactory> _itemFactory;
+	std::vector<std::string> _textItems;
+	int _page;
 public:
-	List(std::string name, std::shared_ptr<ViewFactory> itemFactory);
+	List(std::string name);
 	bool initialize();
 	std::shared_ptr<Back> getBack();
+	std::vector<std::shared_ptr<View> > getViews();
 	bool setBack(std::shared_ptr<View> back);
 	bool addItem(std::string item);
+	bool addView(std::shared_ptr<View> view);
+	bool setPosition(std::tuple<float, float> postion);
+	bool setSize(std::tuple<float, float> size);
 };
 
 class ListFactory : public ViewFactory {
