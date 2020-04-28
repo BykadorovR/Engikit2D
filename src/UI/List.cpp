@@ -9,12 +9,9 @@ bool List::setPosition(std::tuple<float, float> postion) {
 	getBack()->setPosition(postion);
 	auto listSize = getBack()->getSize();
 	std::tuple<float, float> listItemSize = { std::get<0>(listSize), std::get<1>(listSize) / (_views.size() - 1) };
-	for (int i = 1; i < _views.size(); i++) {
-		auto currentPosition = getBack()->getPosition();
-		if (getViews().size() > 1) {
-			auto prevPosition = getViews().back()->getEntity()->getComponent<ObjectComponent>()->getPosition();
-			currentPosition = { std::get<0>(prevPosition), std::get<1>(prevPosition) + std::get<1>(listItemSize) };
-		}
+	for (int i = 2; i < _views.size(); i++) {
+		auto prevPosition = _views[i - 1]->getEntity()->getComponent<ObjectComponent>()->getPosition();
+		std::tuple<float, float> currentPosition = { std::get<0>(prevPosition), std::get<1>(prevPosition) + std::get<1>(listItemSize) };
 
 		_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("positionX", std::get<0>(currentPosition));
 		_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("positionY", std::get<1>(currentPosition));
@@ -29,8 +26,8 @@ bool List::setSize(std::tuple<float, float> size) {
 	for (int i = 1; i < _views.size(); i++) {
 		_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeX", std::get<0>(listItemSize));
 		_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeY", std::get<1>(listItemSize));
-		return false;
 	}
+	return false;
 }
 
 bool List::initialize() {
@@ -42,8 +39,12 @@ bool List::initialize() {
 	for (int i = 1; i < _views.size(); i++) {
 		_views[i]->initialize();
 		_views[i]->getEntity()->getComponent<TextComponent>()->setText("asda");
+		_views[i]->getEntity()->getComponent<TextComponent>()->setAllignment({TextAllignment::CENTER, TextAllignment::CENTER});
 	}
 	
+	setPosition(getBack()->getPosition());
+	setSize(getBack()->getSize());
+
 	return false;
 }
 

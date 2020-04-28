@@ -54,34 +54,35 @@ bool ScrollerDecorator::initialize() {
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
 	
-	//--- 1
-	auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
-	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "lineHeight");
-	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
-	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
-	textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "focus");
-	textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0} AND ${5} = 1");
-	auto changePageDown = std::make_shared<AssignAction>();
-	changePageDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	changePageDown->initializeAction("${0} SET ${0} + 1");
-	textOutOfBoundsDown->registerAction(changePageDown);
-	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
-	//--- 1
+	if (_parent->getName() == "Label") {
+		//--- 1
+		auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
+		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "lineHeight");
+		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
+		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
+		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "focus");
+		textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0} AND ${5} = 1");
+		auto changePageDown = std::make_shared<AssignAction>();
+		changePageDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+		changePageDown->initializeAction("${0} SET ${0} + 1");
+		textOutOfBoundsDown->registerAction(changePageDown);
+		getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
+		//--- 1
 
-	//--- 2
-	auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
-	textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
-	textOutOfBoundsUp->initializeOperation("${1} - ${0} < 1");
-	auto changePageUp = std::make_shared<AssignAction>();
-	changePageUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	changePageUp->initializeAction("${0} SET ${0} - 1");
-	textOutOfBoundsUp->registerAction(changePageUp);
-	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON_START);
-	//--- 2
-
+		//--- 2
+		auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
+		textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+		textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
+		textOutOfBoundsUp->initializeOperation("${1} - ${0} < 1");
+		auto changePageUp = std::make_shared<AssignAction>();
+		changePageUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+		changePageUp->initializeAction("${0} SET ${0} - 1");
+		textOutOfBoundsUp->registerAction(changePageUp);
+		getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON_START);
+		//--- 2
+	}
 	//--- 3
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
 	clickInsideUp->addArgument(getScrollerUp()->getEntity());
