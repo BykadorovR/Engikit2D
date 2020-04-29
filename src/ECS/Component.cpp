@@ -4,27 +4,47 @@ Component::Component() {
 	_componentName = "Component";
 }
 
-std::tuple<float*, bool> Component::getMemberFloat(std::string name) {
-	float* value = 0;
+std::string Component::getName() {
+	return _componentName;
+}
+
+OperationComponent::OperationComponent() {
+	_componentName = "Component";
+}
+
+std::tuple<float*, bool> OperationComponent::getMemberFloat(std::string name) {
+	std::tuple<float*, int> value = {nullptr, -1};
 	bool correctness = false;
 	if (_classVariablesFloat.find(name) != _classVariablesFloat.end()) {
 		value = _classVariablesFloat[name];
 		correctness = true;
 	}
-	return { value, correctness };
+	float* result;
+	if (std::get<1>(value) < 0)
+		result = std::get<0>(value);
+	else
+		result = &std::get<0>(value)[std::get<1>(value)];
+
+	return { result, correctness };
 }
 
-std::tuple<std::string*, bool> Component::getMemberString(std::string name) {
-	std::string* value = 0;
+std::tuple<std::string*, bool> OperationComponent::getMemberString(std::string name) {
+	std::tuple<std::string*, int> value = { nullptr, -1 };
 	bool correctness = false;
 	if (_classVariablesString.find(name) != _classVariablesString.end()) {
 		value = _classVariablesString[name];
 		correctness = true;
 	}
-	return { value, correctness };
+	std::string* result;
+	if (std::get<1>(value) < 0)
+		result = std::get<0>(value);
+	else
+		result = &std::get<0>(value)[std::get<1>(value)];
+
+	return { result, correctness };
 }
 
-VariableType Component::getVariableType(std::string name) {
+VariableType OperationComponent::getVariableType(std::string name) {
 	if (_classVariablesFloat.find(name) != _classVariablesFloat.end())
 		return VariableType::varFloat;
 
@@ -34,16 +54,22 @@ VariableType Component::getVariableType(std::string name) {
 	return VariableType::varUnknown;
 }
 
-bool Component::setMember(std::string name, float value) {
-	*_classVariablesFloat[name] = value;
+bool OperationComponent::setMember(std::string name, float value, int index) {
+	if (index < 0) {
+		*std::get<0>(_classVariablesFloat[name]) = value;
+	}
+	else {
+		std::get<0>(_classVariablesFloat[name])[std::get<1>(_classVariablesFloat[name])] = value;
+	}
 	return false;
 }
 
-bool Component::setMember(std::string name, std::string value) {
-	*_classVariablesString[name] = value;
+bool OperationComponent::setMember(std::string name, std::string value, int index) {
+	if (index < 0) {
+		*std::get<0>(_classVariablesString[name]) = value;
+	}
+	else {
+		std::get<0>(_classVariablesString[name])[std::get<1>(_classVariablesString[name])] = value;
+	}
 	return false;
-}
-
-std::string Component::getName() {
-	return _componentName;
 }

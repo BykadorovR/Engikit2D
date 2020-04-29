@@ -17,7 +17,7 @@ std::string Expression::getCondition() {
 }
 
 //operation[0] - operation from back, so it's actually second operation then operation[1] - first operation
-bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr<Component>, std::string> >& intermediate, float operand[2], std::string operation) {
+bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> >& intermediate, float operand[2], std::string operation) {
 	if (operation == "+")
 		intermediate.push_back({ nullptr, std::to_string(operand[1] + operand[0]) });
 	else if (operation == "-")
@@ -45,7 +45,7 @@ bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr
 }
 
 //operation[0] - operation from back, so it's actually second operation then operation[1] - first operation
-bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_ptr<Component>, std::string> >& intermediate, std::string operand[2], std::string operation) {
+bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> >& intermediate, std::string operand[2], std::string operation) {
 	if (operation == "+")
 		intermediate.push_back({ nullptr, operand[1] + operand[0] });
 	else if (operation == "=")
@@ -60,7 +60,7 @@ bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_pt
 	return false;
 }
 
-bool Expression::entityOperation(std::vector<std::tuple<std::shared_ptr<Component>, std::string> >& intermediate, std::shared_ptr<Entity> entity, std::string operation) {
+bool Expression::entityOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> >& intermediate, std::shared_ptr<Entity> entity, std::string operation) {
 	if (operation == "CLICK") {
 		auto mouseComponent = entity->getComponent<MouseComponent>();
 		auto objectComponent = entity->getComponent<ObjectComponent>();

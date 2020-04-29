@@ -9,12 +9,12 @@ ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
 	_classVariablesFloat =
 	{
-		{"positionX", &std::get<0>(_position)},
-		{"positionY", &std::get<1>(_position)},
-		{"sizeX", &std::get<0>(_size)},
-		{"sizeY", &std::get<1>(_size)},
-		{"scale", &_scale},
-		{"visible", &_visible}
+		{"positionX", {&std::get<0>(_position), -1} },
+		{"positionY", {&std::get<1>(_position), -1} },
+		{"sizeX", {&std::get<0>(_size), -1} },
+		{"sizeY", {&std::get<1>(_size), -1} },
+		{"scale", {&_scale, -1} },
+		{"visible", {&_visible, -1} }
 	};
 }
 
@@ -22,6 +22,8 @@ bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<f
 	_position = position;
 	_size = size;
 	_bufferManager = bufferManager;
+	_visible = true;
+	_scale = 1;
 
 	_bufferManager->addBuffer(BufferType::Position, _position, _size, resolution);
 	_shader = shader;
@@ -29,7 +31,7 @@ bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<f
 }
 
 bool ObjectComponent::setMember(std::string name, float value) {
-	Component::setMember(name, value);
+	OperationComponent::setMember(name, value);
 	getBufferManager()->changeBuffer(BufferType::Position, getPosition(), getSize(), resolution);
 	return false;
 }
@@ -74,7 +76,6 @@ std::vector<float> TextureComponent::getColorAddition() {
 
 bool TextureComponent::initialize(std::shared_ptr<BufferManager> bufferManager) {
 	_textureID = -1;
-	_invisible = false;
 	_bufferManager = bufferManager;
 	return false;
 }
@@ -252,18 +253,18 @@ TextComponent::TextComponent() {
 
 	_classVariablesFloat =
 	{
-		{"page", &_page},
-		{"totalPages", &_totalPages},
-		{"focus", &_focus},
-		{"lineHeight", &_lineHeight},
-		{"spacingCoeff", &_lineSpacingCoeff},
-		{"scale", &_scale},
-		{"editable", &_editable}
+		{"page", {&_page, -1} },
+		{"totalPages", {&_totalPages, -1} },
+		{"focus", {&_focus, -1} },
+		{"lineHeight", {&_lineHeight, -1} },
+		{"spacingCoeff", {&_lineSpacingCoeff, -1} },
+		{"scale", {&_scale, -1} },
+		{"editable", {&_editable, -1} }
 	};
 	
 	_classVariablesString =
 	{
-		{"text", &_text}
+		{"text", {&_text, -1} }
 	};
 	
 }

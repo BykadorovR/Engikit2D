@@ -1,7 +1,7 @@
 #pragma once
 #include "Component.h"
 
-class MouseComponent : public Component {
+class MouseComponent : public OperationComponent {
 public:
 	MouseComponent();
 private:
@@ -9,7 +9,7 @@ private:
 	std::tuple<float, float> _rightClick;
 };
 
-class KeyboardComponent : public Component {
+class KeyboardComponent : public OperationComponent {
 public:
 	KeyboardComponent();
 private:

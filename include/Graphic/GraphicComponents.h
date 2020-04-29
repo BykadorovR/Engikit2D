@@ -7,7 +7,7 @@
 #include "GlyphsLoader.h"
 #include "TextureAtlas.h"
 
-class ObjectComponent : public Component {
+class ObjectComponent : public OperationComponent {
 private:
 	std::tuple<float, float> _position;
 	std::tuple<float, float> _size;
@@ -26,7 +26,7 @@ public:
 	std::tuple<float, float> getSize();
 };
 
-class TextureComponent : public Component {
+class TextureComponent : public OperationComponent {
 private:
 	int _textureID;
 	std::tuple<float, float> _tileSize;
@@ -37,7 +37,6 @@ private:
 	std::shared_ptr<BufferManager> _bufferManager;
 	std::vector<float> _colorMask;
 	std::vector<float> _colorAddition;
-	bool _invisible;
 public:
 	TextureComponent();
 	bool initialize(std::shared_ptr<BufferManager> bufferManager);
@@ -102,7 +101,7 @@ private:
 };
 
 
-class TextComponent : public Component {
+class TextComponent : public OperationComponent {
 public:
 	TextComponent();
 	bool initialize(std::shared_ptr<BufferManager> bufferManager);

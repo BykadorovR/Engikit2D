@@ -17,7 +17,7 @@ AssignAction::AssignAction() {
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
 
-bool AssignAction::addArgument(std::shared_ptr<Component> argument, std::string name) {
+bool AssignAction::addArgument(std::shared_ptr<OperationComponent> argument, std::string name) {
 	_arguments.push_back({ argument, name });
 	return false;
 }
@@ -29,11 +29,11 @@ bool AssignAction::initializeAction(std::string condition) {
 }
 
 bool AssignAction::doAction() {
-	std::vector<std::tuple<std::shared_ptr<Component>, std::string> > intermediate;
+	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> > intermediate;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
-			std::tuple<std::shared_ptr<Component>, std::string> operandTuple[2];
+			std::tuple<std::shared_ptr<OperationComponent>, std::string> operandTuple[2];
 			VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
 			bool operandConst[2] = { false, false };
 
@@ -99,7 +99,7 @@ bool AssignAction::doAction() {
 			std::smatch match;
 			if (std::regex_search(*word, match, varIndexRegex)) {
 				std::string varIndex = match[1].str();
-				std::shared_ptr<Component> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
+				std::shared_ptr<OperationComponent> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
 				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
 				intermediate.push_back({ object, varName });
 			}

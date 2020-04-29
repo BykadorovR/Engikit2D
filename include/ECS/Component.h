@@ -3,28 +3,34 @@
 #include <map>
 #include <vector>
 
+class Component {
+protected:
+	std::string _componentName;
+public:
+	Component();
+	std::string getName();
+	virtual ~Component() = default;
+};
+
 enum VariableType {
 	varUnknown = 0,
 	varFloat = 1,
 	varString = 2
 };
 
-class Component {
+class OperationComponent : public Component {
 protected:
-	std::map<std::string, float*> _classVariablesFloat;
-	std::map<std::string, std::string*> _classVariablesString;
-	std::string _componentName;
-public:
-	Component();
+	std::map<std::string, std::tuple<float*, int> > _classVariablesFloat;
+	std::map<std::string, std::tuple<std::string*, int> > _classVariablesString;
 	
-	virtual bool setMember(std::string name, float value);
-	virtual bool setMember(std::string name, std::string value);
+public:
+	OperationComponent();
+	
+	virtual bool setMember(std::string name, float value, int index = -1);
+	virtual bool setMember(std::string name, std::string value, int index = -1);
 
 	VariableType getVariableType(std::string name);
-	std::string getName();
 
 	std::tuple<float*, bool> getMemberFloat(std::string name);
 	std::tuple<std::string*, bool> getMemberString(std::string name);
-
-	virtual ~Component() = default;
 };
