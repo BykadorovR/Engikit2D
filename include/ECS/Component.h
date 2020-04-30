@@ -26,6 +26,7 @@ protected:
 public:
 	OperationComponent();
 	
+	//if prototype is changed (new arguments added/removed), need to do the same in derived classes 
 	virtual bool setMember(std::string name, float value, int index = -1);
 	virtual bool setMember(std::string name, std::string value, int index = -1);
 
