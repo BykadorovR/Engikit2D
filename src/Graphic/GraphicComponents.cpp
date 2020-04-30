@@ -9,12 +9,12 @@ ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
 	_classVariablesFloat =
 	{
-		{"positionX", {&std::get<0>(_position), -1} },
-		{"positionY", {&std::get<1>(_position), -1} },
-		{"sizeX", {&std::get<0>(_size), -1} },
-		{"sizeY", {&std::get<1>(_size), -1} },
-		{"scale", {&_scale, -1} },
-		{"visible", {&_visible, -1} }
+		{"positionX", &std::get<0>(_position)},
+		{"positionY", &std::get<1>(_position)},
+		{"sizeX", &std::get<0>(_size)},
+		{"sizeY", &std::get<1>(_size)},
+		{"scale", &_scale},
+		{"visible", &_visible}
 	};
 }
 
@@ -253,18 +253,18 @@ TextComponent::TextComponent() {
 
 	_classVariablesFloat =
 	{
-		{"page", {&_page, -1} },
-		{"totalPages", {&_totalPages, -1} },
-		{"focus", {&_focus, -1} },
-		{"lineHeight", {&_lineHeight, -1} },
-		{"spacingCoeff", {&_lineSpacingCoeff, -1} },
-		{"scale", {&_scale, -1} },
-		{"editable", {&_editable, -1} }
+		{"page", &_page},
+		{"totalPages", &_totalPages},
+		{"focus", &_focus},
+		{"lineHeight", &_lineHeight},
+		{"spacingCoeff", &_lineSpacingCoeff},
+		{"scale", &_scale},
+		{"editable", &_editable}
 	};
 	
 	_classVariablesString =
 	{
-		{"text", {&_text, -1} }
+		{"text", &_text}
 	};
 	
 }

@@ -20,8 +20,8 @@ enum VariableType {
 
 class OperationComponent : public Component {
 protected:
-	std::map<std::string, std::tuple<float*, int> > _classVariablesFloat;
-	std::map<std::string, std::tuple<std::string*, int> > _classVariablesString;
+	std::map<std::string, float*> _classVariablesFloat;
+	std::map<std::string, std::string* > _classVariablesString;
 	
 public:
 	OperationComponent();
@@ -32,6 +32,6 @@ public:
 
 	VariableType getVariableType(std::string name);
 
-	std::tuple<float*, bool> getMemberFloat(std::string name);
-	std::tuple<std::string*, bool> getMemberString(std::string name);
+	std::tuple<float*, bool> getMemberFloat(std::string name, int index = -1);
+	std::tuple<std::string*, bool> getMemberString(std::string name, int index = -1);
 };

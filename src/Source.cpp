@@ -55,6 +55,7 @@ void surfaceCreated() {
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
 		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
 		list->initialize();
+		list->addItem("test");
 
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();

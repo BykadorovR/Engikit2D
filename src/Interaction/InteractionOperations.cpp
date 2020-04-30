@@ -21,8 +21,8 @@ ExpressionOperation::ExpressionOperation() {
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
 
-bool ExpressionOperation::addArgument(std::shared_ptr<OperationComponent> argument, std::string name) {
-	_arguments.push_back( { argument, name } );
+bool ExpressionOperation::addArgument(std::shared_ptr<OperationComponent> argument, std::string name, int index) {
+	_arguments.push_back( { argument, name, index } );
 	return false;
 }
 
@@ -37,7 +37,7 @@ bool ExpressionOperation::initializeOperation(std::string condition) {
 }
 
 bool ExpressionOperation::checkOperation() {
-	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> > intermediate;
+	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > intermediate;
 	std::vector<std::shared_ptr<Entity> > intermediateEntities;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
@@ -48,7 +48,7 @@ bool ExpressionOperation::checkOperation() {
 			}
 
 			//arithmetic operations with component's fields
-			std::tuple<std::shared_ptr<OperationComponent>, std::string> operandTuple[2];
+			std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2];
 			VariableType operandType[2] = {VariableType::varUnknown, VariableType::varUnknown};
 			bool operandConst[2] = {false, false};
 
@@ -73,7 +73,8 @@ bool ExpressionOperation::checkOperation() {
 					if (operandConst[i])
 						operand[i] = stof(std::get<1>(operandTuple[i]));
 					else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]),
+																						 std::get<2>(operandTuple[i]));
 						if (std::get<1>(operandValue))
 							operand[i] = *std::get<0>(operandValue);
 						else
@@ -88,7 +89,8 @@ bool ExpressionOperation::checkOperation() {
 					if (operandConst[i])
 						operand[i] = std::get<1>(operandTuple[i]);
 					else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]),
+																						  std::get<2>(operandTuple[i]));
 						if (std::get<1>(operandValue))
 							operand[i] = *std::get<0>(operandValue);
 						else
@@ -107,7 +109,8 @@ bool ExpressionOperation::checkOperation() {
 				std::string varIndex = match[1].str();
 				std::shared_ptr<OperationComponent> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
 				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
-				intermediate.push_back({ object, varName });
+				int index = std::get<2>(_arguments[atoi(varIndex.c_str())]);
+				intermediate.push_back({ object, varName, index });
 			}
 			else {
 				//find entity
@@ -119,7 +122,7 @@ bool ExpressionOperation::checkOperation() {
 					intermediateEntities.push_back(currentEntity);
 				}
 				else {
-					intermediate.push_back({ nullptr, *word });
+					intermediate.push_back({ nullptr, *word, -1 });
 				}
 			}
 		}

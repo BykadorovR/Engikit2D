@@ -10,11 +10,11 @@ private:
 
 	std::vector<std::string> _postfix;
 	std::map<std::string, std::tuple<int, std::string> > _supportedOperations;
-	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> > _arguments;
+	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > _arguments;
 	std::vector<std::shared_ptr<Entity> > _entities;
 public:
 	ExpressionOperation();
-	bool addArgument(std::shared_ptr<OperationComponent> argument, std::string name);
+	bool addArgument(std::shared_ptr<OperationComponent> argument, std::string name, int index = -1);
 	bool addArgument(std::shared_ptr<Entity> entity);
 	
 	bool initializeOperation(std::string condition);

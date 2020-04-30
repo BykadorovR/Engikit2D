@@ -17,27 +17,27 @@ std::string Expression::getCondition() {
 }
 
 //operation[0] - operation from back, so it's actually second operation then operation[1] - first operation
-bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> >& intermediate, float operand[2], std::string operation) {
+bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, float operand[2], std::string operation) {
 	if (operation == "+")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] + operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] + operand[0]), -1 });
 	else if (operation == "-")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] - operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] - operand[0]), -1 });
 	else if (operation == "*")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] * operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] * operand[0]), -1 });
 	else if (operation == "/") {
 		assert(operand[0] != 0, "Division by zero");
-		intermediate.push_back({ nullptr, std::to_string(operand[1] / operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] / operand[0]), -1 });
 	}
 	else if (operation == "=")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] == operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] == operand[0]), -1 });
 	else if (operation == ">")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] > operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] > operand[0]), -1 });
 	else if (operation == "<")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] < operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] < operand[0]), -1 });
 	else if (operation == "AND")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] && operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] && operand[0]), -1 });
 	else if (operation == "OR")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] || operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] || operand[0]), -1 });
 	else
 		return true;
 
@@ -45,22 +45,22 @@ bool Expression::arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr
 }
 
 //operation[0] - operation from back, so it's actually second operation then operation[1] - first operation
-bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> >& intermediate, std::string operand[2], std::string operation) {
+bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::string operand[2], std::string operation) {
 	if (operation == "+")
-		intermediate.push_back({ nullptr, operand[1] + operand[0] });
+		intermediate.push_back({ nullptr, operand[1] + operand[0], -1 });
 	else if (operation == "=")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] == operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] == operand[0]), -1 });
 	else if (operation == ">")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] > operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] > operand[0]), -1 });
 	else if (operation == "<")
-		intermediate.push_back({ nullptr, std::to_string(operand[1] < operand[0]) });
+		intermediate.push_back({ nullptr, std::to_string(operand[1] < operand[0]), -1 });
 	else
 		return true;
 
 	return false;
 }
 
-bool Expression::entityOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> >& intermediate, std::shared_ptr<Entity> entity, std::string operation) {
+bool Expression::entityOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::shared_ptr<Entity> entity, std::string operation) {
 	if (operation == "CLICK") {
 		auto mouseComponent = entity->getComponent<MouseComponent>();
 		auto objectComponent = entity->getComponent<ObjectComponent>();
@@ -72,17 +72,17 @@ bool Expression::entityOperation(std::vector<std::tuple<std::shared_ptr<Operatio
 			auto clickX = mouseComponent->getMemberFloat("leftClickX");
 			auto clickY = mouseComponent->getMemberFloat("leftClickY");
 			if (!std::get<1>(clickX) || !std::get<1>(clickY))
-				intermediate.push_back({ nullptr, std::to_string(false) });
+				intermediate.push_back({ nullptr, std::to_string(false), -1 });
 			
 			if (*std::get<0>(clickX) > x && *std::get<0>(clickX) < x + width && *std::get<0>(clickY) > y && *std::get<0>(clickY) < y + height) {
-				intermediate.push_back({ nullptr, std::to_string(true) });
+				intermediate.push_back({ nullptr, std::to_string(true), -1 });
 			} else {
-				intermediate.push_back({ nullptr, std::to_string(false) });
+				intermediate.push_back({ nullptr, std::to_string(false), -1 });
 			}
 		}
 		else {
 			//set false as result
-			intermediate.push_back({ nullptr, std::to_string(false) });
+			intermediate.push_back({ nullptr, std::to_string(false), -1 });
 		}
 	}
 	else {

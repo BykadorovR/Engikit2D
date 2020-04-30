@@ -17,8 +17,8 @@ AssignAction::AssignAction() {
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
 
-bool AssignAction::addArgument(std::shared_ptr<OperationComponent> argument, std::string name) {
-	_arguments.push_back({ argument, name });
+bool AssignAction::addArgument(std::shared_ptr<OperationComponent> argument, std::string name, int index) {
+	_arguments.push_back({ argument, name, index });
 	return false;
 }
 
@@ -29,11 +29,11 @@ bool AssignAction::initializeAction(std::string condition) {
 }
 
 bool AssignAction::doAction() {
-	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> > intermediate;
+	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > intermediate;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
-			std::tuple<std::shared_ptr<OperationComponent>, std::string> operandTuple[2];
+			std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2];
 			VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
 			bool operandConst[2] = { false, false };
 
@@ -58,7 +58,8 @@ bool AssignAction::doAction() {
 					if (operandConst[i])
 						operand[i] = stof(std::get<1>(operandTuple[i]));
 					else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]),
+																						 std::get<2>(operandTuple[i]));
 						if (std::get<1>(operandValue))
 							operand[i] = *std::get<0>(operandValue);
 						else
@@ -68,7 +69,7 @@ bool AssignAction::doAction() {
 				//operand[0] - second operand, operand[1] - first operand
 				//operandTuple vice versa
 				if (*word == "SET") {
-					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0]);
+					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0], std::get<2>(operandTuple[1]));
 				} else
 					_expression->arithmeticOperationFloat(intermediate, operand, *word);
 			}
@@ -78,7 +79,8 @@ bool AssignAction::doAction() {
 					if (operandConst[i])
 						operand[i] = std::get<1>(operandTuple[i]);
 					else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]),
+																						  std::get<2>(operandTuple[i]));
 						if (std::get<1>(operandValue))
 							operand[i] = *std::get<0>(operandValue);
 						else
@@ -86,7 +88,7 @@ bool AssignAction::doAction() {
 					}
 				}
 				if (*word == "SET") {
-					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0]);
+					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0], std::get<2>(operandTuple[1]));
 				}
 				else
 					_expression->arithmeticOperationString(intermediate, operand, *word);
@@ -101,10 +103,11 @@ bool AssignAction::doAction() {
 				std::string varIndex = match[1].str();
 				std::shared_ptr<OperationComponent> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
 				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
-				intermediate.push_back({ object, varName });
+				int index = std::get<2>(_arguments[atoi(varIndex.c_str())]);
+				intermediate.push_back({ object, varName, index });
 			}
 			else {
-				intermediate.push_back({ nullptr, *word });
+				intermediate.push_back({ nullptr, *word, -1 });
 			}
 		}
 	}

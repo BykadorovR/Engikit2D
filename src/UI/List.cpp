@@ -1,5 +1,6 @@
 #include "List.h"
 #include "GraphicComponents.h"
+#include "CustomComponents.h"
 
 List::List(std::string name) {
 	_viewName = name;
@@ -38,7 +39,6 @@ bool List::initialize() {
 	
 	for (int i = 1; i < _views.size(); i++) {
 		_views[i]->initialize();
-		_views[i]->getEntity()->getComponent<TextComponent>()->setText("asda");
 		_views[i]->getEntity()->getComponent<TextComponent>()->setAllignment({TextAllignment::CENTER, TextAllignment::CENTER});
 	}
 	
@@ -72,7 +72,7 @@ std::vector<std::shared_ptr<View> > List::getViews() {
 }
 
 bool List::addItem(std::string text) {
-	_textItems.push_back(text);
+	getBack()->getEntity()->getComponent<CustomArrayComponent>()->addCustomValue(text, "list");
 	return false;
 }
 
@@ -84,7 +84,9 @@ ListFactory::ListFactory(std::shared_ptr<Scene> activeScene, std::shared_ptr<Vie
 
 std::shared_ptr<View> ListFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<List> list = std::make_shared<List>(name);
-	list->setBack(_backFactory->createView());
+	auto back = _backFactory->createView();
+	back->getEntity()->createComponent<CustomArrayComponent>();
+	list->setBack(back);
 	int listItems = 3;
 	for (int i = 0; i < listItems; i++) {
 		list->addView(_itemFactory->createView());
