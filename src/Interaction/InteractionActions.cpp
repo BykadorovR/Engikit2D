@@ -52,63 +52,60 @@ bool AssignAction::doAction() {
 					operandType[i] = std::get<0>(operandTuple[i])->getVariableType(std::get<1>(operandTuple[i]));
 				}
 			}
-			//TODO: think about correct conditions
-			if (operandType[0] == VariableType::varFloat &&
-				operandType[1] == VariableType::varFloat || operandType[1] == VariableType::varFloatVector || operandType[1] == VariableType::varStringVector) {
-				float operand[2];
-				for (int i = 0; i < 2; i++) {
-					if (operandConst[i])
-						operand[i] = stof(std::get<1>(operandTuple[i]));
-					else if (operandType[i] != VariableType::varFloatVector && operandType[i] != VariableType::varStringVector) {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
-						if (std::get<1>(operandValue))
-							operand[i] = *std::get<0>(operandValue);
-						else
-							return true;
-					}
+
+			std::tuple<float, bool> operandFloat[2] = { {0, false}, {0, false} };
+			std::tuple<std::string, bool> operandString[2] = { {"", false}, {"", false} };
+			for (int i = 0; i < 2; i++) {
+				if (operandConst[i]) {
+					if (operandType[0] == VariableType::varFloat)
+						operandFloat[i] = { stof(std::get<1>(operandTuple[i])), true };
+					else if (operandType[0] == VariableType::varString)
+						operandString[i] = { std::get<1>(operandTuple[i]), true };
 				}
-				//operand[0] - second operand, operand[1] - first operand
-				//operandTuple vice versa
-				if (*word == "SET") {
-					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0], std::get<2>(operandTuple[1]));
+				else if (operandType[i] == VariableType::varFloatVector) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorFloat(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue))
+						operandFloat[i] = { std::get<0>(operandValue)->at(std::get<2>(operandTuple[i])), true };
+					else
+						return true;
 				}
-				else if (*word == "AT") {
+				else if (operandType[i] == VariableType::varStringVector) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorString(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue))
+						operandString[i] = { std::get<0>(operandValue)->at(std::get<2>(operandTuple[i])), true };
+					else
+						return true;
+				}
+				else if (operandType[i] == VariableType::varFloat) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue))
+						operandFloat[i] = { *std::get<0>(operandValue), true };
+					else
+						return true;
+				}
+				else if (operandType[i] == VariableType::varString) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue))
+						operandString[i] = { *std::get<0>(operandValue), true };
+					else
+						return true;
+				}
+			}
+			if (*word == "AT") {
 					//push vector with correct index
-					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), operand[0] });
-				} else
-					_expression->arithmeticOperationFloat(intermediate, operand, *word);
+				intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), operand[0] });
 			}
-			else if (operandType[0] == VariableType::varString || operandType[0] == VariableType::varStringVector &&
-					 operandType[1] == VariableType::varString || operandType[1] == VariableType::varStringVector) {
-				std::string operand[2];
-				for (int i = 0; i < 2; i++) {
-					if (operandConst[i])
-						operand[i] = std::get<1>(operandTuple[i]);
-					//TODO: Extend it for all places
-					else if (operandType[i] == VariableType::varStringVector) {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorString(std::get<1>(operandTuple[i]));
-						if (std::get<1>(operandValue))
-							operand[i] = std::get<0>(operandValue)->at(std::get<2>(operandTuple[i]));
-						else
-							return true;
-					} else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
-						if (std::get<1>(operandValue))
-							operand[i] = *std::get<0>(operandValue);
-						else
-							return true;
-					}
-				}
-				//TODO: IMPL SET FOR ALL CASES!
-				if (*word == "SET") {
-					//if ${0} AT 2 SET 10
-					//if ${0} SET ${1} AT 2
-					//if ${0} AT 2 SET ${1} AT 2
-					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0], std::get<2>(operandTuple[1]));
-				}
-				else
-					_expression->arithmeticOperationString(intermediate, operand, *word);
-			}
+
+			//operand[0] - second operand, operand[1] - first operand
+			//operandTuple vice versa
+			//TODO: IMPL SET FOR ALL CASES!
+			//if ${0} AT 2 SET 10
+			//if ${0} SET ${1} AT 2
+			//if ${0} AT 2 SET ${1} AT 2
+			if (*word == "SET")
+				std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0], std::get<2>(operandTuple[1]));
+			else
+				_expression->arithmeticOperationFloat(intermediate, operand, *word);
 		}
 		//word (token) is operand
 		else {
