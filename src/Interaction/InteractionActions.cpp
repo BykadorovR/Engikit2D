@@ -52,7 +52,8 @@ bool AssignAction::doAction() {
 				}
 			}
 
-			if (operandType[0] == operandType[1] && operandType[1] == VariableType::varFloat) {
+			if (operandType[0] == VariableType::varFloat || operandType[0] == VariableType::varFloatVector &&
+				operandType[1] == VariableType::varFloat || operandType[1] == VariableType::varFloatVector) {
 				float operand[2];
 				for (int i = 0; i < 2; i++) {
 					if (operandConst[i])
@@ -73,7 +74,8 @@ bool AssignAction::doAction() {
 				} else
 					_expression->arithmeticOperationFloat(intermediate, operand, *word);
 			}
-			else if (operandType[0] == operandType[1] && operandType[1] == VariableType::varString) {
+			else if (operandType[0] == VariableType::varString || operandType[0] == VariableType::varStringVector &&
+					 operandType[1] == VariableType::varString || operandType[1] == VariableType::varStringVector) {
 				std::string operand[2];
 				for (int i = 0; i < 2; i++) {
 					if (operandConst[i])
@@ -87,6 +89,7 @@ bool AssignAction::doAction() {
 							return true;
 					}
 				}
+				//TODO: why send index?
 				if (*word == "SET") {
 					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0], std::get<2>(operandTuple[1]));
 				}

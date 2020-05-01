@@ -16,7 +16,8 @@ ExpressionOperation::ExpressionOperation() {
 		{ "-",		{ 2, "left" } },
 		{ "/",		{ 3, "left" } },
 		{ "*",		{ 3, "left" } },
-		{ "^",		{ 4, "right"} }
+		{ "^",		{ 4, "right"} },
+		{ "SIZE",   { 5, "left" } }
 	};
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
@@ -46,6 +47,23 @@ bool ExpressionOperation::checkOperation() {
 				intermediateEntities.pop_back();
 				continue;
 			}
+			//operations with only 1 argument
+			//TODO: move to entity operation section, because it's also operation with 1 argument or maybe merge with entity operation
+			if (*word == "SIZE") {
+				//in size we don't care about type
+				auto operand = intermediate.back();
+				intermediate.pop_back();
+				auto vectorType = std::get<0>(operand)->getVariableType(std::get<1>(operand));
+				if (vectorType == VariableType::varFloatVector) {
+					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorFloat(std::get<1>(operand)))->size();
+					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
+				}
+				else if (vectorType == VariableType::varStringVector) {
+					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorString(std::get<1>(operand)))->size();
+					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
+				}
+				continue;
+			}
 
 			//arithmetic operations with component's fields
 			std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2];
@@ -67,7 +85,8 @@ bool ExpressionOperation::checkOperation() {
 				}
 			}
 
-			if (operandType[0] == operandType[1] && operandType[1] == VariableType::varFloat) {
+			if (operandType[0] == VariableType::varFloat || operandType[0] == VariableType::varFloatVector &&
+				operandType[1] == VariableType::varFloat || operandType[1] == VariableType::varFloatVector) {
 				float operand[2];
 				for (int i = 0; i < 2; i++) {
 					if (operandConst[i])
@@ -83,7 +102,8 @@ bool ExpressionOperation::checkOperation() {
 				}
 				_expression->arithmeticOperationFloat(intermediate, operand, *word);
 			}
-			else if (operandType[0] == operandType[1] && operandType[1] == VariableType::varString) {
+			else if (operandType[0] == VariableType::varString || operandType[0] == VariableType::varStringVector &&
+					 operandType[1] == VariableType::varString || operandType[1] == VariableType::varStringVector) {
 				std::string operand[2];
 				for (int i = 0; i < 2; i++) {
 					if (operandConst[i])

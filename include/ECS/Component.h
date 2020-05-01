@@ -15,13 +15,17 @@ public:
 enum VariableType {
 	varUnknown = 0,
 	varFloat = 1,
-	varString = 2
+	varString = 2,
+	varFloatVector = 3,
+	varStringVector = 4
 };
 
 class OperationComponent : public Component {
 protected:
 	std::map<std::string, float*> _classVariablesFloat;
 	std::map<std::string, std::string* > _classVariablesString;
+	std::map<std::string, std::vector<float>* > _classVariablesVectorFloat;
+	std::map<std::string, std::vector<std::string>* > _classVariablesVectorString;
 	
 public:
 	OperationComponent();
@@ -34,4 +38,6 @@ public:
 
 	std::tuple<float*, bool> getMemberFloat(std::string name, int index = -1);
 	std::tuple<std::string*, bool> getMemberString(std::string name, int index = -1);
+	std::tuple<std::vector<float>*, bool> getMemberVectorFloat(std::string name);
+	std::tuple<std::vector<std::string>*, bool> getMemberVectorString(std::string name);
 };

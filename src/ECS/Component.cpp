@@ -19,13 +19,12 @@ std::tuple<float*, bool> OperationComponent::getMemberFloat(std::string name, in
 		value = _classVariablesFloat[name];
 		correctness = true;
 	}
-	float* result;
-	if (index < 0)
-		result = value;
-	else
-		result = &value[index];
-
-	return { result, correctness };
+	else if (_classVariablesVectorFloat.find(name) != _classVariablesVectorFloat.end()) {
+		value = &_classVariablesVectorFloat[name]->at(index);
+		correctness = true;
+	}
+	
+	return { value, correctness };
 }
 
 std::tuple<std::string*, bool> OperationComponent::getMemberString(std::string name, int index) {
@@ -35,21 +34,40 @@ std::tuple<std::string*, bool> OperationComponent::getMemberString(std::string n
 		value = _classVariablesString[name];
 		correctness = true;
 	}
-	std::string* result;
-	if (index < 0)
-		result = value;
-	else
-		result = &value[index];
+	else if (_classVariablesVectorString.find(name) != _classVariablesVectorString.end()) {
+		value = &_classVariablesVectorString[name]->at(index);
+		correctness = true;
+	}
 
-	return { result, correctness };
+	return { value, correctness };
+}
+
+std::tuple<std::vector<float>*, bool> OperationComponent::getMemberVectorFloat(std::string name) {
+	if (_classVariablesVectorFloat.find(name) != _classVariablesVectorFloat.end()) {
+		return {_classVariablesVectorFloat[name], true};
+	}
+	return {nullptr, false};
+}
+
+std::tuple<std::vector<std::string>*, bool> OperationComponent::getMemberVectorString(std::string name) {
+	if (_classVariablesVectorString.find(name) != _classVariablesVectorString.end()) {
+		return {_classVariablesVectorString[name], true};
+	}
+	return {nullptr, false};
 }
 
 VariableType OperationComponent::getVariableType(std::string name) {
 	if (_classVariablesFloat.find(name) != _classVariablesFloat.end())
 		return VariableType::varFloat;
 
+	if (_classVariablesVectorFloat.find(name) != _classVariablesVectorFloat.end())
+		return VariableType::varFloatVector;
+
 	if (_classVariablesString.find(name) != _classVariablesString.end())
 		return VariableType::varString;
+
+	if (_classVariablesVectorString.find(name) != _classVariablesVectorString.end())
+		return VariableType::varStringVector;
 
 	return VariableType::varUnknown;
 }
@@ -59,7 +77,7 @@ bool OperationComponent::setMember(std::string name, float value, int index) {
 		*_classVariablesFloat[name] = value;
 	}
 	else {
-		_classVariablesFloat[name][index] = value;
+		_classVariablesVectorFloat[name]->at(index) = value;
 	}
 	return false;
 }
@@ -69,7 +87,7 @@ bool OperationComponent::setMember(std::string name, std::string value, int inde
 		*_classVariablesString[name] = value;
 	}
 	else {
-		_classVariablesString[name][index] = value;
+		_classVariablesVectorString[name]->at(index) = value;
 	}
 	return false;
 }

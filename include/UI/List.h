@@ -6,7 +6,6 @@
 
 class List : public View {
 	std::vector<std::shared_ptr<View> > _views;
-	int _page;
 public:
 	List(std::string name);
 	bool initialize();
