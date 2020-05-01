@@ -71,8 +71,11 @@ bool AssignAction::doAction() {
 				}
 				else if (operandType[i] == VariableType::varStringVector) {
 					auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorString(std::get<1>(operandTuple[i]));
-					if (std::get<1>(operandValue))
-						operandString[i] = { std::get<0>(operandValue)->at(std::get<2>(operandTuple[i])), true };
+					if (std::get<1>(operandValue)) {
+						int index = std::get<2>(operandTuple[i]);
+						if (index >= 0)
+							operandString[i] = { std::get<0>(operandValue)->at(index), true };
+					}
 					else
 						return true;
 				}
@@ -92,8 +95,23 @@ bool AssignAction::doAction() {
 				}
 			}
 			if (*word == "AT") {
-					//push vector with correct index
-				intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), operand[0] });
+				if (std::get<1>(operandFloat[0]))
+					//push vector with correct index, index can only be float
+					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]) });
+			} else if (*word == "SET") {
+				if (std::get<1>(operandFloat[0]))
+					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]), std::get<2>(operandTuple[1]));
+				else if (std::get<1>(operandString[0])) {
+					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandString[0]), std::get<2>(operandTuple[1]));
+				}
+			} else {
+				if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
+					float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
+					_expression->arithmeticOperationFloat(intermediate, operand, *word);
+				} else if (std::get<1>(operandString[0]) && std::get<1>(operandString[1])) {
+					std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
+					_expression->arithmeticOperationString(intermediate, operand, *word);
+				}
 			}
 
 			//operand[0] - second operand, operand[1] - first operand
@@ -102,10 +120,6 @@ bool AssignAction::doAction() {
 			//if ${0} AT 2 SET 10
 			//if ${0} SET ${1} AT 2
 			//if ${0} AT 2 SET ${1} AT 2
-			if (*word == "SET")
-				std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), operand[0], std::get<2>(operandTuple[1]));
-			else
-				_expression->arithmeticOperationFloat(intermediate, operand, *word);
 		}
 		//word (token) is operand
 		else {

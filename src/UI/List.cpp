@@ -46,7 +46,7 @@ bool List::initialize() {
 	getBack()->setColorAddition({ 1, 0, 1, 1 });
 	getBack()->getEntity()->createComponent<KeyboardComponent>();
 	
-	getBack()->getEntity()->getComponent<CustomFloatComponent>()->addCustomValue(1, "page");
+	getBack()->getEntity()->getComponent<CustomFloatComponent>()->addCustomValue(0, "page");
 
 	for (int i = 1; i < _views.size(); i++) {
 		_views[i]->initialize();

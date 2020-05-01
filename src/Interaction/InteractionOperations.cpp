@@ -86,40 +86,60 @@ bool ExpressionOperation::checkOperation() {
 				}
 			}
 
-			if (operandType[0] == VariableType::varFloat &&
-				operandType[1] == VariableType::varFloat || operandType[1] == VariableType::varFloatVector || VariableType::varStringVector) {
-				float operand[2];
-				for (int i = 0; i < 2; i++) {
-					if (operandConst[i])
-						operand[i] = stof(std::get<1>(operandTuple[i]));
-					else if (operandType[i] != VariableType::varFloatVector && operandType[i] != VariableType::varStringVector) {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
-						if (std::get<1>(operandValue))
-							operand[i] = *std::get<0>(operandValue);
-						else
-							return true;
-					}
+			std::tuple<float, bool> operandFloat[2] = { {0, false}, {0, false} };
+			std::tuple<std::string, bool> operandString[2] = { {"", false}, {"", false} };
+			for (int i = 0; i < 2; i++) {
+				if (operandConst[i]) {
+					if (operandType[0] == VariableType::varFloat)
+						operandFloat[i] = { stof(std::get<1>(operandTuple[i])), true };
+					else if (operandType[0] == VariableType::varString)
+						operandString[i] = { std::get<1>(operandTuple[i]), true };
 				}
-				if (*word == "AT")
-					//push vector with correct index
-					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), operand[0] });
-				else
-					_expression->arithmeticOperationFloat(intermediate, operand, *word);
+				else if (operandType[i] == VariableType::varFloatVector) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorFloat(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue))
+						operandFloat[i] = { std::get<0>(operandValue)->at(std::get<2>(operandTuple[i])), true };
+					else
+						return true;
+				}
+				else if (operandType[i] == VariableType::varStringVector) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorString(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue)) {
+						int index = std::get<2>(operandTuple[i]);
+						if (index >= 0)
+							operandString[i] = { std::get<0>(operandValue)->at(index), true };
+					}
+					else
+						return true;
+				}
+				else if (operandType[i] == VariableType::varFloat) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue))
+						operandFloat[i] = { *std::get<0>(operandValue), true };
+					else
+						return true;
+				}
+				else if (operandType[i] == VariableType::varString) {
+					auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
+					if (std::get<1>(operandValue))
+						operandString[i] = { *std::get<0>(operandValue), true };
+					else
+						return true;
+				}
 			}
-			else if (operandType[0] == operandType[1] && operandType[1] == VariableType::varString) {
-				std::string operand[2];
-				for (int i = 0; i < 2; i++) {
-					if (operandConst[i])
-						operand[i] = std::get<1>(operandTuple[i]);
-					else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
-						if (std::get<1>(operandValue))
-							operand[i] = *std::get<0>(operandValue);
-						else
-							return true;
-					}
+			if (*word == "AT") {
+				if (std::get<1>(operandFloat[0]))
+					//push vector with correct index, index can only be float
+					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]) });
+			} else {
+				if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
+					float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
+					_expression->arithmeticOperationFloat(intermediate, operand, *word);
 				}
-				_expression->arithmeticOperationString(intermediate, operand, *word);
+				else if (std::get<1>(operandString[0]) && std::get<1>(operandString[1])) {
+					std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
+					_expression->arithmeticOperationString(intermediate, operand, *word);
+				}
 			}
 		}
 		//word (token) is operand
