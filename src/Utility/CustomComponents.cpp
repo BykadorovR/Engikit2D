@@ -29,7 +29,7 @@ CustomFloatComponent::CustomFloatComponent() {
 bool CustomFloatComponent::addCustomValue(float value, std::string name) {
 	if (_floats.find(name) == _floats.end()) {
 		if (_classVariablesFloat.find(name) == _classVariablesFloat.end()) {
-			_classVariablesFloat[name] = &value;
+			_classVariablesFloat[name] = &_floats[name];
 		}
 		else {
 			return true;

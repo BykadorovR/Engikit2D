@@ -36,8 +36,8 @@ public:
 
 	VariableType getVariableType(std::string name);
 
-	std::tuple<float*, bool> getMemberFloat(std::string name, int index = -1);
-	std::tuple<std::string*, bool> getMemberString(std::string name, int index = -1);
+	std::tuple<float*, bool> getMemberFloat(std::string name);
+	std::tuple<std::string*, bool> getMemberString(std::string name);
 	std::tuple<std::vector<float>*, bool> getMemberVectorFloat(std::string name);
 	std::tuple<std::vector<std::string>*, bool> getMemberVectorString(std::string name);
 };

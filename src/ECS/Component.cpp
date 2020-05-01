@@ -12,33 +12,25 @@ OperationComponent::OperationComponent() {
 	_componentName = "Component";
 }
 
-std::tuple<float*, bool> OperationComponent::getMemberFloat(std::string name, int index) {
+std::tuple<float*, bool> OperationComponent::getMemberFloat(std::string name) {
 	float* value = nullptr;
 	bool correctness = false;
 	if (_classVariablesFloat.find(name) != _classVariablesFloat.end()) {
 		value = _classVariablesFloat[name];
 		correctness = true;
 	}
-	else if (_classVariablesVectorFloat.find(name) != _classVariablesVectorFloat.end()) {
-		value = &_classVariablesVectorFloat[name]->at(index);
-		correctness = true;
-	}
 	
 	return { value, correctness };
 }
 
-std::tuple<std::string*, bool> OperationComponent::getMemberString(std::string name, int index) {
+std::tuple<std::string*, bool> OperationComponent::getMemberString(std::string name) {
 	std::string* value = nullptr;
 	bool correctness = false;
 	if (_classVariablesString.find(name) != _classVariablesString.end()) {
 		value = _classVariablesString[name];
 		correctness = true;
 	}
-	else if (_classVariablesVectorString.find(name) != _classVariablesVectorString.end()) {
-		value = &_classVariablesVectorString[name]->at(index);
-		correctness = true;
-	}
-
+	
 	return { value, correctness };
 }
 

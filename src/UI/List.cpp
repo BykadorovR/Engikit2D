@@ -46,7 +46,7 @@ bool List::initialize() {
 	getBack()->setColorAddition({ 1, 0, 1, 1 });
 	getBack()->getEntity()->createComponent<KeyboardComponent>();
 	
-	getBack()->getEntity()->getComponent<CustomFloatComponent>()->addCustomValue(0, "page");
+	getBack()->getEntity()->getComponent<CustomFloatComponent>()->addCustomValue(1, "page");
 
 	for (int i = 1; i < _views.size(); i++) {
 		_views[i]->initialize();
@@ -54,14 +54,16 @@ bool List::initialize() {
 		auto mapText = std::make_shared<ExpressionOperation>();
 		//NOTE: we send list without index only because we use SIZE
 		mapText->addArgument(getBack()->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
-		mapText->addArgument(nullptr, std::to_string(i - 1), -1);
+		mapText->addArgument(nullptr, std::to_string(i - 1));
 		mapText->addArgument(getBack()->getEntity()->getComponent<CustomFloatComponent>(), "page");
 		mapText->initializeOperation("SIZE ${0} > ${1} + ${2}");
 		getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
 		auto setLine = std::make_shared<AssignAction>();
 		setLine->addArgument(_views[i]->getEntity()->getComponent<TextComponent>(), "text");
-		setLine->addArgument(getBack()->getEntity()->getComponent<CustomStringArrayComponent>(), "list", i - 1);
-		setLine->initializeAction("${0} SET ${1}");
+		setLine->addArgument(getBack()->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
+		setLine->addArgument(getBack()->getEntity()->getComponent<CustomFloatComponent>(), "page");
+		setLine->addArgument(nullptr, std::to_string(i - 1));
+		setLine->initializeAction("${0} SET ${1} AT ${2} + ${3}");
 		mapText->registerAction(setLine);
 	}
 	

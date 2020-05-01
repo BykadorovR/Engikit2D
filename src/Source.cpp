@@ -58,7 +58,7 @@ void surfaceCreated() {
 		list->addItem("test");
 		list->addItem("test2");
 		list->addItem("test_123");
-		list->addItem("test_123123");
+		list->addItem("test_qw");
 		list->addItem("qwert");
 
 		/*

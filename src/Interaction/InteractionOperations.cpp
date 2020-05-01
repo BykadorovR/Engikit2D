@@ -12,6 +12,7 @@ ExpressionOperation::ExpressionOperation() {
 		{ "<",		{ 1, "left" } },
 		{ "=",		{ 1, "left" } },
 		{ "CLICK",  { 1, "left" } },
+		{ "AT",     { 1, "left" } },
 		{ "+",		{ 2, "left" } }, 
 		{ "-",		{ 2, "left" } },
 		{ "/",		{ 3, "left" } },
@@ -22,8 +23,8 @@ ExpressionOperation::ExpressionOperation() {
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
 
-bool ExpressionOperation::addArgument(std::shared_ptr<OperationComponent> argument, std::string name, int index) {
-	_arguments.push_back( { argument, name, index } );
+bool ExpressionOperation::addArgument(std::shared_ptr<OperationComponent> argument, std::string name) {
+	_arguments.push_back( { argument, name } );
 	return false;
 }
 
@@ -85,32 +86,33 @@ bool ExpressionOperation::checkOperation() {
 				}
 			}
 
-			if (operandType[0] == VariableType::varFloat || operandType[0] == VariableType::varFloatVector &&
-				operandType[1] == VariableType::varFloat || operandType[1] == VariableType::varFloatVector) {
+			if (operandType[0] == VariableType::varFloat &&
+				operandType[1] == VariableType::varFloat || operandType[1] == VariableType::varFloatVector || VariableType::varStringVector) {
 				float operand[2];
 				for (int i = 0; i < 2; i++) {
 					if (operandConst[i])
 						operand[i] = stof(std::get<1>(operandTuple[i]));
-					else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]),
-																						 std::get<2>(operandTuple[i]));
+					else if (operandType[i] != VariableType::varFloatVector && operandType[i] != VariableType::varStringVector) {
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
 						if (std::get<1>(operandValue))
 							operand[i] = *std::get<0>(operandValue);
 						else
 							return true;
 					}
 				}
-				_expression->arithmeticOperationFloat(intermediate, operand, *word);
+				if (*word == "AT")
+					//push vector with correct index
+					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), operand[0] });
+				else
+					_expression->arithmeticOperationFloat(intermediate, operand, *word);
 			}
-			else if (operandType[0] == VariableType::varString || operandType[0] == VariableType::varStringVector &&
-					 operandType[1] == VariableType::varString || operandType[1] == VariableType::varStringVector) {
+			else if (operandType[0] == operandType[1] && operandType[1] == VariableType::varString) {
 				std::string operand[2];
 				for (int i = 0; i < 2; i++) {
 					if (operandConst[i])
 						operand[i] = std::get<1>(operandTuple[i]);
 					else {
-						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]),
-																						  std::get<2>(operandTuple[i]));
+						auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
 						if (std::get<1>(operandValue))
 							operand[i] = *std::get<0>(operandValue);
 						else
@@ -129,8 +131,7 @@ bool ExpressionOperation::checkOperation() {
 				std::string varIndex = match[1].str();
 				std::shared_ptr<OperationComponent> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
 				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
-				int index = std::get<2>(_arguments[atoi(varIndex.c_str())]);
-				intermediate.push_back({ object, varName, index });
+				intermediate.push_back({ object, varName, -1 });
 			}
 			else {
 				//find entity
