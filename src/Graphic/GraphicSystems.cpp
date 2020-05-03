@@ -164,8 +164,6 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 			realLinesHeight += scaledLineSpacing * textObject->getLineSpacingCoeff() - currentLineSize;
 	}
 
-	OUT_STREAM("All pages: " + std::to_string(lines.size()) + "\n");
-	OUT_STREAM("Current page: " + std::to_string(textObject->getPageNumber()) + "\n");
 	textObject->setMember("totalPages", lines.size());
 	textObject->setMember("lineHeight", scaledLineSpacing);
 

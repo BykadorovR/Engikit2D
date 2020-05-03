@@ -47,24 +47,20 @@ void MouseEvent::unregisterComponent(IMouseEvent* listener) {
 void MouseEvent::mousePressed(GLFWwindow* window, int button, int action, int mods) {
 	switch (button) {
 	case GLFW_MOUSE_BUTTON_LEFT:
-		OUT_STREAM("Left ");
 		if (action == GLFW_PRESS) {
 			double x, y;
 			//getting cursor position
 			glfwGetCursorPos(window, &x, &y);
-			OUT_STREAM("Down " << x << " " << y << std::endl);
 			for (auto listener : _listeners) {
 				listener->mouseClickDownLeft(x, y);
 			}
 		}
 		break;
 	case GLFW_MOUSE_BUTTON_RIGHT:
-		OUT_STREAM("Right ");
 		if (action == GLFW_PRESS) {
 			double x, y;
 			//getting cursor position
 			glfwGetCursorPos(window, &x, &y);
-			OUT_STREAM("Down " << x << " " << y << std::endl);
 			for (auto listener : _listeners) {
 				listener->mouseClickDownRight(x, y);
 			}

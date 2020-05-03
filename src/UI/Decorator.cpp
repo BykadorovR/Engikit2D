@@ -26,8 +26,11 @@ bool ScrollerDecorator::initialize() {
 	//entity == nullptr means that view is composite
 	if (parentEntity == nullptr) {
 		for (auto view : _parent->getViews()) {
-			if (view->getEntity()->getComponent<ObjectComponent>())
+			//attach all components to parent entity or first child view
+			if (view->getEntity()->getComponent<ObjectComponent>()) {
 				parentEntity = view->getEntity();
+				break;
+			}
 		}
 	}
 
@@ -36,6 +39,11 @@ bool ScrollerDecorator::initialize() {
 	std::tuple<float, float> scrollerSize = { 20, 20 };
 	std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
 	std::tuple<float, float> scrollerDownPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) + std::get<1>(size) - std::get<0>(scrollerSize) };
+	if (_parent->getName() == "List") {
+		auto lastPosition = _parent->getViews().back()->getEntity()->getComponent<ObjectComponent>()->getPosition();
+		auto lastSize = _parent->getViews().back()->getEntity()->getComponent<ObjectComponent>()->getSize();
+		scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(lastSize), std::get<1>(lastPosition) + std::get<1>(lastSize) - std::get<0>(scrollerSize) };
+	}
 	std::tuple<float, float> scrollerProgressSize = { 20, 10 };
 	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
 
@@ -121,7 +129,7 @@ bool ScrollerDecorator::initialize() {
 		clickInsideDown->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");
 	else if (_parent->getName() == "List") {
 		clickInsideDown->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
-		clickInsideDown->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+		clickInsideDown->addArgument(nullptr, std::to_string(_parent->getViews().size()));
 	}
 	
 	if (_parent->getName() == "Label")
@@ -145,7 +153,7 @@ bool ScrollerDecorator::initialize() {
 		positionDecorator->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");
 	else if (_parent->getName() == "List") {
 		positionDecorator->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
-		positionDecorator->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+		positionDecorator->addArgument(nullptr, std::to_string(_parent->getViews().size()));
 	}
 	
 	//to avoid division by zero
@@ -169,7 +177,7 @@ bool ScrollerDecorator::initialize() {
 	changePosition->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");			//5
 	changePosition->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");		//6
 	if (_parent->getName() == "List") {
-		changePosition->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));		                    //7
+		changePosition->addArgument(nullptr, std::to_string(_parent->getViews().size()));		                    //7
 	}
 	if (_parent->getName() == "Label")
 		changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 ) * ${0}");
@@ -187,7 +195,7 @@ bool ScrollerDecorator::initialize() {
 	}
 	else if (_parent->getName() == "List") {
 		decoratorAddCheck->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
-		decoratorAddCheck->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+		decoratorAddCheck->addArgument(nullptr, std::to_string(_parent->getViews().size()));
 		decoratorAddCheck->initializeOperation("SIZE ${0} > ${1}");
 	}
 		
@@ -214,7 +222,7 @@ bool ScrollerDecorator::initialize() {
 	}
 	else if (_parent->getName() == "List") {
 		decoratorRemoveCheck->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
-		decoratorRemoveCheck->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+		decoratorRemoveCheck->addArgument(nullptr, std::to_string(_parent->getViews().size()));
 		decoratorRemoveCheck->initializeOperation("SIZE ${0} < ${1} OR SIZE ${0} = ${1}");
 	}
 	for (auto view : getViews()) {

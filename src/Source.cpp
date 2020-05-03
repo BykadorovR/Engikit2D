@@ -1,6 +1,8 @@
 ﻿#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <sstream>
+#include <chrono>
+#include <thread>
 
 #include "Windows.h"
 #include "State.h"
@@ -13,6 +15,7 @@
 #include "GraphicSystems.h"
 #include "TextureManager.h"
 #include "GlyphsLoader.h"
+#include "Common.h"
 
 #include "Back.h"
 #include "Label.h"
@@ -63,10 +66,8 @@ void surfaceCreated() {
 		list->addItem("test5");
 		list->setSize({ 100, 100 });
 		list->setPosition({ 400, 100 });
-		
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
 		scrollerDecoratorList->initialize();
-		/*
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
@@ -76,7 +77,6 @@ void surfaceCreated() {
 
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorLabel = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
 		scrollerDecoratorLabel->initialize();
-		
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		
@@ -110,7 +110,6 @@ void surfaceCreated() {
 		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
-		*/
 	}
 
 	stateSystem = std::make_shared<StateSystem>();
@@ -152,7 +151,6 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //Core profile deprecate all fixed function API calls
@@ -186,10 +184,13 @@ int main(int argc, char **argv) {
 	surfaceCreated();
 	while (!glfwWindowShouldClose(mainWindow)) {
 		// OpenGL API calls go here...
-
+		std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 		drawFrame();
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::high_resolution_clock::now() - startTime).count();
+		OUT_STREAM("Elapsed: " + std::to_string(elapsed) + " ms\n");
 	}
 
 	glfwDestroyWindow(mainWindow);
