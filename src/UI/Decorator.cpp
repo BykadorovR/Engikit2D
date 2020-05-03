@@ -274,10 +274,10 @@ ScrollerDecoratorFactory::ScrollerDecoratorFactory(std::shared_ptr<Scene> active
 
 std::shared_ptr<View> ScrollerDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::make_shared<ScrollerDecorator>(name);
-
-	scrollerDecorator->setScrollerUp(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerUp")));
-	scrollerDecorator->setScrollerDown(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerDown")));
-	scrollerDecorator->setScrollerProgress(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerProgress")));
 	scrollerDecorator->setParent(parent);
+	scrollerDecorator->setScrollerUp(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerUp", scrollerDecorator)));
+	scrollerDecorator->setScrollerDown(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerDown", scrollerDecorator)));
+	scrollerDecorator->setScrollerProgress(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerProgress", scrollerDecorator)));
+	
 	return scrollerDecorator;
 }

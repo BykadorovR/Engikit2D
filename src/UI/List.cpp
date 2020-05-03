@@ -98,9 +98,8 @@ std::shared_ptr<View> ListFactory::createView(std::string name, std::shared_ptr<
 	back->getEntity()->createComponent<CustomStringArrayComponent>();
 	back->getEntity()->createComponent<CustomFloatComponent>();
 	list->setBack(back);
-	int listItems = 3;
-	for (int i = 0; i < listItems; i++) {
-		list->addView(_itemFactory->createView());
+	for (int i = 0; i < 3; i++) {
+		list->addView(_itemFactory->createView("Label", parent));
 	}
 	list->setParent(parent);
 	return list;
