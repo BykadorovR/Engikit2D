@@ -56,15 +56,17 @@ void surfaceCreated() {
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
 		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
 		list->initialize();
-		list->addItem("test");
+		list->addItem("test1");
 		list->addItem("test2");
 		list->addItem("test3");
 		list->addItem("test4");
 		list->addItem("test5");
+		list->setSize({ 100, 100 });
+		list->setPosition({ 400, 100 });
 		
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
 		scrollerDecoratorList->initialize();
-
+		/*
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
@@ -108,6 +110,7 @@ void surfaceCreated() {
 		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
+		*/
 	}
 
 	stateSystem = std::make_shared<StateSystem>();

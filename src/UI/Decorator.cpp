@@ -24,9 +24,9 @@ List of operation-actions:
 bool ScrollerDecorator::initialize() {
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
 	//entity == nullptr means that view is composite
-	if (parentEntity == nullptr || parentEntity->getComponent<ObjectComponent>() == nullptr) {
+	if (parentEntity == nullptr) {
 		for (auto view : _parent->getViews()) {
-			if (view->getName() == "Back")
+			if (view->getEntity()->getComponent<ObjectComponent>())
 				parentEntity = view->getEntity();
 		}
 	}

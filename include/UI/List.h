@@ -8,8 +8,6 @@ class List : public View {
 public:
 	List(std::string name);
 	bool initialize();
-	std::shared_ptr<Back> getBack();
-	bool setBack(std::shared_ptr<View> back);
 	bool addItem(std::string item);
 	bool setPosition(std::tuple<float, float> position);
 	bool setSize(std::tuple<float, float> size);
@@ -18,7 +16,6 @@ public:
 class ListFactory : public ViewFactory {
 private:
 	std::shared_ptr<Scene> _activeScene;
-	std::shared_ptr<BackFactory> _backFactory;
 	std::shared_ptr<ViewFactory> _itemFactory;
 public:
 	ListFactory(std::shared_ptr<Scene> activeScene, std::shared_ptr<ViewFactory> itemFactory);

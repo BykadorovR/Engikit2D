@@ -63,6 +63,9 @@ bool ExpressionOperation::checkOperation() {
 					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorString(std::get<1>(operand)))->size();
 					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
 				}
+				else if (vectorType == VariableType::varUnknown) {
+					intermediate.push_back({ nullptr, std::to_string(0), -1 });
+				}
 				continue;
 			}
 
