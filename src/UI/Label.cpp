@@ -134,6 +134,7 @@ std::shared_ptr<View> LabelFactory::createView(std::string name, std::shared_ptr
 	label->setEntity(_activeScene->createEntity());
 	label->getEntity()->createComponent<ObjectComponent>();
 	label->getEntity()->createComponent<TextComponent>();
+	label->setParent(parent);
 	return label;
 }
 

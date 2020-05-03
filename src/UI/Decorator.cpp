@@ -5,11 +5,10 @@
 #include "UserInputComponents.h"
 #include "InteractionActions.h"
 #include "InteractionComponents.h"
+#include "CustomComponents.h"
 
-
-ScrollerDecorator::ScrollerDecorator(std::string name, std::shared_ptr<View> parent) {
+ScrollerDecorator::ScrollerDecorator(std::string name) {
 	_viewName = name;
-	_parent = parent;
 }
 
 /*
@@ -23,8 +22,17 @@ List of operation-actions:
 7) if "page == 0 and text size < view height" then "hide decorator"
 */
 bool ScrollerDecorator::initialize() {
-	auto position = _parent->getEntity()->getComponent<ObjectComponent>()->getPosition();
-	auto size = _parent->getEntity()->getComponent<ObjectComponent>()->getSize();
+	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
+	//entity == nullptr means that view is composite
+	if (parentEntity == nullptr || parentEntity->getComponent<ObjectComponent>() == nullptr) {
+		for (auto view : _parent->getViews()) {
+			if (view->getName() == "Back")
+				parentEntity = view->getEntity();
+		}
+	}
+
+	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
 	std::tuple<float, float> scrollerSize = { 20, 20 };
 	std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
 	std::tuple<float, float> scrollerDownPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) + std::get<1>(size) - std::get<0>(scrollerSize) };
@@ -53,19 +61,19 @@ bool ScrollerDecorator::initialize() {
 	getScrollerDown()->setColorAddition({ 0, 1, 1, 1 });
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
-	
+
 	if (_parent->getName() == "Label") {
 		//--- 1
 		auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
-		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "lineHeight");
-		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
-		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "spacingCoeff");
-		textOutOfBoundsDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "focus");
+		textOutOfBoundsDown->addArgument(parentEntity->getComponent<ObjectComponent>(), "sizeY");
+		textOutOfBoundsDown->addArgument(parentEntity->getComponent<TextComponent>(), "lineHeight");
+		textOutOfBoundsDown->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+		textOutOfBoundsDown->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");
+		textOutOfBoundsDown->addArgument(parentEntity->getComponent<TextComponent>(), "spacingCoeff");
+		textOutOfBoundsDown->addArgument(parentEntity->getComponent<TextComponent>(), "focus");
 		textOutOfBoundsDown->initializeOperation("( ${3} - ${2} ) * ${4} * ${1} > ${0} AND ${5} = 1");
 		auto changePageDown = std::make_shared<AssignAction>();
-		changePageDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+		changePageDown->addArgument(parentEntity->getComponent<TextComponent>(), "page");
 		changePageDown->initializeAction("${0} SET ${0} + 1");
 		textOutOfBoundsDown->registerAction(changePageDown);
 		getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
@@ -73,23 +81,30 @@ bool ScrollerDecorator::initialize() {
 
 		//--- 2
 		auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
-		textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-		textOutOfBoundsUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
+		textOutOfBoundsUp->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+		textOutOfBoundsUp->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");
 		textOutOfBoundsUp->initializeOperation("${1} - ${0} < 1");
 		auto changePageUp = std::make_shared<AssignAction>();
-		changePageUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+		changePageUp->addArgument(parentEntity->getComponent<TextComponent>(), "page");
 		changePageUp->initializeAction("${0} SET ${0} - 1");
 		textOutOfBoundsUp->registerAction(changePageUp);
 		getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsUp, InteractionType::COMMON_START);
 		//--- 2
 	}
+
 	//--- 3
 	auto clickInsideUp = std::make_shared<ExpressionOperation>();
 	clickInsideUp->addArgument(getScrollerUp()->getEntity());
-	clickInsideUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+	if (_parent->getName() == "Label")
+		clickInsideUp->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+	else if (_parent->getName() == "List")
+		clickInsideUp->addArgument(parentEntity->getComponent<CustomFloatComponent>(), "page");
 	clickInsideUp->initializeOperation("CLICK #{0} AND ${0} > 0");
 	auto changePositionUp = std::make_shared<AssignAction>();
-	changePositionUp->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
+	if (_parent->getName() == "Label")
+		changePositionUp->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+	else if (_parent->getName() == "List")
+		changePositionUp->addArgument(parentEntity->getComponent<CustomFloatComponent>(), "page");
 	changePositionUp->initializeAction("${0} SET ${0} - 1");
 	clickInsideUp->registerAction(changePositionUp);
 	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
@@ -98,13 +113,27 @@ bool ScrollerDecorator::initialize() {
 	//--- 4
 	auto clickInsideDown = std::make_shared<ExpressionOperation>();
 	clickInsideDown->addArgument(getScrollerDown()->getEntity());
-	clickInsideDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	clickInsideDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
-	//TODO: Add constants support to operations
-	clickInsideDown->initializeOperation("CLICK #{0} AND ${0} < ${1} - 1");
+	if (_parent->getName() == "Label")
+		clickInsideDown->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+	else if (_parent->getName() == "List")
+		clickInsideDown->addArgument(parentEntity->getComponent<CustomFloatComponent>(), "page");
+	if (_parent->getName() == "Label")
+		clickInsideDown->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");
+	else if (_parent->getName() == "List") {
+		clickInsideDown->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
+		clickInsideDown->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+	}
+	
+	if (_parent->getName() == "Label")
+		clickInsideDown->initializeOperation("CLICK #{0} AND ${0} < ${1} - 1");
+	else if (_parent->getName() == "List")
+		//in case of list we should end scrolling if next scroll will cause displaying less items then supposed (in case of label, 1 item/string can be displayed)
+		clickInsideDown->initializeOperation("CLICK #{0} AND ${0} < SIZE ${1} - ${2}");
 	auto changePositionDown = std::make_shared<AssignAction>();
-	changePositionDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	changePositionDown->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
+	if (_parent->getName() == "Label")
+		changePositionDown->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+	else if (_parent->getName() == "List")
+		changePositionDown->addArgument(parentEntity->getComponent<CustomFloatComponent>(), "page");
 	changePositionDown->initializeAction("${0} SET ${0} + 1");
 	clickInsideDown->registerAction(changePositionDown);
 	getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
@@ -112,42 +141,82 @@ bool ScrollerDecorator::initialize() {
 
 	//--- 5
 	auto positionDecorator = std::make_shared<ExpressionOperation>();
-	positionDecorator->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
+	if (_parent->getName() == "Label")
+		positionDecorator->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");
+	else if (_parent->getName() == "List") {
+		positionDecorator->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
+		positionDecorator->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+	}
+	
 	//to avoid division by zero
-	positionDecorator->initializeOperation("${0} > 1");
+	if (_parent->getName() == "Label")
+		positionDecorator->initializeOperation("${0} > 1");
+	else if (_parent->getName() == "List")
+		positionDecorator->initializeOperation("SIZE ${0} > ${1}");
 	auto changePosition = std::make_shared<AssignAction>();
-	changePosition->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");							//0
-	changePosition->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");					//1 
+	if (_parent->getName() == "Label")
+		changePosition->addArgument(parentEntity->getComponent<TextComponent>(), "page");						    //0
+	else if (_parent->getName() == "List")
+		changePosition->addArgument(parentEntity->getComponent<CustomFloatComponent>(), "page");					//0
+	if (_parent->getName() == "Label")
+		changePosition->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");					    //1 
+	else if (_parent->getName() == "List")
+		changePosition->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");				//1
+
 	changePosition->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "positionY");  //2
 	changePosition->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "sizeY");		//3
 	changePosition->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");		//4
 	changePosition->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");			//5
 	changePosition->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");		//6
-	changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 ) * ${0}");
+	if (_parent->getName() == "List") {
+		changePosition->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));		                    //7
+	}
+	if (_parent->getName() == "Label")
+		changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( ${1} - 1 ) * ${0}");
+	else if (_parent->getName() == "List")
+		changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( SIZE ${1} - ${7} ) * ${0}");
 	positionDecorator->registerAction(changePosition);
 	getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
 	//--- 5
-
+	
 	//--- 6
 	auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
-	decoratorAddCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	decoratorAddCheck->initializeOperation("${0} > 0");
+	if (_parent->getName() == "Label") {
+		decoratorAddCheck->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+		decoratorAddCheck->initializeOperation("${0} > 0");
+	}
+	else if (_parent->getName() == "List") {
+		decoratorAddCheck->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
+		decoratorAddCheck->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+		decoratorAddCheck->initializeOperation("SIZE ${0} > ${1}");
+	}
+		
 	for (auto view : getViews()) {
 		auto registerDecoratorAction = std::make_shared<AssignAction>();
 		registerDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
 		registerDecoratorAction->initializeAction("${0} SET 1");
 		decoratorAddCheck->registerAction(registerDecoratorAction);
-		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_END);
+		if (_parent->getName() == "List")
+			view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
+		else if (_parent->getName() == "Label")
+			view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_END);
 	}
 	//--- 6
 
 	//--- 7
 	auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
-	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<ObjectComponent>(), "sizeY");
-	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "page");
-	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "lineHeight");
-	decoratorRemoveCheck->addArgument(_parent->getEntity()->getComponent<TextComponent>(), "totalPages");
-	decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
+	if (_parent->getName() == "Label") {
+		decoratorRemoveCheck->addArgument(parentEntity->getComponent<ObjectComponent>(), "sizeY");
+		decoratorRemoveCheck->addArgument(parentEntity->getComponent<TextComponent>(), "page");
+		decoratorRemoveCheck->addArgument(parentEntity->getComponent<TextComponent>(), "lineHeight");
+		decoratorRemoveCheck->addArgument(parentEntity->getComponent<TextComponent>(), "totalPages");
+		decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
+	}
+	else if (_parent->getName() == "List") {
+		decoratorRemoveCheck->addArgument(parentEntity->getComponent<CustomStringArrayComponent>(), "list");
+		decoratorRemoveCheck->addArgument(nullptr, std::to_string(_parent->getViews().size() - 1));
+		decoratorRemoveCheck->initializeOperation("SIZE ${0} < ${1} OR SIZE ${0} = ${1}");
+	}
 	for (auto view : getViews()) {
 		auto unregisterDecoratorAction = std::make_shared<AssignAction>();
 		unregisterDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
@@ -156,7 +225,6 @@ bool ScrollerDecorator::initialize() {
 		view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
 	}
 	//--- 7
-
 	return false;
 }
 
@@ -199,20 +267,17 @@ std::shared_ptr<Back> ScrollerDecorator::getScrollerProgress() {
 	return nullptr;
 }
 
-std::vector<std::shared_ptr<View> > ScrollerDecorator::getViews() {
-	return _views;
-}
-
 ScrollerDecoratorFactory::ScrollerDecoratorFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 	_backFactory = std::make_shared<BackFactory>(activeScene);
 }
 
 std::shared_ptr<View> ScrollerDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
-	std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::make_shared<ScrollerDecorator>(name, parent);
+	std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::make_shared<ScrollerDecorator>(name);
 
 	scrollerDecorator->setScrollerUp(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerUp")));
 	scrollerDecorator->setScrollerDown(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerDown")));
 	scrollerDecorator->setScrollerProgress(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerProgress")));
+	scrollerDecorator->setParent(parent);
 	return scrollerDecorator;
 }

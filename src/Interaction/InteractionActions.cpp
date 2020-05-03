@@ -8,12 +8,13 @@ AssignAction::AssignAction() {
 	_supportedOperations =
 	{
 		{ "SET", { 0, "left" } },
-		{ "AT",  { 1, "left" } },
 		{ "+",   { 2, "left" } },
 		{ "-",   { 2, "left" } },
 		{ "/",   { 3, "left" } },
 		{ "*",   { 3, "left" } },
-		{ "^",   { 4, "right"} }
+		{ "^",   { 4, "right"} },
+		{ "AT",  { 5, "left" } },
+		{ "SIZE",{ 5, "left" } }
 	};
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
@@ -34,6 +35,24 @@ bool AssignAction::doAction() {
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
+			//operations with only 1 argument
+			//TODO: move to entity operation section, because it's also operation with 1 argument or maybe merge with entity operation
+			if (*word == "SIZE") {
+				//in size we don't care about type
+				auto operand = intermediate.back();
+				intermediate.pop_back();
+				auto vectorType = std::get<0>(operand)->getVariableType(std::get<1>(operand));
+				if (vectorType == VariableType::varFloatVector) {
+					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorFloat(std::get<1>(operand)))->size();
+					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
+				}
+				else if (vectorType == VariableType::varStringVector) {
+					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorString(std::get<1>(operand)))->size();
+					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
+				}
+				continue;
+			}
+
 			std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2];
 			VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
 			bool operandConst[2] = { false, false };
@@ -57,9 +76,9 @@ bool AssignAction::doAction() {
 			std::tuple<std::string, bool> operandString[2] = { {"", false}, {"", false} };
 			for (int i = 0; i < 2; i++) {
 				if (operandConst[i]) {
-					if (operandType[0] == VariableType::varFloat)
+					if (operandType[i] == VariableType::varFloat)
 						operandFloat[i] = { stof(std::get<1>(operandTuple[i])), true };
-					else if (operandType[0] == VariableType::varString)
+					else if (operandType[i] == VariableType::varString)
 						operandString[i] = { std::get<1>(operandTuple[i]), true };
 				}
 				else if (operandType[i] == VariableType::varFloatVector) {

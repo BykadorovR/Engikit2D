@@ -5,16 +5,13 @@
 #include "Back.h"
 
 class List : public View {
-	std::vector<std::shared_ptr<View> > _views;
 public:
 	List(std::string name);
 	bool initialize();
 	std::shared_ptr<Back> getBack();
-	std::vector<std::shared_ptr<View> > getViews();
 	bool setBack(std::shared_ptr<View> back);
 	bool addItem(std::string item);
-	bool addView(std::shared_ptr<View> view);
-	bool setPosition(std::tuple<float, float> postion);
+	bool setPosition(std::tuple<float, float> position);
 	bool setSize(std::tuple<float, float> size);
 };
 

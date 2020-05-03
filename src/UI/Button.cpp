@@ -65,10 +65,6 @@ std::shared_ptr<Back> Button::getBack() {
 	return nullptr;
 }
 
-std::vector<std::shared_ptr<View> > Button::getViews() {
-	return _views;
-}
-
 ButtonFactory::ButtonFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 	_backFactory = std::make_shared<BackFactory>(activeScene);
@@ -79,5 +75,6 @@ std::shared_ptr<View> ButtonFactory::createView(std::string name, std::shared_pt
 	std::shared_ptr<Button> button = std::make_shared<Button>();
 	button->setBack(_backFactory->createView());
 	button->setLabel(_labelFactory->createView());
+	button->setParent(parent);
 	return button;
 }

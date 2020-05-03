@@ -12,13 +12,13 @@ ExpressionOperation::ExpressionOperation() {
 		{ "<",		{ 1, "left" } },
 		{ "=",		{ 1, "left" } },
 		{ "CLICK",  { 1, "left" } },
-		{ "AT",     { 1, "left" } },
 		{ "+",		{ 2, "left" } }, 
 		{ "-",		{ 2, "left" } },
 		{ "/",		{ 3, "left" } },
 		{ "*",		{ 3, "left" } },
 		{ "^",		{ 4, "right"} },
-		{ "SIZE",   { 5, "left" } }
+		{ "SIZE",   { 5, "left" } },
+		{ "AT",     { 5, "left" } }
 	};
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
@@ -90,9 +90,9 @@ bool ExpressionOperation::checkOperation() {
 			std::tuple<std::string, bool> operandString[2] = { {"", false}, {"", false} };
 			for (int i = 0; i < 2; i++) {
 				if (operandConst[i]) {
-					if (operandType[0] == VariableType::varFloat)
+					if (operandType[i] == VariableType::varFloat)
 						operandFloat[i] = { stof(std::get<1>(operandTuple[i])), true };
-					else if (operandType[0] == VariableType::varString)
+					else if (operandType[i] == VariableType::varString)
 						operandString[i] = { std::get<1>(operandTuple[i]), true };
 				}
 				else if (operandType[i] == VariableType::varFloatVector) {

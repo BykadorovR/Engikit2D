@@ -57,5 +57,6 @@ std::shared_ptr<View> BackFactory::createView(std::string name, std::shared_ptr<
 	back->setEntity(_activeScene->createEntity());
 	back->getEntity()->createComponent<ObjectComponent>();
 	back->getEntity()->createComponent<TextureComponent>();
+	back->setParent(parent);
 	return back;
 }

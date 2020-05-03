@@ -56,14 +56,14 @@ bool List::initialize() {
 		mapText->addArgument(getBack()->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
 		mapText->addArgument(nullptr, std::to_string(i - 1));
 		mapText->addArgument(getBack()->getEntity()->getComponent<CustomFloatComponent>(), "page");
-		mapText->initializeOperation("SIZE ${0} > ${1} + ${2}");
+		mapText->initializeOperation("${1} + ${2} < SIZE ${0}");
 		getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
 		auto setLine = std::make_shared<AssignAction>();
 		setLine->addArgument(_views[i]->getEntity()->getComponent<TextComponent>(), "text");
 		setLine->addArgument(getBack()->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
 		setLine->addArgument(getBack()->getEntity()->getComponent<CustomFloatComponent>(), "page");
 		setLine->addArgument(nullptr, std::to_string(i - 1));
-		setLine->initializeAction("${0} SET ${1} AT ${2} + ${3}");
+		setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");
 		mapText->registerAction(setLine);
 	}
 	
@@ -86,16 +86,6 @@ bool List::setBack(std::shared_ptr<View> back) {
 	return false;
 }
 
-bool List::addView(std::shared_ptr<View> view) {
-	_views.push_back(view);
-	return false;
-}
-
-//assume that back is always on top
-std::vector<std::shared_ptr<View> > List::getViews() {
-	return std::vector<std::shared_ptr<View> >(_views.begin() + 1, _views.end());
-}
-
 ListFactory::ListFactory(std::shared_ptr<Scene> activeScene, std::shared_ptr<ViewFactory> itemFactory) {
 	_activeScene = activeScene;
 	_itemFactory = itemFactory;
@@ -112,6 +102,6 @@ std::shared_ptr<View> ListFactory::createView(std::string name, std::shared_ptr<
 	for (int i = 0; i < listItems; i++) {
 		list->addView(_itemFactory->createView());
 	}
-	
+	list->setParent(parent);
 	return list;
 }

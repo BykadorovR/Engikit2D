@@ -9,7 +9,6 @@
 
 class Button : public View {
 private:
-	std::vector<std::shared_ptr<View> > _views;
 	std::shared_ptr<ExpressionOperation> _clickInside;
 public:
 	Button(std::string name = "Button");
@@ -21,7 +20,6 @@ public:
 	bool setBack(std::shared_ptr<View> back);
 	std::shared_ptr<Label> getLabel();
 	std::shared_ptr<Back> getBack();
-	std::vector<std::shared_ptr<View> > getViews();
 };
 	
 class ButtonFactory : public ViewFactory {

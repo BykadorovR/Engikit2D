@@ -3,14 +3,10 @@
 #include "View.h"
 
 class ScrollerDecorator : public View {
-private:
-	std::shared_ptr<View> _parent;
-	std::vector<std::shared_ptr<View> > _views;
 public:
-	ScrollerDecorator(std::string name = "ScrollerDecorator", std::shared_ptr<View> parent = nullptr);
+	ScrollerDecorator(std::string name = "ScrollerDecorator");
 	bool initialize();
 
-	std::vector<std::shared_ptr<View> > getViews();
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
 	bool setScrollerDown(std::shared_ptr<View> scrollerDown);
 	bool setScrollerProgress(std::shared_ptr<View> scrollerProgress);
