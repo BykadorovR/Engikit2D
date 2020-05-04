@@ -26,11 +26,21 @@ void MouseSystem::mouseClickDownLeft(int x, int y) {
 	_needUpdate = { true, true };
 }
 
+//need to check if any entity
+bool showComponents(std::shared_ptr<Entity> entity) {
+	auto objectComponent = entity->getComponent<MouseComponent>();
+	auto mouseComponent = entity->getComponent<MouseComponent>();
+
+}
+
 void MouseSystem::update(InteractionType type) {
 	if (std::get<0>(_needUpdate) || std::get<1>(_needUpdate)) {
 		for (auto entity : _entityManager->getEntities()) {
 			if (std::get<1>(entity) == EntityState::ENTITY_UNREGISTERED)
 				continue;
+
+			if (_editorMode)
+				showComponents(std::get<0>(entity));
 
 			auto interactionComponent = std::get<0>(entity)->getComponent<InteractionComponent>();
 			auto mouseComponent = std::get<0>(entity)->getComponent<MouseComponent>();
