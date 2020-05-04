@@ -135,6 +135,10 @@ std::wstring Word::getText() {
 	return text;
 }
 
+int Word::getSize() {
+	return _text.size();
+}
+
 int Word::getWidth() {
 	int size = 0;
 	for (auto symbol : _text) {
@@ -240,6 +244,14 @@ int Line::getBearingYMax() {
 	return size;
 }
 
+int Line::getSize() {
+	int size = 0;
+	for (auto word : _text) {
+		size += word.getSize();
+	}
+	return size;
+}
+
 std::vector<Word>& Line::getText() {
 	return _text;
 }
@@ -250,6 +262,7 @@ TextComponent::TextComponent() {
 	_lineHeight = 0;
 	_totalPages = 1;
 	_editable = 0;
+	_prevTextSize = 0;
 
 	_classVariablesFloat =
 	{
@@ -259,7 +272,8 @@ TextComponent::TextComponent() {
 		{"lineHeight", &_lineHeight},
 		{"spacingCoeff", &_lineSpacingCoeff},
 		{"scale", &_scale},
-		{"editable", &_editable}
+		{"editable", &_editable},
+		{"allignBearingYMax", &_allignBearingYMax}
 	};
 	
 	_classVariablesString =
@@ -298,6 +312,14 @@ std::string TextComponent::getText() {
 	return _text;
 }
 
+int TextComponent::getPrevTextSize() {
+	return _prevTextSize;
+}
+bool TextComponent::setPrevTextSize(int size) {
+	_prevTextSize = size;
+	return false;
+}
+
 bool TextComponent::setScale(float scale) {
 	_scale = scale;
 	return false;
@@ -305,6 +327,15 @@ bool TextComponent::setScale(float scale) {
 
 float TextComponent::getScale() {
 	return _scale;
+}
+
+bool TextComponent::setLines(std::vector<Line> lines) {
+	_lines = lines;
+	return false;
+}
+
+std::vector<Line> TextComponent::getLines() {
+	return _lines;
 }
 
 bool TextComponent::setPageNumber(int page) {

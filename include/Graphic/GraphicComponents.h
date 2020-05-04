@@ -72,6 +72,7 @@ class Word {
 public:
 	Word();
 	std::wstring getText();
+	int getSize();
 	int getWidth();
 	int getHeight();
 	//bearingMax - bearingCurrent + height so we get size of char on screen with bearing padding
@@ -95,6 +96,7 @@ public:
 	int getHeightAdjusted(int bearingYMax);
 	int getBearingYMin();
 	int getBearingYMax();
+	int getSize();
 	std::vector<Word>& getText();
 private:
 	std::vector<Word> _text;
@@ -109,8 +111,12 @@ public:
 	bool getFocus();
 	std::string getText();
 	bool setText(std::string text);
+	int getPrevTextSize();
+	bool setPrevTextSize(int size);
 	bool setScale(float scale);
 	float getScale();
+	bool setLines(std::vector<Line> lines);
+	std::vector<Line> getLines();
 	bool setColor(std::vector<float> color);
 	std::vector<float> getColor();
 	bool setPageNumber(int page);
@@ -128,7 +134,10 @@ private:
 	float _totalPages;
 	float _lineHeight;
 	std::string _text;
+	int _prevTextSize;
+	std::vector<Line> _lines;
 	float _scale;
+	float _allignBearingYMax;
 	float _lineSpacingCoeff;
 	std::vector<float> _color;
 	std::shared_ptr<BufferManager> _bufferManager;
