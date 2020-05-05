@@ -28,24 +28,8 @@ void MouseSystem::mouseClickDownLeft(int x, int y) {
 
 //need to check if any entity
 bool showComponents(std::shared_ptr<Entity> entity) {
-	auto objectComponent = entity->getComponent<ObjectComponent>();
+	auto objectComponent = entity->getComponent<MouseComponent>();
 	auto mouseComponent = entity->getComponent<MouseComponent>();
-	if (objectComponent && mouseComponent) {
-		std::tuple<float, float> positionStart = objectComponent->getPosition();
-		std::tuple<float, float> positionEnd = { std::get<0>(positionStart) + std::get<0>(objectComponent->getSize()),
-												 std::get<1>(positionStart) + std::get<1>(objectComponent->getSize()) };
-
-		float objectWidth = std::get<0>(objectComponent->getSize());
-		float objectHeight = std::get<1>(objectComponent->getSize());
-		std::tuple<float, float> clickPosition = { *std::get<0>(mouseComponent->getMemberFloat("leftClickX")), 
-							   *std::get<0>(mouseComponent->getMemberFloat("leftClickY")) };
-		if (std::get<0>(clickPosition) > std::get<0>(positionStart) &&
-			std::get<0>(clickPosition) < std::get<0>(positionStart) + objectWidth &&
-			std::get<1>(clickPosition) > std::get<1>(positionStart) &&
-			std::get<1>(clickPosition) < std::get<1>(positionStart) + objectHeight) {
-				
-		}
-	}
 
 }
 
