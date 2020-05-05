@@ -67,6 +67,7 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 
 //TODO: Need to split text to words and lines only once! at init
 void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
+	std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 	std::tuple<TextAllignment, TextAllignment> textAllignment = textObject->getAllignment();
 	std::tuple<float, float> positionStart = vertexObject->getPosition();
 	std::tuple<float, float> positionEnd = { std::get<0>(vertexObject->getPosition()) + std::get<0>(vertexObject->getSize()),
@@ -187,8 +188,13 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 
 		if (lines.size() <= textObject->getPageNumber())
 			return;
+
+		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::high_resolution_clock::now() - startTime).count();
+		OUT_STREAM("Text preparation: " + std::to_string(elapsed) + " ms\n");
 	}
 
+	startTime = std::chrono::high_resolution_clock::now();
 	//calculate allignment
 	float heightAllign = 0;
 	if (std::get<1>(textAllignment) == TextAllignment::CENTER)
@@ -230,6 +236,9 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 				break;
 			}
 		}
+	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+	std::chrono::high_resolution_clock::now() - startTime).count();
+	OUT_STREAM("Text render: " + std::to_string(elapsed) + " ms\n");
 }
 
 // Called every game update
