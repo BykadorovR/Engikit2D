@@ -11,10 +11,11 @@ public:
 	bool addItem(std::string item);
 	bool setPosition(std::tuple<float, float> position);
 	bool setSize(std::tuple<float, float> size);
+	bool clear();
 };
 
 class ListFactory : public ViewFactory {
-private:
+protected:
 	std::shared_ptr<Scene> _activeScene;
 	std::shared_ptr<ViewFactory> _itemFactory;
 public:

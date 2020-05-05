@@ -5,6 +5,7 @@ class CustomStringArrayComponent : public OperationComponent {
 public:
 	CustomStringArrayComponent();
 	bool addCustomValue(std::string value, std::string name);
+	bool clear(std::string name);
 private:
 	//should be extended to map or vector of vectors
 	std::map<std::string, std::vector<std::string> > _strings;

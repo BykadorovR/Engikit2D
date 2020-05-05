@@ -1,7 +1,7 @@
 #include "InteractionComponents.h"
 
 InteractionComponent::InteractionComponent() {
-
+	_componentName = "InteractionComponent";
 }
 
 void InteractionComponent::attachOperation(std::shared_ptr<Operation> operation, InteractionType type) {

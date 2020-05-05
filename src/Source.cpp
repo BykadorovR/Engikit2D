@@ -16,6 +16,7 @@
 #include "TextureManager.h"
 #include "GlyphsLoader.h"
 #include "Common.h"
+#include "UIActions.h"
 
 #include "Back.h"
 #include "Label.h"
@@ -48,9 +49,10 @@ void surfaceCreated() {
 	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf",
 		std::make_tuple<int, int>(static_cast<int>(*(L"А")),
 			static_cast<int>(*(L"я"))));
-	GlyphsLoader::instance().bufferSymbols(24);
+	//TODO: some glitches with small size
+	//TODO: issue with text label decorator wrong auto scroll down in case of small symbol size
+	GlyphsLoader::instance().bufferSymbols(15);
 
-	//TODO: shaders should be global
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
 	{
@@ -59,21 +61,37 @@ void surfaceCreated() {
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
 		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
 		list->initialize();
-		list->addItem("test1");
-		list->addItem("test2");
-		list->addItem("test3");
-		list->addItem("test4");
-		list->addItem("test5");
-		list->setSize({ 100, 100 });
-		list->setPosition({ 400, 100 });
+		list->setSize({ 130, 110 });
+		list->setPosition({ 500, 50 });
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
 		scrollerDecoratorList->initialize();
+
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
 		label->setSize({ 100, 100 });
 		label->setText("Hello");
 		label->setEditable(true);
+
+		auto printComponentsOperation = std::make_shared<ExpressionOperation>();
+		printComponentsOperation->addArgument(label->getEntity());
+		printComponentsOperation->initializeOperation("CLICK #{0}");
+		auto printComponentsAction = std::make_shared<PrintComponentsAction>();
+		printComponentsAction->setList(list);
+		printComponentsAction->setEntity(label->getEntity());
+		printComponentsOperation->registerAction(printComponentsAction);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(printComponentsOperation, InteractionType::MOUSE_START);
+		
+		auto clearComponentsOperation = std::make_shared<ExpressionOperation>();
+		clearComponentsOperation->addArgument(label->getEntity());
+		clearComponentsOperation->addArgument(list);
+		clearComponentsOperation->addArgument(scrollerDecoratorList);
+		clearComponentsOperation->initializeOperation("! ( CLICK #{0} ) AND ! ( CLICK %{0} ) AND ! ( CLICK %{1} )");
+		auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
+		clearComponentsAction->setList(list);
+		clearComponentsAction->setEntity(label->getEntity());
+		clearComponentsOperation->registerAction(clearComponentsAction);
+		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(clearComponentsOperation, InteractionType::MOUSE_START);
 
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorLabel = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
 		scrollerDecoratorLabel->initialize();
@@ -110,6 +128,7 @@ void surfaceCreated() {
 		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
+		
 	}
 
 	stateSystem = std::make_shared<StateSystem>();

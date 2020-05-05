@@ -60,6 +60,39 @@ bool Expression::arithmeticOperationString(std::vector<std::tuple<std::shared_pt
 	return false;
 }
 
+bool Expression::viewOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::shared_ptr<View> view, std::string operation) {
+	if (operation == "CLICK") {
+		bool anyClick = false;
+		for (auto view : view->getViews()) {
+			auto entity = view->getEntity();
+			if (!std::get<0>(entity->getComponent<ObjectComponent>()->getMemberFloat("visible"))) {
+				continue;
+			}
+			auto mouseComponent = entity->getComponent<MouseComponent>();
+			auto objectComponent = entity->getComponent<ObjectComponent>();
+			if (mouseComponent && objectComponent) {
+				float x = std::get<0>(objectComponent->getPosition());
+				float y = std::get<1>(objectComponent->getPosition());
+				float width = std::get<0>(objectComponent->getSize());
+				float height = std::get<1>(objectComponent->getSize());
+				auto clickX = mouseComponent->getMemberFloat("leftClickX");
+				auto clickY = mouseComponent->getMemberFloat("leftClickY");
+				if (!std::get<1>(clickX) || !std::get<1>(clickY))
+					continue;
+				if (*std::get<0>(clickX) > x && *std::get<0>(clickX) < x + width && *std::get<0>(clickY) > y && *std::get<0>(clickY) < y + height) {
+					anyClick = true;
+					break;
+				}
+			}
+		}
+		intermediate.push_back({ nullptr, std::to_string(anyClick), -1 });
+	}
+	else {
+		return true;
+	}
+	return false;
+}
+
 bool Expression::entityOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::shared_ptr<Entity> entity, std::string operation) {
 	if (operation == "CLICK") {
 		auto mouseComponent = entity->getComponent<MouseComponent>();

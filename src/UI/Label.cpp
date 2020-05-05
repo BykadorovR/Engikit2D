@@ -6,6 +6,7 @@
 #include "UserInputComponents.h"
 #include "InteractionActions.h"
 #include "InteractionComponents.h"
+#include "UIActions.h"
 
 Label::Label(std::string name = "Label") {
 	_viewName = name;
@@ -24,7 +25,7 @@ bool Label::initialize() {
 
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
-	
+
 	//--- 1
 	auto changeText = std::make_shared<ExpressionOperation>();
 	changeText->addArgument(_entity->getComponent<TextComponent>(), "focus");

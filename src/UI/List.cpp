@@ -38,19 +38,26 @@ bool List::addItem(std::string text) {
 	return false;
 }
 
+bool List::clear() {
+	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->clear("list");
+	for (int i = 0; i < _views.size(); i++)
+		_views[i]->getEntity()->getComponent<TextComponent>()->setText("");
+	return false;
+}
+
 //views and items are different thigs. Views - labels, items - string (text)
 bool List::initialize() {
 	_views[0]->getEntity()->getComponent<CustomFloatComponent>()->addCustomValue(0, "page");
 	for (int i = 0; i < _views.size(); i++) {
 		_views[i]->initialize();
-		_views[i]->getEntity()->getComponent<TextComponent>()->setAllignment({TextAllignment::CENTER, TextAllignment::CENTER});
+		//TODO: Refactor the whole TextComponent. Allignment works incorrectly!
+		//_views[i]->getEntity()->getComponent<TextComponent>()->setAllignment({TextAllignment::CENTER, TextAllignment::CENTER});
 		auto mapText = std::make_shared<ExpressionOperation>();
 		//NOTE: we send list without index only because we use SIZE
 		mapText->addArgument(_views[0]->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
 		mapText->addArgument(nullptr, std::to_string(i));
 		mapText->addArgument(_views[0]->getEntity()->getComponent<CustomFloatComponent>(), "page");
 		mapText->initializeOperation("${1} + ${2} < SIZE ${0}");
-		_views[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
 		auto setLine = std::make_shared<AssignAction>();
 		setLine->addArgument(_views[i]->getEntity()->getComponent<TextComponent>(), "text");
 		setLine->addArgument(_views[0]->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
@@ -58,6 +65,7 @@ bool List::initialize() {
 		setLine->addArgument(nullptr, std::to_string(i));
 		setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");
 		mapText->registerAction(setLine);
+		_views[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
 	}
 	
 	return false;
@@ -71,8 +79,9 @@ ListFactory::ListFactory(std::shared_ptr<Scene> activeScene, std::shared_ptr<Vie
 std::shared_ptr<View> ListFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<List> list = std::make_shared<List>(name);
 	list->setParent(parent);
-	for (int i = 0; i < 3; i++) {
-		list->addView(_itemFactory->createView("Label", list));
+
+	for (int i = 0; i < 4; i++) {
+		list->addView(_itemFactory->createView("Item"+std::to_string(i), list));
 	}
 	list->getViews()[0]->getEntity()->createComponent<CustomStringArrayComponent>();
 	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>();

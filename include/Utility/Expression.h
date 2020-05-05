@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "Entity.h"
+#include "View.h"
 
 class Expression {
 	std::string _condition;
@@ -13,6 +14,7 @@ public:
 
 	bool prepareExpression(std::vector<std::string>& postfix);
 	bool entityOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::shared_ptr<Entity> entity, std::string operation);
+	bool viewOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::shared_ptr<View> view, std::string operation);
 	bool arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, float operand[2], std::string operation);
 	bool arithmeticOperationString(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::string operand[2], std::string operation);
 };

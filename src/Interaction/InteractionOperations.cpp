@@ -11,6 +11,7 @@ ExpressionOperation::ExpressionOperation() {
 		{ ">",		{ 1, "left" } }, // 2 ^ 2 ^ 3 - have to be processed from right to left
 		{ "<",		{ 1, "left" } },
 		{ "=",		{ 1, "left" } },
+		{ "!",      { 1, "left" } },
 		{ "CLICK",  { 1, "left" } },
 		{ "+",		{ 2, "left" } }, 
 		{ "-",		{ 2, "left" } },
@@ -33,6 +34,11 @@ bool ExpressionOperation::addArgument(std::shared_ptr<Entity> entity) {
 	return false;
 }
 
+bool ExpressionOperation::addArgument(std::shared_ptr<View> view) {
+	_views.push_back(view);
+	return false;
+}
+
 bool ExpressionOperation::initializeOperation(std::string condition) {
 	_expression->setCondition(condition);
 	return _expression->prepareExpression(_postfix);
@@ -41,11 +47,16 @@ bool ExpressionOperation::initializeOperation(std::string condition) {
 bool ExpressionOperation::checkOperation() {
 	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > intermediate;
 	std::vector<std::shared_ptr<Entity> > intermediateEntities;
+	std::vector<std::shared_ptr<View> > intermediateViews;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
 			if (intermediateEntities.size() > 0 && !_expression->entityOperation(intermediate, intermediateEntities.back(), *word)) {
 				intermediateEntities.pop_back();
+				continue;
+			}
+			if (intermediateViews.size() > 0 && !_expression->viewOperation(intermediate, intermediateViews.back(), *word)) {
+				intermediateViews.pop_back();
 				continue;
 			}
 			//operations with only 1 argument
@@ -65,6 +76,16 @@ bool ExpressionOperation::checkOperation() {
 				}
 				else if (vectorType == VariableType::varUnknown) {
 					intermediate.push_back({ nullptr, std::to_string(0), -1 });
+				}
+				continue;
+			}
+			if (*word == "!") {
+				auto operand = intermediate.back();
+				intermediate.pop_back();
+				//it's constant, and ! supports only constants
+				if (std::get<0>(operand) == nullptr) {
+					if (isNumber(std::get<1>(operand)))
+						intermediate.push_back({ nullptr, std::to_string(!stof(std::get<1>(operand))), -1 });
 				}
 				continue;
 			}
@@ -148,27 +169,33 @@ bool ExpressionOperation::checkOperation() {
 		//word (token) is operand
 		else {
 			// Extraction of a sub-match
-			const std::regex varIndexRegex("\\$\\{(\\d+)\\}");
+			std::regex varIndexRegex("\\$\\{(\\d+)\\}");
 			std::smatch match;
 			if (std::regex_search(*word, match, varIndexRegex)) {
 				std::string varIndex = match[1].str();
 				std::shared_ptr<OperationComponent> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
 				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
 				intermediate.push_back({ object, varName, -1 });
+				continue;
 			}
-			else {
-				//find entity
-				const std::regex varIndexRegex("\\#\\{(\\d+)\\}");
-				std::smatch match;
-				if (std::regex_search(*word, match, varIndexRegex)) {
-					std::string entityIndex = match[1].str();
-					std::shared_ptr<Entity> currentEntity = _entities[atoi(entityIndex.c_str())];
-					intermediateEntities.push_back(currentEntity);
-				}
-				else {
-					intermediate.push_back({ nullptr, *word, -1 });
-				}
+			//find entity
+			varIndexRegex = std::regex("\\#\\{(\\d+)\\}");
+			if (std::regex_search(*word, match, varIndexRegex)) {
+				std::string entityIndex = match[1].str();
+				std::shared_ptr<Entity> currentEntity = _entities[atoi(entityIndex.c_str())];
+				intermediateEntities.push_back(currentEntity);
+				continue;
 			}
+			//find view
+			varIndexRegex = std::regex("\\%\\{(\\d+)\\}");
+			if (std::regex_search(*word, match, varIndexRegex)) {
+				std::string entityIndex = match[1].str();
+				std::shared_ptr<View> currentView = _views[atoi(entityIndex.c_str())];
+				intermediateViews.push_back(currentView);
+				continue;
+			}
+			
+			intermediate.push_back({ nullptr, *word, -1 });
 		}
 	}
 	

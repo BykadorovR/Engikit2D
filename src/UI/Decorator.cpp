@@ -52,6 +52,7 @@ bool ScrollerDecorator::initialize() {
 	getScrollerProgress()->setSize(scrollerProgressSize);
 	getScrollerProgress()->setColorMask({0, 0, 0, 0});
 	getScrollerProgress()->setColorAddition({ 0.5, 0.5, 0, 1 });
+	getScrollerProgress()->getEntity()->createComponent<MouseComponent>();
 	getScrollerProgress()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerUp()->initialize();
@@ -204,11 +205,11 @@ bool ScrollerDecorator::initialize() {
 		registerDecoratorAction->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "visible");
 		registerDecoratorAction->initializeAction("${0} SET 1");
 		decoratorAddCheck->registerAction(registerDecoratorAction);
-		if (_parent->getName() == "List")
-			view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
-		else if (_parent->getName() == "Label")
-			view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_END);
 	}
+	if (_parent->getName() == "List")
+		parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
+	else if (_parent->getName() == "Label")
+		parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_END);
 	//--- 6
 
 	//--- 7

@@ -83,6 +83,8 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	std::wstring text = converter.from_bytes(textObject->getText());
 	int prevTextSize = textObject->getPrevTextSize();
 	bool lastWordEqual = true;
+	if (text.size() == 0 && textObject->getLines().size() > 0)
+		lastWordEqual = false;
 	if (text.size() > 0 && prevTextSize != text.size())
 		lastWordEqual = false;
 	else if (text.size() > 0 && prevTextSize == text.size()) {

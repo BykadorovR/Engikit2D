@@ -11,9 +11,11 @@ void InteractionSystem::update(InteractionType type) {
 		if (interactionObjects) {
 			std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > operations = interactionObjects->getOperations();
 			for (auto operation : operations) {
-				if (std::get<1>(operation) == type && std::get<0>(operation)->checkOperation()) {
-					for (auto action : std::get<0>(operation)->getActions()) {
-						action->doAction();
+				if (std::get<1>(operation) == type) {
+					if (std::get<0>(operation)->checkOperation()) {
+						for (auto action : std::get<0>(operation)->getActions()) {
+							action->doAction();
+						}
 					}
 				}
 			}
@@ -27,6 +29,7 @@ void StateSystem::update(InteractionType type) {
 		auto objectComponent = std::get<0>(entity)->getComponent<ObjectComponent>();
 		if (objectComponent) {
 			//if not visible and registered
+			//if entity isn't registered it can be registered via other entity
 			bool value = *std::get<0>(objectComponent->getMemberFloat("visible"));
 			if (value == false && std::get<1>(entity) == EntityState::ENTITY_REGISTERED) {
 				_entityManager->unregisterEntity(std::get<0>(entity));

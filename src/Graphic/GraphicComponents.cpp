@@ -280,6 +280,8 @@ TextComponent::TextComponent() {
 	{
 		{"text", &_text}
 	};
+
+	_componentName = "TextComponent";
 	
 }
 

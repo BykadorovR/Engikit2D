@@ -3,6 +3,7 @@
 #include "Operation.h"
 #include <algorithm>
 #include "Entity.h"
+#include "View.h"
 
 //TODO: merge common part with arguments with action
 class ExpressionOperation : public Operation {
@@ -13,10 +14,12 @@ private:
 	std::map<std::string, std::tuple<int, std::string> > _supportedOperations;
 	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string> > _arguments;
 	std::vector<std::shared_ptr<Entity> > _entities;
+	std::vector<std::shared_ptr<View> > _views;
 public:
 	ExpressionOperation();
 	bool addArgument(std::shared_ptr<OperationComponent> argument, std::string name);
 	bool addArgument(std::shared_ptr<Entity> entity);
+	bool addArgument(std::shared_ptr<View> view);
 	
 	bool initializeOperation(std::string condition);
 	bool checkOperation();

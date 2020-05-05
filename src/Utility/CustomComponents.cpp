@@ -21,6 +21,14 @@ bool CustomStringArrayComponent::addCustomValue(std::string value, std::string n
 	return false;
 }
 
+bool CustomStringArrayComponent::clear(std::string name) {
+	//we have to check if _string is empty otherwise it will create record in _strings with "name" name but
+	//won't bind it with _classVariablesVectorString as did in addCustomValue
+	if (_strings.find(name) != _strings.end())
+		_strings[name].clear();
+	return false;
+}
+
 CustomFloatComponent::CustomFloatComponent() {
 	_componentName = "CustomFloatComponent";
 }
