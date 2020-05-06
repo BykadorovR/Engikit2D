@@ -49,6 +49,7 @@ public:
 	void addComponent(std::shared_ptr<Component> concreteComponent);
 	void clearAllComponents();
 
+	std::shared_ptr<Component> getComponent(std::string name);
 	std::vector<std::shared_ptr<Component> > getComponents();
 
 private:

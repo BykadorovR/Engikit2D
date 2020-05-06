@@ -35,6 +35,7 @@ public:
 	virtual bool setMember(std::string name, std::string value, int index = -1);
 
 	VariableType getVariableType(std::string name);
+	std::vector<std::string> getItemsNames();
 
 	std::tuple<float*, bool> getMemberFloat(std::string name);
 	std::tuple<std::string*, bool> getMemberString(std::string name);

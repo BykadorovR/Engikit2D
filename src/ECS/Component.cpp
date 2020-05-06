@@ -12,6 +12,23 @@ OperationComponent::OperationComponent() {
 	_componentName = "Component";
 }
 
+std::vector<std::string> OperationComponent::getItemsNames() {
+	std::vector<std::string> names;
+	for (auto it = _classVariablesFloat.begin(); it != _classVariablesFloat.end(); ++it) {
+		names.push_back(it->first);
+	}
+	for (auto it = _classVariablesString.begin(); it != _classVariablesString.end(); ++it) {
+		names.push_back(it->first);
+	}
+	for (auto it = _classVariablesVectorString.begin(); it != _classVariablesVectorString.end(); ++it) {
+		names.push_back(it->first);
+	}
+	for (auto it = _classVariablesVectorFloat.begin(); it != _classVariablesVectorFloat.end(); ++it) {
+		names.push_back(it->first);
+	}
+	return names;
+}
+
 std::tuple<float*, bool> OperationComponent::getMemberFloat(std::string name) {
 	float* value = nullptr;
 	bool correctness = false;

@@ -34,3 +34,12 @@ void Entity::clearAllComponents() {
 std::vector<std::shared_ptr<Component> > Entity::getComponents() {
 	return _components;
 }
+
+std::shared_ptr<Component> Entity::getComponent(std::string name) {
+	for (auto component : _components) {
+		if (component->getName() == name)
+			return component;
+	}
+
+	return nullptr;
+}
