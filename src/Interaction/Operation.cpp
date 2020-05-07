@@ -2,6 +2,14 @@
 #include "Entity.h"
 #include <algorithm>
 
+Operation::Operation(std::string name) {
+	_name = name;
+}
+
+std::string Operation::getName() {
+	return _name;
+}
+
 Operation::~Operation() {
 
 }

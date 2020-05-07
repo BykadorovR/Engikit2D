@@ -7,7 +7,8 @@ AssignAction::AssignAction() {
 	_actionName = "AssignAction";
 	_supportedOperations =
 	{
-		{ "SET", { 0, "left" } },
+		{ "AND", { 0, "left" } },
+		{ "SET", { 1, "left" } },
 		{ "+",   { 2, "left" } },
 		{ "-",   { 2, "left" } },
 		{ "/",   { 3, "left" } },
@@ -118,11 +119,22 @@ bool AssignAction::doAction() {
 					//push vector with correct index, index can only be float
 					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]) });
 			} else if (*word == "SET") {
-				if (std::get<1>(operandFloat[0]))
-					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]), std::get<2>(operandTuple[1]));
-				else if (std::get<1>(operandString[0])) {
-					std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandString[0]), std::get<2>(operandTuple[1]));
+				//issues with accessing wrong members due to wrong operand's classification can happen
+				//so need to check if member exist first
+				if (std::get<1>(operandFloat[0])) {
+					//TODO: remove this piece of shit with hardcoding
+					if (std::get<1>(operandTuple[1]) == "text")
+						std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::to_string((int)std::get<0>(operandFloat[0])), std::get<2>(operandTuple[1]));
+					else
+						std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]), std::get<2>(operandTuple[1]));
 				}
+				else if (std::get<1>(operandString[0])) {
+					if (std::get<1>(operandTuple[0]) == "text")
+						std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), stof(std::get<0>(operandString[0])), std::get<2>(operandTuple[1]));
+					else
+						std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandString[0]), std::get<2>(operandTuple[1]));
+				}
+				intermediate.push_back({ nullptr, "1", -1 });
 			} else {
 				if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
 					float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };

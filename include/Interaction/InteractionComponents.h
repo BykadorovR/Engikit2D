@@ -17,6 +17,7 @@ private:
 public:
 	InteractionComponent();
 	std::tuple<float, bool> getMember(std::string name);
-	void attachOperation(std::shared_ptr<Operation> operation, InteractionType type);
+	bool attachOperation(std::shared_ptr<Operation> operation, InteractionType type);
 	std::vector<std::tuple<std::shared_ptr<Operation>, InteractionType> > getOperations();
+	bool clearOperations(std::string name);
 };

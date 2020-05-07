@@ -53,13 +53,8 @@ bool Label::initialize() {
 
 	//--- 3
 	auto clickOutside = std::make_shared<ExpressionOperation>();
-	clickOutside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickX");
-	clickOutside->addArgument(_entity->getComponent<MouseComponent>(), "leftClickY");
-	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "positionX");
-	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "positionY");
-	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeX");
-	clickOutside->addArgument(_entity->getComponent<ObjectComponent>(), "sizeY");
-	clickOutside->initializeOperation("${0} < ${2} OR ${0} > ${2} + ${4} OR ${1} < ${3} OR ${1} > ${3} + ${5}");
+	clickOutside->addArgument(_entity);
+	clickOutside->initializeOperation("! ( CLICK #{0} )");
 	auto changeFocusOff = std::make_shared<AssignAction>();
 	changeFocusOff->addArgument(_entity->getComponent<TextComponent>(), "focus");
 	changeFocusOff->initializeAction("${0} SET 0");

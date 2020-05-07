@@ -57,7 +57,8 @@ bool List::initialize() {
 		mapText->addArgument(_views[0]->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
 		mapText->addArgument(nullptr, std::to_string(i));
 		mapText->addArgument(_views[0]->getEntity()->getComponent<CustomFloatComponent>(), "page");
-		mapText->initializeOperation("${1} + ${2} < SIZE ${0}");
+		mapText->addArgument(_views[i]->getEntity()->getComponent<TextComponent>(), "focus");
+		mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
 		auto setLine = std::make_shared<AssignAction>();
 		setLine->addArgument(_views[i]->getEntity()->getComponent<TextComponent>(), "text");
 		setLine->addArgument(_views[0]->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
@@ -65,6 +66,7 @@ bool List::initialize() {
 		setLine->addArgument(nullptr, std::to_string(i));
 		setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");
 		mapText->registerAction(setLine);
+		//TODO: add common ONCE + mouse/keyboard
 		_views[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
 	}
 	

@@ -16,7 +16,7 @@ private:
 	std::vector<std::shared_ptr<Entity> > _entities;
 	std::vector<std::shared_ptr<View> > _views;
 public:
-	ExpressionOperation();
+	ExpressionOperation(std::string name = "ExpressionOperation");
 	bool addArgument(std::shared_ptr<OperationComponent> argument, std::string name);
 	bool addArgument(std::shared_ptr<Entity> entity);
 	bool addArgument(std::shared_ptr<View> view);

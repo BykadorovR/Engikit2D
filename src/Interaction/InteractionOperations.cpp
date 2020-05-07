@@ -3,7 +3,8 @@
 #include <assert.h>
 #include "Common.h"
 
-ExpressionOperation::ExpressionOperation() {
+ExpressionOperation::ExpressionOperation(std::string name) {
+	_name = name;
 	_supportedOperations =
 	{
 		{ "AND",	{ 0, "left" } }, //last argument - the order sequence of the same operations should be executed in.
@@ -12,7 +13,7 @@ ExpressionOperation::ExpressionOperation() {
 		{ "<",		{ 1, "left" } },
 		{ "=",		{ 1, "left" } },
 		{ "!",      { 1, "left" } },
-		{ "CLICK",  { 1, "left" } },
+		{ "CLICK",  { 2, "left" } },
 		{ "+",		{ 2, "left" } }, 
 		{ "-",		{ 2, "left" } },
 		{ "/",		{ 3, "left" } },
@@ -156,12 +157,17 @@ bool ExpressionOperation::checkOperation() {
 					//push vector with correct index, index can only be float
 					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]) });
 			} else {
+				//TODO: if operands are different
 				if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
 					float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
 					_expression->arithmeticOperationFloat(intermediate, operand, *word);
 				}
 				else if (std::get<1>(operandString[0]) && std::get<1>(operandString[1])) {
 					std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
+					_expression->arithmeticOperationString(intermediate, operand, *word);
+				}
+				else {
+					std::string operand[2] = { std::to_string((int)std::get<0>(operandFloat[0])), std::get<0>(operandString[1]) };
 					_expression->arithmeticOperationString(intermediate, operand, *word);
 				}
 			}
