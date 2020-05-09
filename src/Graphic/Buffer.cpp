@@ -52,9 +52,9 @@ BufferType Buffer::getType() {
 
 bool Buffer::change(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
 	float width = std::get<0>(sizeTarget),
-		height = std::get<1>(sizeTarget);
+		  height = std::get<1>(sizeTarget);
 	float x = std::get<0>(position),
-		y = std::get<1>(position);
+		  y = std::get<1>(position);
 	float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
 	float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
 	float startX = (float)x / (float)std::get<0>(sizeOverall);

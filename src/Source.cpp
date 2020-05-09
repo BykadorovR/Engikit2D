@@ -51,11 +51,22 @@ void surfaceCreated() {
 			static_cast<int>(*(L"я"))));
 	//TODO: some glitches with small size
 	//TODO: issue with text label decorator wrong auto scroll down in case of small symbol size
-	GlyphsLoader::instance().bufferSymbols(15);
+	GlyphsLoader::instance().bufferSymbols(13);
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
 	{
+		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
+		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
+		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
+		list->initialize();
+		list->addItem("Test");
+		list->addItem("Test");
+		list->addItem("Test");
+		list->addItem("Test");
+		list->setSize({ 130, 110 });
+		list->setPosition({ 500, 50 });
+		/*
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
@@ -128,7 +139,7 @@ void surfaceCreated() {
 		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
-		
+		*/
 	}
 
 	stateSystem = std::make_shared<StateSystem>();

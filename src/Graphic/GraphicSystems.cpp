@@ -29,6 +29,7 @@ void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) 
 void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float allignBearingY, std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
 	int xAllign = 0;
 	float startX = std::get<0>(wordPosition);
+	//float startY = std::round(std::get<1>(wordPosition));
 	float startY = std::get<1>(wordPosition);
 	for (auto c = word.begin(); c != word.end(); c++) {
 		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
