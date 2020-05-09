@@ -73,6 +73,9 @@ void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
 
 			auto keyboardComponent = std::get<0>(entity)->getComponent<KeyboardComponent>();
 			if (keyboardComponent) {
+				//replace symbol with code
+				keyboardComponent->setMember("symbol", "");
+				keyboardComponent->setMember("code", key);
 				switch (key) {
 				case GLFW_KEY_BACKSPACE:
 					auto textComponent = std::get<0>(entity)->getComponent<TextComponent>();
@@ -92,6 +95,7 @@ void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
 				}
 			}
 		}
+		_needUpdate = { true, true };
 	}
 }
 

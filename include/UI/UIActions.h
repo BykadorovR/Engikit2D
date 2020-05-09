@@ -38,3 +38,16 @@ public:
 	bool setComponent(std::shared_ptr<TextComponent> component);
 	bool setEntity(std::shared_ptr<Entity> entity);
 };
+
+class ApplyItemAction : public Action {
+private:
+	std::shared_ptr<OperationComponent> _component;
+	int _viewIndex;
+	std::shared_ptr<List> _list;
+public:
+	ApplyItemAction();
+	bool doAction();
+	bool setList(std::shared_ptr<List> view);
+	bool setComponent(std::shared_ptr<OperationComponent> component);
+	bool setViewIndex(int viewIndex);
+};

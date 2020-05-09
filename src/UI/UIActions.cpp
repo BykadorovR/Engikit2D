@@ -4,6 +4,9 @@
 #include "InteractionComponents.h"
 #include "InteractionActions.h"
 #include "UserInputComponents.h"
+#include "CustomComponents.h"
+
+#include <GLFW/glfw3.h>
 
 PrintComponentsAction::PrintComponentsAction() {
 	_actionName = "PrintComponentsAction";
@@ -70,38 +73,40 @@ bool PrintItemsAction::doAction() {
 	for (auto item : component->getItemsNames()) {
 		_list->addItem(item);
 	}
+	//create custom component with all names?
+	//_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text, "list");
 
-	for (auto view : _list->getViews()) {
-		view->getEntity()->getComponent<InteractionComponent>()->clearOperations("PrintItems");
-		view->getEntity()->getComponent<TextComponent>()->setMember("focus", 0);
+	auto listViews = _list->getViews();
+	for (int i = 0; i < listViews.size(); i++) {
+		listViews[i]->getEntity()->getComponent<InteractionComponent>()->clearOperations("PrintItems");
+		listViews[i]->getEntity()->getComponent<TextComponent>()->setMember("focus", 0);
 		auto setEditable = std::make_shared<ExpressionOperation>("PrintItems");
-		setEditable->addArgument(view->getEntity());
+		setEditable->addArgument(listViews[i]->getEntity());
 		//TODO: if view isn't composite need to check entity instead of view
 		setEditable->initializeOperation("CLICK #{0}");
 		auto setEditableAction = std::make_shared<AssignAction>();
-		setEditableAction->addArgument(view->getEntity()->getComponent<TextComponent>(), "editable");
+		setEditableAction->addArgument(listViews[i]->getEntity()->getComponent<TextComponent>(), "editable");
 		setEditableAction->initializeAction("${0} SET 1");
 		setEditable->registerAction(setEditableAction);
 		auto resetTextAction = std::make_shared<AssignAction>();
-		resetTextAction->addArgument(view->getEntity()->getComponent<TextComponent>(), "text");
+		resetTextAction->addArgument(listViews[i]->getEntity()->getComponent<TextComponent>(), "text");
 		resetTextAction->initializeAction("${0} SET ");
 		setEditable->registerAction(resetTextAction);
-		_list->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(setEditable, InteractionType::MOUSE_START);
+		listViews[i]->getEntity()->createComponent<InteractionComponent>()->attachOperation(setEditable, InteractionType::MOUSE_START);
 
+		//TODO: if view isn't composite need to check entity instead of view
+		auto changeField = std::make_shared<ExpressionOperation>("PrintItems");
+		changeField->addArgument(listViews[i]->getEntity()->getComponent<KeyboardComponent>(), "code");
+		changeField->addArgument(nullptr, std::to_string(GLFW_KEY_ENTER));
+		changeField->addArgument(listViews[i]->getEntity()->getComponent<TextComponent>(), "focus");
+		changeField->initializeOperation("${0} = ${1} AND ${2} = 1");
+		auto changeFieldAction = std::make_shared<ApplyItemAction>();
+		changeFieldAction->setComponent(component);
+		changeFieldAction->setViewIndex(i);
+		changeFieldAction->setList(_list);
+		changeField->registerAction(changeFieldAction);
+		listViews[i]->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeField, InteractionType::KEYBOARD_END);
 	}
-	//TODO: if view isn't composite need to check entity instead of view
-	auto changeField = std::make_shared<ExpressionOperation>("PrintItems");
-	changeField->addArgument(_list->getViews()[0]->getEntity()->getComponent<KeyboardComponent>(), "symbol");
-	changeField->initializeOperation("${0} = 4");
-	auto changeFieldAction = std::make_shared<AssignAction>();
-	//need to find field from component which is assigned for this view
-	//need to understand index of string in list array
-	changeFieldAction->addArgument(component, "positionX");
-	changeFieldAction->addArgument(_list->getViews()[0]->getEntity()->getComponent<TextComponent>(), "text");
-	changeFieldAction->addArgument(_list->getViews()[0]->getEntity()->getComponent<KeyboardComponent>(), "symbol");
-	changeFieldAction->initializeAction("${0} SET ${1} AND ${2} SET ");
-	changeField->registerAction(changeFieldAction);
-	_list->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeField, InteractionType::COMMON_END);
 	return false;
 }
 
@@ -117,5 +122,33 @@ bool PrintItemsAction::setComponent(std::shared_ptr<TextComponent> component) {
 
 bool PrintItemsAction::setEntity(std::shared_ptr<Entity> entity) {
 	_entity = entity;
+	return false;
+}
+
+
+ApplyItemAction::ApplyItemAction() {
+	_actionName = "ApplyItemAction";
+}
+
+bool ApplyItemAction::doAction() {
+	int currentPage = *std::get<0>(_list->getViews()[0]->getEntity()->getComponent<CustomFloatComponent>()->getMemberFloat("page"));
+	int componentNameIndex = currentPage + _viewIndex;
+	auto componentNames = _component->getItemsNames();
+	_component->setMember(componentNames[componentNameIndex], stof(_list->getViews()[_viewIndex]->getEntity()->getComponent<TextComponent>()->getText()));
+	return false;
+}
+
+bool ApplyItemAction::setList(std::shared_ptr<List> list) {
+	_list = list;
+	return false;
+}
+
+bool ApplyItemAction::setComponent(std::shared_ptr<OperationComponent> component) {
+	_component = component;
+	return false;
+}
+
+bool ApplyItemAction::setViewIndex(int viewIndex) {
+	_viewIndex = viewIndex;
 	return false;
 }

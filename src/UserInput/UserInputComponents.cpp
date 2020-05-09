@@ -13,6 +13,10 @@ MouseComponent::MouseComponent() {
 
 KeyboardComponent::KeyboardComponent() {
 	_componentName = "KeyboardComponent";
+	_classVariablesFloat = 
+	{
+		{"code", &_code}
+	};
 	_classVariablesString = 
 	{
 		{"symbol", &_symbol}

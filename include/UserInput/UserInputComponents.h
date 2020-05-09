@@ -14,4 +14,5 @@ public:
 	KeyboardComponent();
 private:
 	std::string _symbol = "";
+	float _code;
 };
