@@ -87,7 +87,6 @@ bool ScrollerDecorator::initialize() {
 		textOutOfBoundsDown->registerAction(changePageDown);
 		getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(textOutOfBoundsDown, InteractionType::KEYBOARD_END);
 		//--- 1
-
 		//--- 2
 		auto textOutOfBoundsUp = std::make_shared<ExpressionOperation>();
 		textOutOfBoundsUp->addArgument(parentEntity->getComponent<TextComponent>(), "page");

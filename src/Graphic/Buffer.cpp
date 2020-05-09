@@ -11,10 +11,12 @@ Buffer::Buffer(BufferType type) {
 Let's assume for now that 1 object = 1 buffer, so no impl for N objects = 1 buffer;
 */
 bool Buffer::create(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
-	float width = std::get<0>(sizeTarget),
-		  height = std::get<1>(sizeTarget);
-	float x = std::get<0>(position),
-		  y = std::get<1>(position);
+	//using int because coords and size should be in "pixels" which are int
+	//if use float, some visual glitches can appear
+	int width = std::get<0>(sizeTarget),
+		height = std::get<1>(sizeTarget);
+	int x = std::get<0>(position),
+		y = std::get<1>(position);
 	float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
 	float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
 	float startX = (float)x / (float)std::get<0>(sizeOverall);
@@ -51,10 +53,12 @@ BufferType Buffer::getType() {
 }
 
 bool Buffer::change(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
-	float width = std::get<0>(sizeTarget),
-		  height = std::get<1>(sizeTarget);
-	float x = std::get<0>(position),
-		  y = std::get<1>(position);
+	//using int because coords and size should be in "pixels" which are int
+	//if use float, some visual glitches can appear
+	int width = std::get<0>(sizeTarget),
+		height = std::get<1>(sizeTarget);
+	int x = std::get<0>(position),
+		y = std::get<1>(position);
 	float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
 	float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
 	float startX = (float)x / (float)std::get<0>(sizeOverall);

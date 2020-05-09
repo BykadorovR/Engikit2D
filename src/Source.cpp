@@ -56,16 +56,18 @@ void surfaceCreated() {
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
 	{
+		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
-		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
-		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
-		list->initialize();
-		list->addItem("Test");
-		list->addItem("Test");
-		list->addItem("Test");
-		list->addItem("Test");
-		list->setSize({ 130, 110 });
-		list->setPosition({ 500, 50 });
+		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
+		label->initialize();
+		label->setPosition({ 50, 50 });
+		label->setSize({ 100, 100 });
+		label->setText("Hello");
+		label->setEditable(true);
+
+		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
+		scrollerDecoratorList->initialize();
+
 		/*
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
@@ -74,6 +76,7 @@ void surfaceCreated() {
 		list->initialize();
 		list->setSize({ 130, 110 });
 		list->setPosition({ 500, 50 });
+		//TODO: attach decorator position to parent position so it moves with parent (or smth like this)
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
 		scrollerDecoratorList->initialize();
 
