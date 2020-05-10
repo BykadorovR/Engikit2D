@@ -242,7 +242,6 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 		}
 	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
 	std::chrono::high_resolution_clock::now() - startTime).count();
-	OUT_STREAM("Text render: " + std::to_string(elapsed) + " ms\n");
 }
 
 // Called every game update

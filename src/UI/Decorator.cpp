@@ -13,6 +13,7 @@ ScrollerDecorator::ScrollerDecorator(std::string name) {
 
 /*
 List of operation-actions:
+0) keep decorator's position to parent entity
 1) if "text out of bounds down" (typing) then "scroll text down"
 2) if "text out of bounds up" (removing) then "scroll text up"
 3) if "click to scroller up" then "scroll text up"
@@ -48,7 +49,6 @@ bool ScrollerDecorator::initialize() {
 	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
 
 	getScrollerProgress()->initialize();
-	getScrollerProgress()->setPosition(scrollerProgressPosition);
 	getScrollerProgress()->setSize(scrollerProgressSize);
 	getScrollerProgress()->setColorMask({0, 0, 0, 0});
 	getScrollerProgress()->setColorAddition({ 0.5, 0.5, 0, 1 });
@@ -56,7 +56,6 @@ bool ScrollerDecorator::initialize() {
 	getScrollerProgress()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerUp()->initialize();
-	getScrollerUp()->setPosition(scrollerUpPosition);
 	getScrollerUp()->setSize(scrollerSize);
 	getScrollerUp()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerUp()->setColorAddition({ 1, 0, 0.5, 1 });
@@ -64,13 +63,52 @@ bool ScrollerDecorator::initialize() {
 	getScrollerUp()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerDown()->initialize();
-	getScrollerDown()->setPosition(scrollerDownPosition);
 	getScrollerDown()->setSize(scrollerSize);
 	getScrollerDown()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerDown()->setColorAddition({ 0, 1, 1, 1 });
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
 
+	//--- 0 //TODO: need to make some more smart condition
+	auto keepPosition = std::make_shared<ExpressionOperation>();
+	keepPosition->initializeOperation("1");
+	auto keepPositionUp = std::make_shared<AssignAction>();
+	keepPositionUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+	keepPositionUp->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");
+	keepPositionUp->addArgument(parentEntity->getComponent<ObjectComponent>(), "positionX");
+	keepPositionUp->addArgument(parentEntity->getComponent<ObjectComponent>(), "positionY");
+	keepPositionUp->addArgument(parentEntity->getComponent<ObjectComponent>(), "sizeX");
+	keepPositionUp->addArgument(parentEntity->getComponent<ObjectComponent>(), "sizeY");
+	keepPositionUp->initializeAction("${0} SET ${2} + ${4} AND ${1} SET ${3}");
+	keepPosition->registerAction(keepPositionUp);
+	auto keepPositionDown = std::make_shared<AssignAction>();
+	keepPositionDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+	keepPositionDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "positionY");
+	keepPositionDown->addArgument(getScrollerDown()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	if (_parent->getName() == "List") {
+		keepPositionDown->addArgument(_parent->getViews().back()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+		keepPositionDown->addArgument(_parent->getViews().back()->getEntity()->getComponent<ObjectComponent>(), "positionY");
+		keepPositionDown->addArgument(_parent->getViews().back()->getEntity()->getComponent<ObjectComponent>(), "sizeX");
+		keepPositionDown->addArgument(_parent->getViews().back()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	}
+	else if (_parent->getName() == "Label") {
+		keepPositionDown->addArgument(parentEntity->getComponent<ObjectComponent>(), "positionX");
+		keepPositionDown->addArgument(parentEntity->getComponent<ObjectComponent>(), "positionY");
+		keepPositionDown->addArgument(parentEntity->getComponent<ObjectComponent>(), "sizeX");
+		keepPositionDown->addArgument(parentEntity->getComponent<ObjectComponent>(), "sizeY");
+	}
+	keepPositionDown->initializeAction("${0} SET ${3} + ${5} AND ${1} SET ${4} + ${6} - ${2}");
+	keepPosition->registerAction(keepPositionDown);
+	auto keepPositionScroller = std::make_shared<AssignAction>();
+	keepPositionScroller->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+	keepPositionScroller->addArgument(getScrollerProgress()->getEntity()->getComponent<ObjectComponent>(), "positionY");
+	keepPositionScroller->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionX");
+	keepPositionScroller->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "positionY");
+	keepPositionScroller->addArgument(getScrollerUp()->getEntity()->getComponent<ObjectComponent>(), "sizeY");
+	keepPositionScroller->initializeAction("${0} SET ${2} AND ${1} SET ${3} + ${4}");
+	keepPosition->registerAction(keepPositionScroller);
+	getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
+	//--- 0
 	if (_parent->getName() == "Label") {
 		//--- 1
 		auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();

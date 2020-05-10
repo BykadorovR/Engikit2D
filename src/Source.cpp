@@ -37,6 +37,28 @@ std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
 std::shared_ptr<KeyboardSystem> keyboardSystem;
 
+void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerDecorator> decorator) {
+	auto printComponentsOperation = std::make_shared<ExpressionOperation>();
+	printComponentsOperation->addArgument(entity);
+	printComponentsOperation->initializeOperation("CLICK #{0}");
+	auto printComponentsAction = std::make_shared<PrintComponentsAction>();
+	printComponentsAction->setList(list);
+	printComponentsAction->setEntity(entity);
+	printComponentsOperation->registerAction(printComponentsAction);
+	entity->createComponent<InteractionComponent>()->attachOperation(printComponentsOperation, InteractionType::MOUSE_START);
+
+	auto clearComponentsOperation = std::make_shared<ExpressionOperation>();
+	clearComponentsOperation->addArgument(entity);
+	clearComponentsOperation->addArgument(list);
+	clearComponentsOperation->addArgument(decorator);
+	clearComponentsOperation->initializeOperation("! ( CLICK #{0} ) AND ! ( CLICK %{0} ) AND ! ( CLICK %{1} )");
+	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
+	clearComponentsAction->setList(list);
+	clearComponentsAction->setEntity(entity);
+	clearComponentsOperation->registerAction(clearComponentsAction);
+	entity->createComponent<InteractionComponent>()->attachOperation(clearComponentsOperation, InteractionType::MOUSE_START);
+}
+
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
@@ -49,26 +71,11 @@ void surfaceCreated() {
 	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf",
 		std::make_tuple<int, int>(static_cast<int>(*(L"А")),
 			static_cast<int>(*(L"я"))));
-	//TODO: some glitches with small size
-	//TODO: issue with text label decorator wrong auto scroll down in case of small symbol size
-	GlyphsLoader::instance().bufferSymbols(13);
+	GlyphsLoader::instance().bufferSymbols(21);
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
 	{
-		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
-		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
-		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-		label->initialize();
-		label->setPosition({ 50, 50 });
-		label->setSize({ 100, 100 });
-		label->setText("Hello");
-		label->setEditable(true);
-
-		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
-		scrollerDecoratorList->initialize();
-
-		/*
 		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
@@ -76,10 +83,10 @@ void surfaceCreated() {
 		list->initialize();
 		list->setSize({ 130, 110 });
 		list->setPosition({ 500, 50 });
-		//TODO: attach decorator position to parent position so it moves with parent (or smth like this)
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
 		scrollerDecoratorList->initialize();
 
+		/*
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
@@ -87,62 +94,26 @@ void surfaceCreated() {
 		label->setText("Hello");
 		label->setEditable(true);
 
-		auto printComponentsOperation = std::make_shared<ExpressionOperation>();
-		printComponentsOperation->addArgument(label->getEntity());
-		printComponentsOperation->initializeOperation("CLICK #{0}");
-		auto printComponentsAction = std::make_shared<PrintComponentsAction>();
-		printComponentsAction->setList(list);
-		printComponentsAction->setEntity(label->getEntity());
-		printComponentsOperation->registerAction(printComponentsAction);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(printComponentsOperation, InteractionType::MOUSE_START);
-		
-		auto clearComponentsOperation = std::make_shared<ExpressionOperation>();
-		clearComponentsOperation->addArgument(label->getEntity());
-		clearComponentsOperation->addArgument(list);
-		clearComponentsOperation->addArgument(scrollerDecoratorList);
-		clearComponentsOperation->initializeOperation("! ( CLICK #{0} ) AND ! ( CLICK %{0} ) AND ! ( CLICK %{1} )");
-		auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
-		clearComponentsAction->setList(list);
-		clearComponentsAction->setEntity(label->getEntity());
-		clearComponentsOperation->registerAction(clearComponentsAction);
-		label->getEntity()->createComponent<InteractionComponent>()->attachOperation(clearComponentsOperation, InteractionType::MOUSE_START);
-
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorLabel = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
 		scrollerDecoratorLabel->initialize();
+		*/
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		
 		//TODO: rewrite to Back options and LabelOptions
+		//TODO: coordinates of label should depends on coordinates of back
 		button->initialize();
 		button->getBack()->setPosition({ 100, 200 });
 		button->getBack()->setSize({ 100, 100 });
 		button->getLabel()->setPosition({ 100, 200 });
 		button->getLabel()->setSize({ 100, 100 });
 		button->setTexture(textureRaw->getTextureID());
-
-		for (auto view : button->getViews()) {
-			auto changePosition = std::make_shared<AssignAction>();
-			changePosition->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");
-			changePosition->initializeAction("${0} SET ${0} + 10");
-			button->addClickAction(changePosition);
-		}
-
-		auto boundCheck = std::make_shared<ExpressionOperation>();
-		boundCheck->addArgument(button->getBack()->getEntity()->getComponent<ObjectComponent>(), "positionX");
-		boundCheck->initializeOperation("${0} > 350");
-
-		for (auto view : button->getViews()) {
-			auto returnBack = std::make_shared<AssignAction>();
-			returnBack->addArgument(view->getEntity()->getComponent<ObjectComponent>(), "positionX");
-			returnBack->initializeAction("${0} SET 300");
-			boundCheck->registerAction(returnBack);
-		}
-		button->getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(boundCheck, InteractionType::COMMON_START);
-
 		button->getLabel()->setPageNumber(0);
 		button->getLabel()->setLineSpacingCoeff(0.8);
 		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
-		*/
+
+		attachShowComponents(button->getBack()->getEntity(), list, scrollerDecoratorList);
+		attachShowComponents(button->getLabel()->getEntity(), list, scrollerDecoratorList);
 	}
 
 	stateSystem = std::make_shared<StateSystem>();
@@ -206,6 +177,8 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 		return -1;
 	}
+	//disable VSync
+	glfwSwapInterval(0);
 
 	glfwSetMouseButtonCallback(mainWindow, mousePressed);
 	glfwSetKeyCallback(mainWindow, keyboardPress);
@@ -213,11 +186,10 @@ int main(int argc, char **argv) {
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	surfaceCreated();
 	while (!glfwWindowShouldClose(mainWindow)) {
-		// OpenGL API calls go here...
 		std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+		// OpenGL API calls go here...
 		drawFrame();
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();
