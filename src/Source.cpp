@@ -38,6 +38,17 @@ std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
 std::shared_ptr<KeyboardSystem> keyboardSystem;
 
+void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerDecorator> decorator) {
+	auto printOperation = std::make_shared<ExpressionOperation>();
+	printOperation->addArgument(entity);
+	printOperation->initializeOperation("CLICK #{0}");
+	auto printAction = std::make_shared<PrintOperationsAction>();
+	printAction->setList(list);
+	printAction->setEntity(entity);
+	printOperation->registerAction(printAction);
+	entity->createComponent<InteractionComponent>()->attachOperation(printOperation, InteractionType::MOUSE_START);
+}
+
 void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerDecorator> decorator) {
 	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue(-1, "currentEntity");
 	list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->initializeEmpty("registeredEntities");
@@ -75,7 +86,7 @@ void surfaceCreated() {
 	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf",
 		std::make_tuple<int, int>(static_cast<int>(*(L"А")),
 			static_cast<int>(*(L"я"))));
-	GlyphsLoader::instance().bufferSymbols(21);
+	GlyphsLoader::instance().bufferSymbols(15);
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
@@ -89,6 +100,13 @@ void surfaceCreated() {
 		list->setPosition({ 500, 50 });
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
 		scrollerDecoratorList->initialize();
+
+		std::shared_ptr<List> listOperations = std::dynamic_pointer_cast<List>(listFactory->createView());
+		listOperations->initialize();
+		listOperations->setSize({ 130, 110 });
+		listOperations->setPosition({ 500, 170 });
+		std::shared_ptr<ScrollerDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", listOperations));
+		scrollerDecoratorListOperations->initialize();
 
 		/*
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
@@ -118,6 +136,8 @@ void surfaceCreated() {
 
 		attachShowComponents(button->getBack()->getEntity(), list, scrollerDecoratorList);
 		attachShowComponents(button->getLabel()->getEntity(), list, scrollerDecoratorList);
+
+		attachShowOperations(button->getBack()->getEntity(), listOperations, scrollerDecoratorListOperations);
 	}
 
 	stateSystem = std::make_shared<StateSystem>();

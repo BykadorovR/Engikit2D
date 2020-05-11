@@ -8,6 +8,30 @@
 
 #include <GLFW/glfw3.h>
 
+PrintOperationsAction::PrintOperationsAction() {
+	_actionName = "PrintOperationsAction";
+}
+bool PrintOperationsAction::doAction() {
+	_list->clear();
+
+	for (auto operation : _entity->getComponent<InteractionComponent>()->getOperations()) {
+		_list->addItem(std::get<0>(operation)->getName());
+	}
+
+	return false;
+}
+
+bool PrintOperationsAction::setList(std::shared_ptr<List> list) {
+	_list = list;
+	return false;
+}
+
+bool PrintOperationsAction::setEntity(std::shared_ptr<Entity> entity) {
+	_entity = entity;
+	return false;
+}
+
+
 PrintComponentsAction::PrintComponentsAction() {
 	_actionName = "PrintComponentsAction";
 }

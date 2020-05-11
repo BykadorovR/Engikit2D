@@ -4,6 +4,17 @@
 #include "List.h"
 #include "GraphicComponents.h"
 
+class PrintOperationsAction : public Action {
+private:
+	std::shared_ptr<Entity> _entity;
+	std::shared_ptr<List> _list;
+public:
+	PrintOperationsAction();
+	bool doAction();
+	bool setList(std::shared_ptr<List> list);
+	bool setEntity(std::shared_ptr<Entity> entity);
+};
+
 class PrintComponentsAction : public Action {
 private:
 	std::shared_ptr<Entity> _entity;
