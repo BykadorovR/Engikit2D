@@ -13,6 +13,23 @@ PrintComponentsAction::PrintComponentsAction() {
 }
 
 bool PrintComponentsAction::doAction() {
+	//should be like a critical section
+	if (*std::get<0>(_list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->getMemberFloat("currentEntity")) == -1) {
+		_list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue(_entity->getIndex(), "currentEntity");
+	}
+	else {
+		auto registeredEntities = std::get<0>(_list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->getMemberVectorFloat("registeredEntities"));
+		auto item = std::find((*registeredEntities).begin(), (*registeredEntities).end(), _entity->getIndex());
+		if (item != (*registeredEntities).end()) {
+			_list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue(_entity->getIndex(), "currentEntity");
+			registeredEntities->erase(item);
+		}
+		else {
+			registeredEntities->push_back(_entity->getIndex());
+			return true;
+		}
+	}
+	
 	_list->clear();
 
 	for (auto component : _entity->getComponents()) {
@@ -49,7 +66,10 @@ ClearComponentsAction::ClearComponentsAction() {
 	_actionName = "ClearComponentsAction";
 }
 bool ClearComponentsAction::doAction() {
-	_list->clear();
+	//clear should work only for entity which triggered add so no any other entity can clear
+	if (*std::get<0>(_list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->getMemberFloat("currentEntity")) ==
+		_entity->getIndex())
+		_list->clear();
 	return false;
 }
 bool ClearComponentsAction::setList(std::shared_ptr<List> list) {

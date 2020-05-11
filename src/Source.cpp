@@ -29,6 +29,7 @@
 #include "UserInputSystems.h"
 #include "Decorator.h"
 #include "List.h"
+#include "CustomComponents.h"
 
 std::shared_ptr<Scene> activeScene;
 std::shared_ptr<StateSystem> stateSystem;
@@ -38,6 +39,9 @@ std::shared_ptr<MouseSystem> mouseSystem;
 std::shared_ptr<KeyboardSystem> keyboardSystem;
 
 void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerDecorator> decorator) {
+	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue(-1, "currentEntity");
+	list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->initializeEmpty("registeredEntities");
+
 	auto printComponentsOperation = std::make_shared<ExpressionOperation>();
 	printComponentsOperation->addArgument(entity);
 	printComponentsOperation->initializeOperation("CLICK #{0}");
