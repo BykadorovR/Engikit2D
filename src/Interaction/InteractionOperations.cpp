@@ -51,13 +51,21 @@ bool ExpressionOperation::checkOperation() {
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
-			if (intermediateEntities.size() > 0 && !_expression->entityOperation(intermediate, intermediateEntities.back(), *word)) {
-				intermediateEntities.pop_back();
-				continue;
+			if (intermediateEntities.size() > 0) {
+				auto result = _expression->oneArgumentOperation(intermediateEntities.back(), *word);
+				if (std::get<1>(result)) {
+					intermediate.push_back({ nullptr, std::get<0>(result), -1 });
+					intermediateEntities.pop_back();
+					continue;
+				}
 			}
-			if (intermediateViews.size() > 0 && !_expression->viewOperation(intermediate, intermediateViews.back(), *word)) {
-				intermediateViews.pop_back();
-				continue;
+			if (intermediateViews.size() > 0) {
+				auto result = _expression->oneArgumentOperation(intermediateViews.back(), *word);
+				if (std::get<1>(result)) {
+					intermediate.push_back({ nullptr, std::get<0>(result), -1 });
+					intermediateViews.pop_back();
+					continue;
+				}
 			}
 			//operations with only 1 argument
 			//TODO: move to entity operation section, because it's also operation with 1 argument or maybe merge with entity operation
@@ -159,15 +167,15 @@ bool ExpressionOperation::checkOperation() {
 				//TODO: if operands are different
 				if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
 					float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
-					_expression->arithmeticOperationFloat(intermediate, operand, *word);
+					intermediate.push_back({ nullptr, std::get<0>(_expression->arithmeticOperationFloat(operand, *word)), -1 });
 				}
 				else if (std::get<1>(operandString[0]) && std::get<1>(operandString[1])) {
 					std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
-					_expression->arithmeticOperationString(intermediate, operand, *word);
+					intermediate.push_back({ nullptr, std::get<0>(_expression->arithmeticOperationString(operand, *word)), -1 });
 				}
 				else {
 					std::string operand[2] = { std::to_string((int)std::get<0>(operandFloat[0])), std::get<0>(operandString[1]) };
-					_expression->arithmeticOperationString(intermediate, operand, *word);
+					intermediate.push_back({ nullptr, std::get<0>(_expression->arithmeticOperationString(operand, *word)), -1 });
 				}
 			}
 		}

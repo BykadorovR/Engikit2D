@@ -139,10 +139,14 @@ bool AssignAction::doAction() {
 			} else {
 				if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
 					float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
-					_expression->arithmeticOperationFloat(intermediate, operand, *word);
+					auto result = _expression->arithmeticOperationFloat(operand, *word);
+					if (std::get<1>(result))
+						intermediate.push_back({ nullptr, std::get<0>(result), -1 });
 				} else if (std::get<1>(operandString[0]) && std::get<1>(operandString[1])) {
 					std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
-					_expression->arithmeticOperationString(intermediate, operand, *word);
+					auto result = _expression->arithmeticOperationString(operand, *word);
+					if (std::get<1>(result))
+						intermediate.push_back({ nullptr, std::get<0>(result), -1 });
 				}
 			}
 

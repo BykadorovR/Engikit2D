@@ -13,9 +13,9 @@ public:
 	std::string getCondition();
 
 	bool prepareExpression(std::vector<std::string>& postfix);
-	bool entityOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::shared_ptr<Entity> entity, std::string operation);
-	bool viewOperation(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::shared_ptr<View> view, std::string operation);
-	bool arithmeticOperationFloat(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, float operand[2], std::string operation);
-	bool arithmeticOperationString(std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> >& intermediate, std::string operand[2], std::string operation);
+	std::tuple<std::string, int> arithmeticOperationFloat(float operand[2], std::string operation);
+	std::tuple<std::string, int> arithmeticOperationString(std::string operand[2], std::string operation);
+	std::tuple<std::string, int> oneArgumentOperation(std::shared_ptr<Entity> entity, std::string operation);
+	std::tuple<std::string, int> oneArgumentOperation(std::shared_ptr<View> view, std::string operation);
 };
 
