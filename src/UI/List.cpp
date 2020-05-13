@@ -55,16 +55,16 @@ bool List::initialize() {
 		//_views[i]->getEntity()->getComponent<TextComponent>()->setAllignment({TextAllignment::CENTER, TextAllignment::CENTER});
 		auto mapText = std::make_shared<ExpressionOperation>();
 		//NOTE: we send list without index only because we use SIZE
-		mapText->addArgument(_views[0]->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
-		mapText->addArgument(nullptr, std::to_string(i));
-		mapText->addArgument(_views[0]->getEntity()->getComponent<CustomFloatComponent>(), "page");
-		mapText->addArgument(_views[i]->getEntity()->getComponent<TextComponent>(), "focus");
+		mapText->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list");
+		mapText->addArgument(nullptr, "", std::to_string(i));
+		mapText->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "page");
+		mapText->addArgument(_views[i]->getEntity(), "TextComponent", "focus");
 		mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
 		auto setLine = std::make_shared<AssignAction>();
-		setLine->addArgument(_views[i]->getEntity()->getComponent<TextComponent>(), "text");
-		setLine->addArgument(_views[0]->getEntity()->getComponent<CustomStringArrayComponent>(), "list");
-		setLine->addArgument(_views[0]->getEntity()->getComponent<CustomFloatComponent>(), "page");
-		setLine->addArgument(nullptr, std::to_string(i));
+		setLine->addArgument(_views[i]->getEntity(), "TextComponent", "text");
+		setLine->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list");
+		setLine->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "page");
+		setLine->addArgument(nullptr, "", std::to_string(i));
 		setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");
 		mapText->registerAction(setLine);
 		//TODO: add common ONCE + mouse/keyboard

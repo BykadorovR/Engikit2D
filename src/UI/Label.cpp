@@ -28,12 +28,12 @@ bool Label::initialize() {
 
 	//--- 1
 	auto changeText = std::make_shared<ExpressionOperation>();
-	changeText->addArgument(_entity->getComponent<TextComponent>(), "focus");
-	changeText->addArgument(_entity->getComponent<TextComponent>(), "editable");
+	changeText->addArgument(_entity, "TextComponent", "focus");
+	changeText->addArgument(_entity, "TextComponent", "editable");
 	changeText->initializeOperation("${0} = 1 AND ${1} = 1");
 	auto editText = std::make_shared<AssignAction>();
-	editText->addArgument(_entity->getComponent<KeyboardComponent>(), "symbol");
-	editText->addArgument(_entity->getComponent<TextComponent>(), "text");
+	editText->addArgument(_entity, "KeyboardComponent", "symbol");
+	editText->addArgument(_entity, "TextComponent", "text");
 	editText->initializeAction("${1} SET ${1} + ${0}");
 	changeText->registerAction(editText);
 	_entity->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD_START);
@@ -41,11 +41,11 @@ bool Label::initialize() {
 
 	//--- 2
 	auto clickInside = std::make_shared<ExpressionOperation>();
-	clickInside->addArgument(_entity);
+	clickInside->addArgument(_entity, "", "");
 	//TODO: Add constants support to operations
 	clickInside->initializeOperation("CLICK #{0}");
 	auto changeFocusOn = std::make_shared<AssignAction>();
-	changeFocusOn->addArgument(_entity->getComponent<TextComponent>(), "focus");
+	changeFocusOn->addArgument(_entity, "TextComponent", "focus");
 	changeFocusOn->initializeAction("${0} SET 1");
 	clickInside->registerAction(changeFocusOn);
 	_entity->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE_START);
@@ -53,10 +53,10 @@ bool Label::initialize() {
 
 	//--- 3
 	auto clickOutside = std::make_shared<ExpressionOperation>();
-	clickOutside->addArgument(_entity);
+	clickOutside->addArgument(_entity, "", "");
 	clickOutside->initializeOperation("! ( CLICK #{0} )");
 	auto changeFocusOff = std::make_shared<AssignAction>();
-	changeFocusOff->addArgument(_entity->getComponent<TextComponent>(), "focus");
+	changeFocusOff->addArgument(_entity, "TextComponent", "focus");
 	changeFocusOff->initializeAction("${0} SET 0");
 	clickOutside->registerAction(changeFocusOff);
 	_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE_START);

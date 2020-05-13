@@ -63,7 +63,7 @@ bool PrintComponentsAction::doAction() {
 	for (auto view : _list->getViews()) {
 		view->getEntity()->getComponent<InteractionComponent>()->clearOperations("PrintItems");
 		auto printItemsOperation = std::make_shared<ExpressionOperation>("PrintItems");
-		printItemsOperation->addArgument(view->getEntity());
+		printItemsOperation->addArgument(view->getEntity(), "", "");
 		//TODO: if view isn't composite need to check entity instead of view
 		printItemsOperation->initializeOperation("CLICK #{0}");
 		auto printItemsAction = std::make_shared<PrintItemsAction>();
@@ -125,24 +125,24 @@ bool PrintItemsAction::doAction() {
 		listViews[i]->getEntity()->getComponent<InteractionComponent>()->clearOperations("PrintItems");
 		listViews[i]->getEntity()->getComponent<TextComponent>()->setMember("focus", 0);
 		auto setEditable = std::make_shared<ExpressionOperation>("PrintItems");
-		setEditable->addArgument(listViews[i]->getEntity());
+		setEditable->addArgument(listViews[i]->getEntity(), "", "");
 		//TODO: if view isn't composite need to check entity instead of view
 		setEditable->initializeOperation("CLICK #{0}");
 		auto setEditableAction = std::make_shared<AssignAction>();
-		setEditableAction->addArgument(listViews[i]->getEntity()->getComponent<TextComponent>(), "editable");
+		setEditableAction->addArgument(listViews[i]->getEntity(), "TextComponent", "editable");
 		setEditableAction->initializeAction("${0} SET 1");
 		setEditable->registerAction(setEditableAction);
 		auto resetTextAction = std::make_shared<AssignAction>();
-		resetTextAction->addArgument(listViews[i]->getEntity()->getComponent<TextComponent>(), "text");
+		resetTextAction->addArgument(listViews[i]->getEntity(), "TextComponent", "text");
 		resetTextAction->initializeAction("${0} SET ");
 		setEditable->registerAction(resetTextAction);
 		listViews[i]->getEntity()->createComponent<InteractionComponent>()->attachOperation(setEditable, InteractionType::MOUSE_START);
 
 		//TODO: if view isn't composite need to check entity instead of view
 		auto changeField = std::make_shared<ExpressionOperation>("PrintItems");
-		changeField->addArgument(listViews[i]->getEntity()->getComponent<KeyboardComponent>(), "code");
-		changeField->addArgument(nullptr, std::to_string(GLFW_KEY_ENTER));
-		changeField->addArgument(listViews[i]->getEntity()->getComponent<TextComponent>(), "focus");
+		changeField->addArgument(listViews[i]->getEntity(), "KeyboardComponent", "code");
+		changeField->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+		changeField->addArgument(listViews[i]->getEntity(), "TextComponent", "focus");
 		changeField->initializeOperation("${0} = ${1} AND ${2} = 1");
 		auto changeFieldAction = std::make_shared<ApplyItemAction>();
 		changeFieldAction->setComponent(component);

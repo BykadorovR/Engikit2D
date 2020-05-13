@@ -20,8 +20,9 @@ AssignAction::AssignAction() {
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
 
-bool AssignAction::addArgument(std::shared_ptr<OperationComponent> argument, std::string name) {
-	_arguments.push_back({ argument, name });
+//TODO: separate common parts from operations and actions
+bool AssignAction::addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name) {
+	_arguments.push_back({ entity, component, name });
 	return false;
 }
 
@@ -159,9 +160,13 @@ bool AssignAction::doAction() {
 			std::smatch match;
 			if (std::regex_search(*word, match, varIndexRegex)) {
 				std::string varIndex = match[1].str();
-				std::shared_ptr<OperationComponent> object = std::get<0>(_arguments[atoi(varIndex.c_str())]);
-				std::string varName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
-				intermediate.push_back({ object, varName, -1 });
+				std::shared_ptr<Entity> entity = std::get<0>(_arguments[atoi(varIndex.c_str())]);
+				std::string componentName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
+				std::shared_ptr<OperationComponent> component = nullptr;
+				if (componentName != "")
+					component = std::dynamic_pointer_cast<OperationComponent>(entity->getComponent(componentName));
+				std::string varName = std::get<2>(_arguments[atoi(varIndex.c_str())]);
+				intermediate.push_back({ component, varName, -1 });
 			}
 			else {
 				intermediate.push_back({ nullptr, *word, -1 });
