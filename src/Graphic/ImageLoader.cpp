@@ -37,63 +37,63 @@ int ImageLoader::getImageFromPNG(std::string PNGData) {
 
 int ImageLoader::readAndUpdateInfo(png_structp PNGPtr, png_infop infoPTR) {
 	png_read_info(PNGPtr, infoPTR);
-	png_get_IHDR(PNGPtr, infoPTR, &width, &height, &bitDepth, &colorFormat, NULL, NULL, NULL);
+	png_get_IHDR(PNGPtr, infoPTR, &_width, &_height, &_bitDepth, &_colorFormat, NULL, NULL, NULL);
 
 	// Convert transparency to full alpha
 	if (png_get_valid(PNGPtr, infoPTR, PNG_INFO_tRNS))
 		png_set_tRNS_to_alpha(PNGPtr);
 
 	// Convert grayscale, if needed.
-	if (colorFormat == PNG_COLOR_TYPE_GRAY && bitDepth < 8)
+	if (_colorFormat == PNG_COLOR_TYPE_GRAY && _bitDepth < 8)
 		png_set_expand_gray_1_2_4_to_8(PNGPtr);
 
 	// Convert paletted images, if needed.
-	if (colorFormat == PNG_COLOR_TYPE_PALETTE)
+	if (_colorFormat == PNG_COLOR_TYPE_PALETTE)
 		png_set_palette_to_rgb(PNGPtr);
 
 	// Add alpha channel, if there is none (rationale: GL_RGBA is faster than GL_RGB on many GPUs)
-	if (colorFormat == PNG_COLOR_TYPE_PALETTE || colorFormat == PNG_COLOR_TYPE_RGB)
+	if (_colorFormat == PNG_COLOR_TYPE_PALETTE || _colorFormat == PNG_COLOR_TYPE_RGB)
 		png_set_add_alpha(PNGPtr, 0xFF, PNG_FILLER_AFTER);
 
 	// Ensure 8-bit packing
-	if (bitDepth < 8)
+	if (_bitDepth < 8)
 		png_set_packing(PNGPtr);
-	else if (bitDepth == 16)
+	else if (_bitDepth == 16)
 		png_set_scale_16(PNGPtr);
 
 	png_read_update_info(PNGPtr, infoPTR);
 
 	// Read the new color type after updates have been made.
-	colorFormat = png_get_color_type(PNGPtr, infoPTR);
+	_colorFormat = png_get_color_type(PNGPtr, infoPTR);
 	return 0;
 }
 
 int ImageLoader::readEntirePNGImage(const png_structp PNGPtr, const png_infop infoPTR) {
 	const png_size_t rowSize = png_get_rowbytes(PNGPtr, infoPTR);
-	const int dataLength = rowSize * height;
+	const int dataLength = rowSize * _height;
 	assert(rowSize > 0);
 
 	png_byte* rawImage = new png_byte[dataLength];
 	assert(rawImage != NULL);
 
-	png_byte** rowPtrs = new png_byte*[height];
+	png_byte** rowPtrs = new png_byte*[_height];
 
 	png_uint_32 i;
-	for (i = 0; i < height; i++) {
+	for (i = 0; i < _height; i++) {
 		rowPtrs[i] = &rawImage[i * rowSize];
 	}
 
 	png_read_image(PNGPtr, rowPtrs);
-	data = std::vector<unsigned char>(rawImage, rawImage + dataLength);
+	_data = std::vector<unsigned char>(rawImage, rawImage + dataLength);
 	return 0;
 }
 
 GLenum ImageLoader::getGLColorFormat() {
-	assert(colorFormat == PNG_COLOR_TYPE_GRAY
-		|| colorFormat == PNG_COLOR_TYPE_RGB_ALPHA
-		|| colorFormat == PNG_COLOR_TYPE_GRAY_ALPHA);
+	assert(_colorFormat == PNG_COLOR_TYPE_GRAY
+		|| _colorFormat == PNG_COLOR_TYPE_RGB_ALPHA
+		|| _colorFormat == PNG_COLOR_TYPE_GRAY_ALPHA);
 
-	switch (colorFormat) {
+	switch (_colorFormat) {
 	case PNG_COLOR_TYPE_GRAY:
 		return GL_LUMINANCE;
 	case PNG_COLOR_TYPE_RGB_ALPHA:
@@ -114,13 +114,13 @@ int ImageLoader::loadPNG(const char* relativePath) {
 }
 
 std::tuple<float, float> ImageLoader::getSize() {
-	return { width, height };
+	return { _width, _height };
 }
 
 int ImageLoader::getBitdepth() {
-	return bitDepth;
+	return _bitDepth;
 }
 std::vector<unsigned char> ImageLoader::getData() {
-	return data;
+	return _data;
 }
 

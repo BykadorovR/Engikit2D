@@ -31,9 +31,9 @@ private:
 	int readAndUpdateInfo(png_structp PNGPtr, png_infop infoPTR);
 	int getImageFromPNG(std::string PNGData);
 	int readEntirePNGImage(const png_structp PNGPtr, const png_infop infoPTR);
-	unsigned int width;
-	unsigned int height;
-	int bitDepth;
-	int colorFormat;
-	std::vector<uint8_t> data;
+	unsigned int _width;
+	unsigned int _height;
+	int _bitDepth;
+	int _colorFormat;
+	std::vector<uint8_t> _data;
 };

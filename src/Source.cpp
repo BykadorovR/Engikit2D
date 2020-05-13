@@ -108,7 +108,6 @@ void surfaceCreated() {
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", listOperations));
 		scrollerDecoratorListOperations->initialize();
 
-		/*
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
@@ -118,7 +117,6 @@ void surfaceCreated() {
 
 		std::shared_ptr<ScrollerDecorator> scrollerDecoratorLabel = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
 		scrollerDecoratorLabel->initialize();
-		*/
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		
