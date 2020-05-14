@@ -49,6 +49,7 @@ bool List::clear() {
 //views and items are different thigs. Views - labels, items - string (text)
 bool List::initialize() {
 	_views[0]->getEntity()->getComponent<CustomFloatComponent>()->addCustomValue(0, "page");
+	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->initializeEmpty("list");
 	for (int i = 0; i < _views.size(); i++) {
 		_views[i]->initialize();
 		//TODO: Refactor the whole TextComponent. Allignment works incorrectly!

@@ -38,23 +38,15 @@ bool AssignAction::doAction() {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
 			//operations with only 1 argument
-			//TODO: move to entity operation section, because it's also operation with 1 argument or maybe merge with entity operation
-			if (*word == "SIZE") {
-				//in size we don't care about type
-				auto operand = intermediate.back();
-				intermediate.pop_back();
-				auto vectorType = std::get<0>(operand)->getVariableType(std::get<1>(operand));
-				if (vectorType == VariableType::varFloatVector) {
-					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorFloat(std::get<1>(operand)))->size();
-					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
+			if (intermediate.size() > 0) {
+				auto oneArgumentResult = _expression->oneArgumentOperation(intermediate.back(), *word);
+				if (std::get<1>(oneArgumentResult)) {
+					intermediate.pop_back();
+					intermediate.push_back({ nullptr, std::get<0>(oneArgumentResult), -1 });
+					continue;
 				}
-				else if (vectorType == VariableType::varStringVector) {
-					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorString(std::get<1>(operand)))->size();
-					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
-				}
-				continue;
 			}
-
+			
 			std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2];
 			VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
 			bool operandConst[2] = { false, false };

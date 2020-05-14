@@ -67,35 +67,14 @@ bool ExpressionOperation::checkOperation() {
 					continue;
 				}
 			}
-			//operations with only 1 argument
-			//TODO: move to entity operation section, because it's also operation with 1 argument or maybe merge with entity operation
-			if (*word == "SIZE") {
-				//in size we don't care about type
-				auto operand = intermediate.back();
-				intermediate.pop_back();
-				auto vectorType = std::get<0>(operand)->getVariableType(std::get<1>(operand));
-				if (vectorType == VariableType::varFloatVector) {
-					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorFloat(std::get<1>(operand)))->size();
-					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
+
+			if (intermediate.size() > 0) {
+				auto oneArgumentResult = _expression->oneArgumentOperation(intermediate.back(), *word);
+				if (std::get<1>(oneArgumentResult)) {
+					intermediate.pop_back();
+					intermediate.push_back({ nullptr, std::get<0>(oneArgumentResult), -1 });
+					continue;
 				}
-				else if (vectorType == VariableType::varStringVector) {
-					int vectorSize = std::get<0>(std::get<0>(operand)->getMemberVectorString(std::get<1>(operand)))->size();
-					intermediate.push_back({ nullptr, std::to_string(vectorSize), -1 });
-				}
-				else if (vectorType == VariableType::varUnknown) {
-					intermediate.push_back({ nullptr, std::to_string(0), -1 });
-				}
-				continue;
-			}
-			if (*word == "!") {
-				auto operand = intermediate.back();
-				intermediate.pop_back();
-				//it's constant, and ! supports only constants
-				if (std::get<0>(operand) == nullptr) {
-					if (isNumber(std::get<1>(operand)))
-						intermediate.push_back({ nullptr, std::to_string(!stof(std::get<1>(operand))), -1 });
-				}
-				continue;
 			}
 
 			//arithmetic operations with component's fields
@@ -162,6 +141,7 @@ bool ExpressionOperation::checkOperation() {
 			if (*word == "AT") {
 				if (std::get<1>(operandFloat[0]))
 					//push vector with correct index, index can only be float
+					//keep component and field name, only change index and set it as second argument
 					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]) });
 			} else {
 				//TODO: if operands are different

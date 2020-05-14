@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "UserInputComponents.h"
 #include "GraphicComponents.h"
+#include "Common.h"
 
 Expression::Expression(std::map<std::string, std::tuple<int, std::string> > supportedOperations) {
 	_supportedOperations = supportedOperations;
@@ -114,6 +115,37 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<Vi
 		else
 			result = { std::to_string(false), 1 };
 	} else
+		result = { std::to_string(false), 0 };
+
+	return result;
+}
+
+std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item, std::string operation) {
+	std::tuple<std::string, int> result;
+	if (operation == "SIZE") {
+		auto vectorType = std::get<0>(item)->getVariableType(std::get<1>(item));
+		if (vectorType == VariableType::varFloatVector) {
+			int vectorSize = std::get<0>(std::get<0>(item)->getMemberVectorFloat(std::get<1>(item)))->size();
+			result = { std::to_string(vectorSize), 1 };
+		}
+		else if (vectorType == VariableType::varStringVector) {
+			int vectorSize = std::get<0>(std::get<0>(item)->getMemberVectorString(std::get<1>(item)))->size();
+			result = { std::to_string(vectorSize), 1 };
+		}
+		else if (vectorType == VariableType::varUnknown) {
+			result = { std::to_string(false), 0 };
+		}
+	}
+	else if (operation == "!") {
+		if (std::get<0>(item) == nullptr) {
+			if (isNumber(std::get<1>(item)))
+				result = { std::to_string(!stof(std::get<1>(item))), 1 };
+		}
+		else {
+			result = { std::to_string(false), 0 };
+		}
+	}
+	else
 		result = { std::to_string(false), 0 };
 
 	return result;

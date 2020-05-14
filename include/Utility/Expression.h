@@ -17,5 +17,6 @@ public:
 	std::tuple<std::string, int> arithmeticOperationString(std::string operand[2], std::string operation);
 	std::tuple<std::string, int> oneArgumentOperation(std::shared_ptr<Entity> entity, std::string operation);
 	std::tuple<std::string, int> oneArgumentOperation(std::shared_ptr<View> view, std::string operation);
+	std::tuple<std::string, int> oneArgumentOperation(std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item, std::string operation);
 };
 
