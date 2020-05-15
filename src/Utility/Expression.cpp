@@ -151,6 +151,131 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 	return result;
 }
 
+std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item1, std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item2, std::string operation) {
+	std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> result;
+	//item1 - second argument, item2 - first argument
+	std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2] = {item1, item2};
+	VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
+	bool operandConst[2] = { false, false };
+
+	for (int i = 0; i < 2; i++) {
+		if (std::get<0>(operandTuple[i]) == nullptr) {
+			operandConst[i] = true;
+			if (isNumber(std::get<1>(operandTuple[i])))
+				operandType[i] = VariableType::varFloat;
+			else
+				operandType[i] = VariableType::varString;
+		}
+		else {
+			operandType[i] = std::get<0>(operandTuple[i])->getVariableType(std::get<1>(operandTuple[i]));
+		}
+	}
+
+	std::tuple<float, bool> operandFloat[2] = { {0, false}, {0, false} };
+	std::tuple<std::string, bool> operandString[2] = { {"", false}, {"", false} };
+	for (int i = 0; i < 2; i++) {
+		if (operandConst[i]) {
+			if (operandType[i] == VariableType::varFloat)
+				operandFloat[i] = { stof(std::get<1>(operandTuple[i])), true };
+			else if (operandType[i] == VariableType::varString)
+				operandString[i] = { std::get<1>(operandTuple[i]), true };
+		}
+		else if (operandType[i] == VariableType::varFloatVector) {
+			auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorFloat(std::get<1>(operandTuple[i]));
+			if (std::get<1>(operandValue))
+				operandFloat[i] = { std::get<0>(operandValue)->at(std::get<2>(operandTuple[i])), true };
+			else
+				result = {nullptr, std::to_string(false), 0, 0};
+		}
+		else if (operandType[i] == VariableType::varStringVector) {
+			auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorString(std::get<1>(operandTuple[i]));
+			if (std::get<1>(operandValue)) {
+				int index = std::get<2>(operandTuple[i]);
+				if (index >= 0)
+					operandString[i] = { std::get<0>(operandValue)->at(index), true };
+			}
+			else
+				result = { nullptr, std::to_string(false), 0, 0 };
+		}
+		else if (operandType[i] == VariableType::varFloat) {
+			auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
+			if (std::get<1>(operandValue))
+				operandFloat[i] = { *std::get<0>(operandValue), true };
+			else
+				result = { nullptr, std::to_string(false), 0, 0 };
+		}
+		else if (operandType[i] == VariableType::varString) {
+			auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
+			if (std::get<1>(operandValue))
+				operandString[i] = { *std::get<0>(operandValue), true };
+			else
+				result = { nullptr, std::to_string(false), 0, 0 };
+		}
+	}
+
+	if (operation == "AT") {
+		//for AT second argument should be float
+		if (std::get<1>(operandFloat[0])) {
+			//push vector with correct index, index can only be float
+			//keep component and field name, only change index and set it as second argument
+			result = { std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]), 1 };
+		} else 
+			result = { nullptr, std::to_string(false), 0, 0 };
+	}
+	else if (operation == "SET") {
+		//issues with accessing wrong members due to wrong operand's classification can happen
+		//so need to check if member exist first
+
+		//if second operand is float:
+		//  if first operand is string so we need convert second operand to string
+		//if second operand is string:
+		//  if first operand is float so we need convert second operand to float
+		if (std::get<1>(operandFloat[0])) {
+			if (std::get<1>(operandString[1]))
+				std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::to_string((int)std::get<0>(operandFloat[0])), std::get<2>(operandTuple[1]));
+			else
+				std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]), std::get<2>(operandTuple[1]));
+		}
+		else if (std::get<1>(operandString[0])) {
+			if (std::get<1>(operandFloat[1]))
+				std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), stof(std::get<0>(operandString[0])), std::get<2>(operandTuple[1]));
+			else
+				std::get<0>(operandTuple[1])->setMember(std::get<1>(operandTuple[1]), std::get<0>(operandString[0]), std::get<2>(operandTuple[1]));
+		}
+		result = { nullptr, "1", -1, 1 };
+	}
+	else {
+		//TODO: if operands are different
+		if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
+			float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
+			auto arithmeticResult = arithmeticOperationFloat(operand, operation);
+			if (std::get<1>(arithmeticResult))
+				result = { nullptr, std::get<0>(arithmeticResult), -1, 1 };
+			else
+				assert("Not defined arithmetic operation");
+		}
+		else if (std::get<1>(operandString[0]) && std::get<1>(operandString[1])) {
+			std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
+			auto arithmeticResult = arithmeticOperationString(operand, operation);
+			if (std::get<1>(arithmeticResult))
+				result = { nullptr, std::get<0>(arithmeticResult), -1, 1 };
+			else
+				assert("Not defined arithmetic operation");
+		}
+		else {
+			OUT_STREAM("WARNING: arithmetic operaton with different argument's type. Casting both to string.\n");
+			std::string operand[2] = { std::to_string((int)std::get<0>(operandFloat[0])), std::get<0>(operandString[1]) };
+			auto arithmeticResult = arithmeticOperationString(operand, operation);
+			if (std::get<1>(arithmeticResult))
+				result = { nullptr, std::get<0>(arithmeticResult), -1, 1 };
+			else
+				assert("Not defined arithmetic operation");
+		}
+	}
+
+	return result;
+}
+
 bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 	//first we need to convert condition to postfix form
 	//Shunting-yard algorithm

@@ -77,87 +77,16 @@ bool ExpressionOperation::checkOperation() {
 				}
 			}
 
-			//arithmetic operations with component's fields
-			std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2];
-			VariableType operandType[2] = {VariableType::varUnknown, VariableType::varUnknown};
-			bool operandConst[2] = {false, false};
-
-			for (int i = 0; i < 2; i++) {
-				operandTuple[i] = intermediate.back();
+			auto twoArgumentResult = _expression->twoArgumentOperation(intermediate[intermediate.size() - 1], intermediate[intermediate.size() - 2], *word);
+			if (std::get<3>(twoArgumentResult)) {
 				intermediate.pop_back();
-				if (std::get<0>(operandTuple[i]) == nullptr) {
-					operandConst[i] = true;
-					if (isNumber(std::get<1>(operandTuple[i])))
-						operandType[i] = VariableType::varFloat;
-					else
-						operandType[i] = VariableType::varString;
-				}
-				else {
-					operandType[i] = std::get<0>(operandTuple[i])->getVariableType(std::get<1>(operandTuple[i]));
-				}
+				intermediate.pop_back();
+				intermediate.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult) });
 			}
-
-			std::tuple<float, bool> operandFloat[2] = { {0, false}, {0, false} };
-			std::tuple<std::string, bool> operandString[2] = { {"", false}, {"", false} };
-			for (int i = 0; i < 2; i++) {
-				if (operandConst[i]) {
-					if (operandType[i] == VariableType::varFloat)
-						operandFloat[i] = { stof(std::get<1>(operandTuple[i])), true };
-					else if (operandType[i] == VariableType::varString)
-						operandString[i] = { std::get<1>(operandTuple[i]), true };
-				}
-				else if (operandType[i] == VariableType::varFloatVector) {
-					auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorFloat(std::get<1>(operandTuple[i]));
-					if (std::get<1>(operandValue))
-						operandFloat[i] = { std::get<0>(operandValue)->at(std::get<2>(operandTuple[i])), true };
-					else
-						return true;
-				}
-				else if (operandType[i] == VariableType::varStringVector) {
-					auto operandValue = std::get<0>(operandTuple[i])->getMemberVectorString(std::get<1>(operandTuple[i]));
-					if (std::get<1>(operandValue)) {
-						int index = std::get<2>(operandTuple[i]);
-						if (index >= 0)
-							operandString[i] = { std::get<0>(operandValue)->at(index), true };
-					}
-					else
-						return true;
-				}
-				else if (operandType[i] == VariableType::varFloat) {
-					auto operandValue = std::get<0>(operandTuple[i])->getMemberFloat(std::get<1>(operandTuple[i]));
-					if (std::get<1>(operandValue))
-						operandFloat[i] = { *std::get<0>(operandValue), true };
-					else
-						return true;
-				}
-				else if (operandType[i] == VariableType::varString) {
-					auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
-					if (std::get<1>(operandValue))
-						operandString[i] = { *std::get<0>(operandValue), true };
-					else
-						return true;
-				}
+			else {
+				assert("Can't find operation");
 			}
-			if (*word == "AT") {
-				if (std::get<1>(operandFloat[0]))
-					//push vector with correct index, index can only be float
-					//keep component and field name, only change index and set it as second argument
-					intermediate.push_back({ std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<0>(operandFloat[0]) });
-			} else {
-				//TODO: if operands are different
-				if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
-					float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
-					intermediate.push_back({ nullptr, std::get<0>(_expression->arithmeticOperationFloat(operand, *word)), -1 });
-				}
-				else if (std::get<1>(operandString[0]) && std::get<1>(operandString[1])) {
-					std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
-					intermediate.push_back({ nullptr, std::get<0>(_expression->arithmeticOperationString(operand, *word)), -1 });
-				}
-				else {
-					std::string operand[2] = { std::to_string((int)std::get<0>(operandFloat[0])), std::get<0>(operandString[1]) };
-					intermediate.push_back({ nullptr, std::get<0>(_expression->arithmeticOperationString(operand, *word)), -1 });
-				}
-			}
+			
 		}
 		//word (token) is operand
 		else {
