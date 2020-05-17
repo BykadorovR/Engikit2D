@@ -41,7 +41,7 @@ std::shared_ptr<KeyboardSystem> keyboardSystem;
 void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerDecorator> decorator) {
 	auto printOperation = std::make_shared<ExpressionOperation>();
 	printOperation->addArgument(entity, "", "");
-	printOperation->initializeOperation("CLICK #{0}");
+	printOperation->initializeOperation("CLICK ${0}");
 	auto printAction = std::make_shared<PrintOperationsAction>();
 	printAction->setList(list);
 	printAction->setEntity(entity);
@@ -55,7 +55,7 @@ void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> 
 
 	auto printComponentsOperation = std::make_shared<ExpressionOperation>();
 	printComponentsOperation->addArgument(entity, "", "");
-	printComponentsOperation->initializeOperation("CLICK #{0}");
+	printComponentsOperation->initializeOperation("CLICK ${0}");
 	auto printComponentsAction = std::make_shared<PrintComponentsAction>();
 	printComponentsAction->setList(list);
 	printComponentsAction->setEntity(entity);
@@ -66,7 +66,7 @@ void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> 
 	clearComponentsOperation->addArgument(entity, "", "");
 	clearComponentsOperation->addArgument(list);
 	clearComponentsOperation->addArgument(decorator);
-	clearComponentsOperation->initializeOperation("! ( CLICK #{0} ) AND ! ( CLICK %{0} ) AND ! ( CLICK %{1} )");
+	clearComponentsOperation->initializeOperation("! ( CLICK ${0} ) AND ! ( CLICK ${1} ) AND ! ( CLICK ${2} )");
 	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
 	clearComponentsAction->setList(list);
 	clearComponentsAction->setEntity(entity);

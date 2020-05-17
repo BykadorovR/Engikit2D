@@ -23,7 +23,7 @@ bool Button::initialize() {
 	getBack()->getEntity()->createComponent<MouseComponent>();
 	_clickInside = std::make_shared<ExpressionOperation>();
 	_clickInside->addArgument(getBack()->getEntity(), "", "");
-	_clickInside->initializeOperation("CLICK #{0}");
+	_clickInside->initializeOperation("CLICK ${0}");
 	getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(_clickInside, InteractionType::MOUSE_START);
 	//--- 1
 	return false;

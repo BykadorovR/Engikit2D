@@ -26,16 +26,12 @@ ExpressionOperation::ExpressionOperation(std::string name) {
 }
 
 bool ExpressionOperation::addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name) {
-	if (entity != nullptr && component == "" && name == "")
-		_entities.push_back(entity);
-	else
-		_arguments.push_back( { entity, component, name } );
-
+	_arguments[_arguments.size() + _views.size()] = { entity, component, name };
 	return false;
 }
 
 bool ExpressionOperation::addArgument(std::shared_ptr<View> view) {
-	_views.push_back(view);
+	_views[_arguments.size() + _views.size()] = view;
 	return false;
 }
 
@@ -94,34 +90,29 @@ bool ExpressionOperation::checkOperation() {
 			std::regex varIndexRegex("\\$\\{(\\d+)\\}");
 			std::smatch match;
 			if (std::regex_search(*word, match, varIndexRegex)) {
-				std::string varIndex = match[1].str();
-				std::shared_ptr<Entity> entity = std::get<0>(_arguments[atoi(varIndex.c_str())]);
-				std::string componentName = std::get<1>(_arguments[atoi(varIndex.c_str())]);
-				std::shared_ptr<OperationComponent> component = nullptr;
-				if (componentName != "")
-					component = std::dynamic_pointer_cast<OperationComponent>(entity->getComponent(componentName));
-				std::string varName = std::get<2>(_arguments[atoi(varIndex.c_str())]);
-				intermediate.push_back({ component, varName, -1 });
-				continue;
+				int varIndex = atoi(match[1].str().c_str());
+				//let's first check if record with such index exists in _arguments
+				if (_arguments.find(varIndex) != _arguments.end()) {
+					std::shared_ptr<Entity> entity = std::get<0>(_arguments[varIndex]);
+					std::string componentName = std::get<1>(_arguments[varIndex]);
+					std::shared_ptr<OperationComponent> component = nullptr;
+					if (componentName != "")
+						component = std::dynamic_pointer_cast<OperationComponent>(entity->getComponent(componentName));
+					std::string varName = std::get<2>(_arguments[varIndex]);
+					if (component == nullptr && entity != nullptr) {
+						intermediateEntities.push_back(entity);
+					} else
+						intermediate.push_back({ component, varName, -1 });
+				}
+				//if doesn't exist let's check in views list
+				else if (_views.find(varIndex) != _views.end()) {
+					std::shared_ptr<View> currentView = _views[varIndex];
+					intermediateViews.push_back(currentView);
+				}
 			}
-			//find entity
-			varIndexRegex = std::regex("\\#\\{(\\d+)\\}");
-			if (std::regex_search(*word, match, varIndexRegex)) {
-				std::string entityIndex = match[1].str();
-				std::shared_ptr<Entity> currentEntity = _entities[atoi(entityIndex.c_str())];
-				intermediateEntities.push_back(currentEntity);
-				continue;
+			else {
+				intermediate.push_back({ nullptr, *word, -1 });
 			}
-			//find view
-			varIndexRegex = std::regex("\\%\\{(\\d+)\\}");
-			if (std::regex_search(*word, match, varIndexRegex)) {
-				std::string entityIndex = match[1].str();
-				std::shared_ptr<View> currentView = _views[atoi(entityIndex.c_str())];
-				intermediateViews.push_back(currentView);
-				continue;
-			}
-			
-			intermediate.push_back({ nullptr, *word, -1 });
 		}
 	}
 	

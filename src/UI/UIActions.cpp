@@ -59,13 +59,13 @@ bool PrintComponentsAction::doAction() {
 	for (auto component : _entity->getComponents()) {
 		_list->addItem(component->getName());
 	}
-		
+	//TODO: FIX BUG with decorator, if we changed page in one list it will be the same in another list, but need to reset it to 0 every time we change list content
 	for (auto view : _list->getViews()) {
 		view->getEntity()->getComponent<InteractionComponent>()->clearOperations("PrintItems");
 		auto printItemsOperation = std::make_shared<ExpressionOperation>("PrintItems");
 		printItemsOperation->addArgument(view->getEntity(), "", "");
 		//TODO: if view isn't composite need to check entity instead of view
-		printItemsOperation->initializeOperation("CLICK #{0}");
+		printItemsOperation->initializeOperation("CLICK ${0}");
 		auto printItemsAction = std::make_shared<PrintItemsAction>();
 		printItemsAction->setList(_list);
 		printItemsAction->setEntity(_entity);
@@ -127,7 +127,7 @@ bool PrintItemsAction::doAction() {
 		auto setEditable = std::make_shared<ExpressionOperation>("PrintItems");
 		setEditable->addArgument(listViews[i]->getEntity(), "", "");
 		//TODO: if view isn't composite need to check entity instead of view
-		setEditable->initializeOperation("CLICK #{0}");
+		setEditable->initializeOperation("CLICK ${0}");
 		auto setEditableAction = std::make_shared<AssignAction>();
 		setEditableAction->addArgument(listViews[i]->getEntity(), "TextComponent", "editable");
 		setEditableAction->initializeAction("${0} SET 1");

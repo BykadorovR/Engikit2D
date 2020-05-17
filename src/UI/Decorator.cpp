@@ -145,7 +145,7 @@ bool ScrollerDecorator::initialize() {
 		clickInsideUp->addArgument(parentEntity, "TextComponent", "page");
 	else if (_parent->getName() == "List")
 		clickInsideUp->addArgument(parentEntity, "CustomFloatComponent", "page");
-	clickInsideUp->initializeOperation("CLICK #{0} AND ${0} > 0");
+	clickInsideUp->initializeOperation("CLICK ${0} AND ${1} > 0");
 	auto changePositionUp = std::make_shared<AssignAction>();
 	if (_parent->getName() == "Label")
 		changePositionUp->addArgument(parentEntity, "TextComponent", "page");
@@ -171,10 +171,10 @@ bool ScrollerDecorator::initialize() {
 	}
 	
 	if (_parent->getName() == "Label")
-		clickInsideDown->initializeOperation("CLICK #{0} AND ${0} < ${1} - 1");
+		clickInsideDown->initializeOperation("CLICK ${0} AND ${1} < ${2} - 1");
 	else if (_parent->getName() == "List")
 		//in case of list we should end scrolling if next scroll will cause displaying less items then supposed (in case of label, 1 item/string can be displayed)
-		clickInsideDown->initializeOperation("CLICK #{0} AND ${0} < SIZE ${1} - ${2}");
+		clickInsideDown->initializeOperation("CLICK ${0} AND ${1} < SIZE ${2} - ${3}");
 	auto changePositionDown = std::make_shared<AssignAction>();
 	if (_parent->getName() == "Label")
 		changePositionDown->addArgument(parentEntity, "TextComponent", "page");

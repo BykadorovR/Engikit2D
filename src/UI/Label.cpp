@@ -43,7 +43,7 @@ bool Label::initialize() {
 	auto clickInside = std::make_shared<ExpressionOperation>();
 	clickInside->addArgument(_entity, "", "");
 	//TODO: Add constants support to operations
-	clickInside->initializeOperation("CLICK #{0}");
+	clickInside->initializeOperation("CLICK ${0}");
 	auto changeFocusOn = std::make_shared<AssignAction>();
 	changeFocusOn->addArgument(_entity, "TextComponent", "focus");
 	changeFocusOn->initializeAction("${0} SET 1");
@@ -54,7 +54,7 @@ bool Label::initialize() {
 	//--- 3
 	auto clickOutside = std::make_shared<ExpressionOperation>();
 	clickOutside->addArgument(_entity, "", "");
-	clickOutside->initializeOperation("! ( CLICK #{0} )");
+	clickOutside->initializeOperation("! ( CLICK ${0} )");
 	auto changeFocusOff = std::make_shared<AssignAction>();
 	changeFocusOff->addArgument(_entity, "TextComponent", "focus");
 	changeFocusOff->initializeAction("${0} SET 0");
