@@ -111,6 +111,7 @@ PrintItemsAction::PrintItemsAction() {
 
 bool PrintItemsAction::doAction() {
 	//TODO: remove op/act from list items
+	//TODO: if decorator is invisible it shouldn't generate click!
 	auto component = std::dynamic_pointer_cast<OperationComponent>(_entity->getComponent(_component->getText()));
 	_list->clear();
 

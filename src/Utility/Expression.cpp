@@ -68,7 +68,9 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<En
 	if (operation == "CLICK") {
 		auto mouseComponent = entity->getComponent<MouseComponent>();
 		auto objectComponent = entity->getComponent<ObjectComponent>();
-		if (mouseComponent && objectComponent) {
+		if (!std::get<0>(entity->getComponent<ObjectComponent>()->getMemberFloat("visible"))) {
+			result = { std::to_string(false), 1 };
+		} else if (mouseComponent && objectComponent) {
 			float x = std::get<0>(objectComponent->getPosition());
 			float y = std::get<1>(objectComponent->getPosition());
 			float width = std::get<0>(objectComponent->getSize());
@@ -96,15 +98,11 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<En
 	return result;
 }
 
-std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<View> view, std::string operation) {
+std::tuple<std::string, int> Expression::oneArgumentOperation(std::vector<std::shared_ptr<Entity> > batch, std::string operation) {
 	std::tuple<std::string, int> result;
 	if (operation == "CLICK") {
 		bool anyClick = false;
-		for (auto view : view->getViews()) {
-			auto entity = view->getEntity();
-			if (!std::get<0>(entity->getComponent<ObjectComponent>()->getMemberFloat("visible"))) {
-				continue;
-			}
+		for (auto entity : batch) {
 			if (std::get<1>(oneArgumentOperation(entity, operation)) && atoi(std::get<0>(oneArgumentOperation(entity, operation)).c_str())) {
 				anyClick = true;
 				break;

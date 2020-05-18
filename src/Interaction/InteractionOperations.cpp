@@ -2,7 +2,7 @@
 #include <regex>
 #include <assert.h>
 #include "Common.h"
-
+#include <sstream>
 ExpressionOperation::ExpressionOperation(std::string name) {
 	_name = name;
 	_supportedOperations =
@@ -25,14 +25,20 @@ ExpressionOperation::ExpressionOperation(std::string name) {
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }
 
-bool ExpressionOperation::addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name) {
-	_arguments[_arguments.size() + _views.size()] = { entity, component, name };
-	return false;
+std::string ExpressionOperation::addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name) {
+	int index = _arguments.size() + _views.size();
+	_arguments[index] = { entity, component, name };
+	return std::to_string(index);
 }
 
-bool ExpressionOperation::addArgument(std::shared_ptr<View> view) {
-	_views[_arguments.size() + _views.size()] = view;
-	return false;
+std::string ExpressionOperation::addArgument(std::vector<std::shared_ptr<Entity> > entities) {
+	std::string listIndexes = "";
+	for (auto item = entities.begin(); item != entities.end(); item++) {
+		listIndexes += addArgument(*item, "", "");
+		if (std::next(item) != entities.end())
+			listIndexes += ",";
+	}
+	return listIndexes;
 }
 
 bool ExpressionOperation::initializeOperation(std::string condition) {
@@ -43,7 +49,7 @@ bool ExpressionOperation::initializeOperation(std::string condition) {
 bool ExpressionOperation::checkOperation() {
 	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > intermediate;
 	std::vector<std::shared_ptr<Entity> > intermediateEntities;
-	std::vector<std::shared_ptr<View> > intermediateViews;
+	std::vector<std::shared_ptr<Entity> > intermediateBatchEntities;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
 		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
@@ -55,11 +61,11 @@ bool ExpressionOperation::checkOperation() {
 					continue;
 				}
 			}
-			if (intermediateViews.size() > 0) {
-				auto result = _expression->oneArgumentOperation(intermediateViews.back(), *word);
+			if (intermediateBatchEntities.size() > 0) {
+				auto result = _expression->oneArgumentOperation(intermediateBatchEntities, *word);
 				if (std::get<1>(result)) {
 					intermediate.push_back({ nullptr, std::get<0>(result), -1 });
-					intermediateViews.pop_back();
+					intermediateBatchEntities.clear();
 					continue;
 				}
 			}
@@ -87,27 +93,36 @@ bool ExpressionOperation::checkOperation() {
 		//word (token) is operand
 		else {
 			// Extraction of a sub-match
-			std::regex varIndexRegex("\\$\\{(\\d+)\\}");
+			std::regex varIndexRegex = std::regex("\\$\\{([\\d|\\,]+)\\}");
 			std::smatch match;
 			if (std::regex_search(*word, match, varIndexRegex)) {
-				int varIndex = atoi(match[1].str().c_str());
-				//let's first check if record with such index exists in _arguments
-				if (_arguments.find(varIndex) != _arguments.end()) {
-					std::shared_ptr<Entity> entity = std::get<0>(_arguments[varIndex]);
-					std::string componentName = std::get<1>(_arguments[varIndex]);
-					std::shared_ptr<OperationComponent> component = nullptr;
-					if (componentName != "")
-						component = std::dynamic_pointer_cast<OperationComponent>(entity->getComponent(componentName));
-					std::string varName = std::get<2>(_arguments[varIndex]);
-					if (component == nullptr && entity != nullptr) {
-						intermediateEntities.push_back(entity);
-					} else
-						intermediate.push_back({ component, varName, -1 });
+				std::string matchResult = match[1].str();
+				std::stringstream ss(matchResult);
+				std::vector<int> varIndexes;
+				while (ss.good())
+				{
+					std::string substr;
+					getline(ss, substr, ',');
+					varIndexes.push_back(atoi(substr.c_str()));
 				}
-				//if doesn't exist let's check in views list
-				else if (_views.find(varIndex) != _views.end()) {
-					std::shared_ptr<View> currentView = _views[varIndex];
-					intermediateViews.push_back(currentView);
+				for (auto varIndex : varIndexes) {
+					//let's first check if record with such index exists in _arguments
+					if (_arguments.find(varIndex) != _arguments.end()) {
+						std::shared_ptr<Entity> entity = std::get<0>(_arguments[varIndex]);
+						std::string componentName = std::get<1>(_arguments[varIndex]);
+						std::shared_ptr<OperationComponent> component = nullptr;
+						if (componentName != "")
+							component = std::dynamic_pointer_cast<OperationComponent>(entity->getComponent(componentName));
+						std::string varName = std::get<2>(_arguments[varIndex]);
+						if (component == nullptr && entity != nullptr && varIndexes.size() == 1) {
+							intermediateEntities.push_back(entity);
+						}
+						else if (component == nullptr && entity != nullptr && varIndexes.size() > 1) {
+							intermediateBatchEntities.push_back(entity);
+						}
+						else
+							intermediate.push_back({ component, varName, -1 });
+					}
 				}
 			}
 			else {

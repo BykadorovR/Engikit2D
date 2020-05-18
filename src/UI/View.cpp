@@ -26,6 +26,18 @@ std::vector<std::shared_ptr<View> > View::getViews() {
 	return _views;
 }
 
+std::vector<std::shared_ptr<Entity> > View::getEntities() {
+	std::vector<std::shared_ptr<Entity> > entities;
+	if (_views.size() != 0)
+		for (auto view : _views)
+			for (auto entity : view->getEntities())
+				entities.push_back(entity);
+	else
+		entities.push_back(_entity);
+
+	return entities;
+}
+
 bool View::setParent(std::shared_ptr<View> parent) {
 	_parent = parent;
 	return false;

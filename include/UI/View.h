@@ -15,6 +15,7 @@ public:
 	std::string getName();
 	bool addView(std::shared_ptr<View> view);
 	std::vector<std::shared_ptr<View> > getViews();
+	std::vector<std::shared_ptr<Entity> > getEntities();
 	bool setParent(std::shared_ptr<View> parent);
 	std::shared_ptr<View> getParent();
 

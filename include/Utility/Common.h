@@ -1,8 +1,10 @@
 #pragma once
 #include <iostream>
 #include <sstream>
-#include "Windows.h"
 #include <string>
+#include <vector>
+#define NOMINMAX
+#include "Windows.h"
 
 std::string rawFileContent(const char* relativePath);
 

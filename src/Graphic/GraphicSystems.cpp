@@ -128,7 +128,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 					lines.back().addWord(currentWord);
 				}
 
-				allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
+				allignBearingYMax = std::max(lines.back().getBearingYMax(), allignBearingYMax);
 
 				currentWord.clear();
 				continue;
@@ -144,7 +144,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 				}
 				else {
 					lines.back().addWord(currentWord);
-					allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
+					allignBearingYMax = std::max(lines.back().getBearingYMax(), allignBearingYMax);
 					lines.push_back(Line());
 					currentWord.clear();
 					currentWord += {*c, chInfo};
@@ -167,7 +167,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 				lines.back().addWord(currentWord);
 			}
 
-			allignBearingYMax = max(lines.back().getBearingYMax(), allignBearingYMax);
+			allignBearingYMax = std::max(lines.back().getBearingYMax(), allignBearingYMax);
 		}
 
 		//Calculate real height of text

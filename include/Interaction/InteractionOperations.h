@@ -16,9 +16,9 @@ private:
 	std::map<int, std::shared_ptr<View> > _views;
 public:
 	ExpressionOperation(std::string name = "ExpressionOperation");
-	bool addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name);
-	bool addArgument(std::shared_ptr<View> view);
-	
+	std::string addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name);
+	std::string addArgument(std::vector<std::shared_ptr<Entity> > entities);
+
 	bool initializeOperation(std::string condition);
 	bool checkOperation();
 };

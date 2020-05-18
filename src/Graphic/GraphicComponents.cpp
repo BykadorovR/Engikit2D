@@ -4,6 +4,7 @@
 #include "Common.h"
 #include <locale>
 #include <codecvt>
+#include <algorithm>
 
 ObjectComponent::ObjectComponent() {
 	_componentName = "ObjectComponent";
@@ -150,7 +151,7 @@ int Word::getWidth() {
 int Word::getHeight() {
 	int size = 0;
 	for (auto symbol : _text) {
-		size = max(std::get<1>(symbol.getCharacterInfo()._size), size);
+		size = std::max(std::get<1>(symbol.getCharacterInfo()._size), size);
 	}
 	return size;
 }
@@ -158,7 +159,7 @@ int Word::getHeight() {
 int Word::getHeightAdjusted(int bearingYMax) {
 	int size = 0;
 	for (auto symbol : _text) {
-		size = max(std::get<1>(symbol.getCharacterInfo()._size) + bearingYMax - std::get<1>(symbol.getCharacterInfo()._bearing), size);
+		size = std::max(std::get<1>(symbol.getCharacterInfo()._size) + bearingYMax - std::get<1>(symbol.getCharacterInfo()._bearing), size);
 	}
 	return size;
 }
@@ -177,7 +178,7 @@ bool Word::cropTrailingSpace() {
 int Word::getBearingYMin() {
 	int size = INT_MAX;
 	for (auto symbol : _text) {
-		size = min(std::get<1>(symbol.getCharacterInfo()._bearing), size);
+		size = std::min(std::get<1>(symbol.getCharacterInfo()._bearing), size);
 	}
 	return size;
 }
@@ -185,7 +186,7 @@ int Word::getBearingYMin() {
 int Word::getBearingYMax() {
 	int size = INT_MIN;
 	for (auto symbol : _text) {
-		size = max(std::get<1>(symbol.getCharacterInfo()._bearing), size);
+		size = std::max(std::get<1>(symbol.getCharacterInfo()._bearing), size);
 	}
 	return size;
 }
@@ -215,7 +216,7 @@ int Line::getWidth() {
 int Line::getHeight() {
 	int height = 0;
 	for (auto word : _text) {
-		height = max(word.getHeight(), height);
+		height = std::max(word.getHeight(), height);
 	}
 	return height;
 }
@@ -223,7 +224,7 @@ int Line::getHeight() {
 int Line::getHeightAdjusted(int bearingYMax) {
 	int height = 0;
 	for (auto word : _text) {
-		height = max(word.getHeightAdjusted(bearingYMax), height);
+		height = std::max(word.getHeightAdjusted(bearingYMax), height);
 	}
 	return height;
 }
@@ -231,7 +232,7 @@ int Line::getHeightAdjusted(int bearingYMax) {
 int Line::getBearingYMin() {
 	int size = INT_MAX;
 	for (auto symbol : _text) {
-		size = min(symbol.getBearingYMin(), size);
+		size = std::min(symbol.getBearingYMin(), size);
 	}
 	return size;
 }
@@ -239,7 +240,7 @@ int Line::getBearingYMin() {
 int Line::getBearingYMax() {
 	int size = INT_MIN;
 	for (auto symbol : _text) {
-		size = max(symbol.getBearingYMax(), size);
+		size = std::max(symbol.getBearingYMax(), size);
 	}
 	return size;
 }
