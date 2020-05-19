@@ -60,7 +60,7 @@ void MouseEvent::mousePressed(GLFWwindow* window, int button, int action, int mo
 			auto secondClick = std::chrono::system_clock::now();
 			double difference = std::chrono::duration <double, std::milli>(secondClick - firstClick).count();
 			firstClick = secondClick;
-			if (difference > 10 && difference < 200) {
+			if (difference > 10 && difference < 300) {
 				double x, y;
 				//getting cursor position
 				glfwGetCursorPos(window, &x, &y);
