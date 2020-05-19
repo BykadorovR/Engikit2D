@@ -65,7 +65,8 @@ std::tuple<std::string, int> Expression::arithmeticOperationString(std::string o
 
 std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<Entity> entity, std::string operation) {
 	std::tuple<std::string, int> result;
-	if (operation == "CLICK") {
+	if (operation == "CLICK" || 
+		operation == "DOUBLE_CLICK") {
 		auto mouseComponent = entity->getComponent<MouseComponent>();
 		auto objectComponent = entity->getComponent<ObjectComponent>();
 		if (!std::get<0>(entity->getComponent<ObjectComponent>()->getMemberFloat("visible"))) {
@@ -86,6 +87,9 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<En
 			else {
 				result = { std::to_string(false), 1 };
 			}
+			auto doubleClick = mouseComponent->getMemberFloat("doubleClick");
+			if (operation == "DOUBLE_CLICK" && (bool)*std::get<0>(doubleClick) == false)
+				result = { std::to_string(false), 1 };
 		}
 		else {
 			//set false as result

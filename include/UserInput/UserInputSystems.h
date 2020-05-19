@@ -5,10 +5,12 @@
 class MouseSystem : public System, public IMouseEvent {
 private:
 	std::tuple<bool, bool> _needUpdate = { false, false };
+	std::tuple<bool, bool> _needUpdateDouble = { false, false };
 public:
 	MouseSystem();
 	
 	void mouseClickDownLeft(int x, int y);
+	void mouseDoubleClickDownLeft(int x, int y);
 	void mouseClickDownRight(int x, int y);
 
 	void update(InteractionType type);

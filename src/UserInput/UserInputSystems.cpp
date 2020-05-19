@@ -10,6 +10,23 @@ MouseSystem::MouseSystem() {
 	MouseEvent::instance().registerComponent(this);
 }
 
+void MouseSystem::mouseDoubleClickDownLeft(int x, int y) {
+	//first update coords in mouse components
+	for (auto entity : _entityManager->getEntities()) {
+		if (std::get<1>(entity) == EntityState::ENTITY_UNREGISTERED)
+			continue;
+
+		auto mouseComponent = std::get<0>(entity)->getComponent<MouseComponent>();
+		if (mouseComponent) {
+			mouseComponent->setMember("leftClickX", x);
+			mouseComponent->setMember("leftClickY", y);
+			mouseComponent->setMember("doubleClick", true);
+		}
+	}
+
+	_needUpdate = { true, true };
+}
+
 void MouseSystem::mouseClickDownLeft(int x, int y) {
 	//first update coords in mouse components
 	for (auto entity : _entityManager->getEntities()) {
@@ -20,6 +37,7 @@ void MouseSystem::mouseClickDownLeft(int x, int y) {
 		if (mouseComponent) {
 			mouseComponent->setMember("leftClickX", x);
 			mouseComponent->setMember("leftClickY", y);
+			mouseComponent->setMember("doubleClick", false);
 		}
 	}
 

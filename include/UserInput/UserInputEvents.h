@@ -41,6 +41,7 @@ void mousePressed(GLFWwindow* window, int button, int action, int mods);
 class IMouseEvent {
 public:
 	virtual void mouseClickDownLeft(int x, int y) = 0;
+	virtual void mouseDoubleClickDownLeft(int x, int y) = 0;
 	virtual void mouseClickDownRight(int x, int y) = 0;
 };
 

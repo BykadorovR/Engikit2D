@@ -4,11 +4,11 @@
 
 enum InteractionType {
 	COMMON_START = 0,
-	COMMON_END = 1,
-	MOUSE_START = 2,
-	MOUSE_END = 3,
-	KEYBOARD_START = 4,
-	KEYBOARD_END = 5
+	COMMON_END,
+	MOUSE_START,
+	MOUSE_END,
+	KEYBOARD_START,
+	KEYBOARD_END
 };
 
 class InteractionComponent : public Component {

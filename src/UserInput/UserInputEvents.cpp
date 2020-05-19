@@ -1,7 +1,7 @@
 #include "UserInputEvents.h"
 #include "Common.h"
 #include <algorithm>
-
+#include <chrono>
 void mousePressed(GLFWwindow* window, int button, int action, int mods) {
 	MouseEvent::instance().mousePressed(window, button, action, mods);
 }
@@ -53,6 +53,20 @@ void MouseEvent::mousePressed(GLFWwindow* window, int button, int action, int mo
 			glfwGetCursorPos(window, &x, &y);
 			for (auto listener : _listeners) {
 				listener->mouseClickDownLeft(x, y);
+			}
+		}
+		else if (action == GLFW_RELEASE) {
+			static auto firstClick = std::chrono::system_clock::now();
+			auto secondClick = std::chrono::system_clock::now();
+			double difference = std::chrono::duration <double, std::milli>(secondClick - firstClick).count();
+			firstClick = secondClick;
+			if (difference > 10 && difference < 200) {
+				double x, y;
+				//getting cursor position
+				glfwGetCursorPos(window, &x, &y);
+				for (auto listener : _listeners) {
+					listener->mouseDoubleClickDownLeft(x, y);
+				}
 			}
 		}
 		break;

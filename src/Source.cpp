@@ -66,7 +66,7 @@ void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> 
 	clearComponentsOperation->addArgument(entity, "", "");
 	std::string listIndexes = clearComponentsOperation->addArgument(list->getEntities());
 	std::string decoratorIndexes = clearComponentsOperation->addArgument(decorator->getEntities());
-	clearComponentsOperation->initializeOperation("! ( CLICK ${0} ) AND ! ( CLICK ${"+listIndexes+"} ) AND ! ( CLICK ${"+decoratorIndexes+"} )");
+	clearComponentsOperation->initializeOperation("! ( DOUBLE_CLICK ${0} ) AND ! ( CLICK ${"+listIndexes+"} ) AND ! ( CLICK ${"+decoratorIndexes+"} )");
 	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
 	clearComponentsAction->setList(list);
 	clearComponentsAction->setEntity(entity);
