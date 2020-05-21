@@ -274,7 +274,9 @@ TextComponent::TextComponent() {
 		{"spacingCoeff", &_lineSpacingCoeff},
 		{"scale", &_scale},
 		{"editable", &_editable},
-		{"allignBearingYMax", &_allignBearingYMax}
+		{"allignBearingYMax", &_allignBearingYMax},
+		{"verticalScrollerPosition", &_verticalScrollerPosition},
+		{"horizontalScrollerPosition", &_horizontalScrollerPosition},
 	};
 	
 	_classVariablesString =

@@ -7,6 +7,7 @@
 #include "TextureAtlas.h"
 #include FT_FREETYPE_H
 
+//Glyph info, so texture size
 struct CharacterInfo {
 	std::tuple<int, int> _size;       // Size of glyph
 	std::tuple<int, int> _bearing;    // Offset from baseline to left/top of glyph
@@ -29,6 +30,7 @@ public:
 	std::map<FT_ULong, std::tuple<float, float> > getCharactersAtlasPosition();
 	std::shared_ptr<TextureAtlas> getAtlas();
 	float getLineSpace();
+	float getGlyphHeight();
 private:
 	float _lineSpace;
 	int _symbolHeight;

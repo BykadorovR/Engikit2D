@@ -22,6 +22,10 @@ float GlyphsLoader::getLineSpace() {
 	return _lineSpace;
 }
 
+float GlyphsLoader::getGlyphHeight() {
+	return _symbolHeight;
+}
+
 std::map<FT_ULong, CharacterInfo> GlyphsLoader::getCharacters() {
 	return _characters;
 }

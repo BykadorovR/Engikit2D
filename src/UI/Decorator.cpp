@@ -7,7 +7,7 @@
 #include "InteractionComponents.h"
 #include "CustomComponents.h"
 
-ScrollerDecorator::ScrollerDecorator(std::string name) {
+ScrollerVerticalDecorator::ScrollerVerticalDecorator(std::string name) {
 	_viewName = name;
 }
 
@@ -22,7 +22,7 @@ List of operation-actions:
 6) if "current page > 1" then "show decorator"
 7) if "page == 0 and text size < view height" then "hide decorator"
 */
-bool ScrollerDecorator::initialize() {
+bool ScrollerVerticalDecorator::initialize() {
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
 	//entity == nullptr means that view is composite
 	if (parentEntity == nullptr) {
@@ -274,22 +274,22 @@ bool ScrollerDecorator::initialize() {
 	return false;
 }
 
-bool ScrollerDecorator::setScrollerUp(std::shared_ptr<View> scrollerUp) {
+bool ScrollerVerticalDecorator::setScrollerUp(std::shared_ptr<View> scrollerUp) {
 	_views.push_back(scrollerUp);
 	return false;
 }
 
-bool ScrollerDecorator::setScrollerProgress(std::shared_ptr<View> scrollerProgress) {
+bool ScrollerVerticalDecorator::setScrollerProgress(std::shared_ptr<View> scrollerProgress) {
 	_views.push_back(scrollerProgress);
 	return false;
 }
 
-bool ScrollerDecorator::setScrollerDown(std::shared_ptr<View> scrollerDown) {
+bool ScrollerVerticalDecorator::setScrollerDown(std::shared_ptr<View> scrollerDown) {
 	_views.push_back(scrollerDown);
 	return false;
 }
 
-std::shared_ptr<Back> ScrollerDecorator::getScrollerUp() {
+std::shared_ptr<Back> ScrollerVerticalDecorator::getScrollerUp() {
 	for (auto view : _views) {
 		if (view->getName() == "scrollerUp")
 			return std::dynamic_pointer_cast<Back>(view);
@@ -297,7 +297,7 @@ std::shared_ptr<Back> ScrollerDecorator::getScrollerUp() {
 	return nullptr;
 }
 
-std::shared_ptr<Back> ScrollerDecorator::getScrollerDown() {
+std::shared_ptr<Back> ScrollerVerticalDecorator::getScrollerDown() {
 	for (auto view : _views) {
 		if (view->getName() == "scrollerDown")
 			return std::dynamic_pointer_cast<Back>(view);
@@ -305,7 +305,7 @@ std::shared_ptr<Back> ScrollerDecorator::getScrollerDown() {
 	return nullptr;
 }
 
-std::shared_ptr<Back> ScrollerDecorator::getScrollerProgress() {
+std::shared_ptr<Back> ScrollerVerticalDecorator::getScrollerProgress() {
 	for (auto view : _views) {
 		if (view->getName() == "scrollerProgress")
 			return std::dynamic_pointer_cast<Back>(view);
@@ -313,13 +313,13 @@ std::shared_ptr<Back> ScrollerDecorator::getScrollerProgress() {
 	return nullptr;
 }
 
-ScrollerDecoratorFactory::ScrollerDecoratorFactory(std::shared_ptr<Scene> activeScene) {
+ScrollerVerticalDecoratorFactory::ScrollerVerticalDecoratorFactory(std::shared_ptr<Scene> activeScene) {
 	_activeScene = activeScene;
 	_backFactory = std::make_shared<BackFactory>(activeScene);
 }
 
-std::shared_ptr<View> ScrollerDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
-	std::shared_ptr<ScrollerDecorator> scrollerDecorator = std::make_shared<ScrollerDecorator>(name);
+std::shared_ptr<View> ScrollerVerticalDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
+	std::shared_ptr<ScrollerVerticalDecorator> scrollerDecorator = std::make_shared<ScrollerVerticalDecorator>(name);
 	scrollerDecorator->setParent(parent);
 	scrollerDecorator->setScrollerUp(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerUp", scrollerDecorator)));
 	scrollerDecorator->setScrollerDown(std::dynamic_pointer_cast<Back>(_backFactory->createView("scrollerDown", scrollerDecorator)));

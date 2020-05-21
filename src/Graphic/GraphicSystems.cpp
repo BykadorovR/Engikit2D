@@ -65,8 +65,71 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 	}
 }
 
-//TODO: Need to split text to words and lines only once! at init
 void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
+	std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+	std::tuple<TextAllignment, TextAllignment> textAllignment = textObject->getAllignment();
+	std::tuple<float, float> positionStart = vertexObject->getPosition();
+	std::tuple<float, float> positionEnd = { std::get<0>(vertexObject->getPosition()) + std::get<0>(vertexObject->getSize()),
+											 std::get<1>(vertexObject->getPosition()) + std::get<1>(vertexObject->getSize()) };
+
+	float objectWidth = std::get<0>(positionEnd) - std::get<0>(positionStart);
+	float objectHeight = std::get<1>(positionEnd) - std::get<1>(positionStart);
+	float startX = std::get<0>(positionStart);
+	float startY = std::get<1>(positionStart);
+	int scaledLineSpacing = GlyphsLoader::instance().getLineSpace();
+
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	std::wstring text = converter.from_bytes(textObject->getText());
+	wchar_t delimiter = *(L" ");
+	CharacterInfo delimiterInfo = GlyphsLoader::instance().getCharacters()[delimiter];
+	int xAllign = 0;
+	int yAllign = 0;
+	float xPos = startX;
+	float yPos = startY;
+	float verticalScroll = *std::get<0>(textObject->getMemberFloat("verticalScrollerPosition"));
+	float horizontalScroll = *std::get<0>(textObject->getMemberFloat("horizontalScrollerPosition"));
+	//need to find overall width for row
+	for (auto c = text.begin(); c != text.end(); c++) {
+			CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
+			GLfloat w = std::get<0>(chInfo._size) * textObject->getScale();
+			GLfloat h = std::get<1>(chInfo._size) * textObject->getScale();
+			if (*c == '\n') {
+				xAllign = 0;
+				yAllign += GlyphsLoader::instance().getGlyphHeight();
+				if (yPos + yAllign >= std::get<1>(positionEnd)) {
+					break;
+				}
+			}
+			GLfloat xPos = startX + xAllign;
+			//allign by the tallest char (bearing is the upper part of symbol)
+			GLfloat yPos = startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing)) + yAllign;
+			//First of all we should change vertex buffer by changing size and position
+			vertexObject->getBufferManager()->changeBuffer(BufferType::Position, { xPos, yPos }, { w, h }, resolution);
+
+			std::tuple<float, float> characterAtlasPosition = GlyphsLoader::instance().getCharactersAtlasPosition()[*c];
+			//Now we should change texture buffer by passing position of current glyph in atlas to OpenGL API
+			textObject->getBufferManager()->changeBuffer(BufferType::Texture, characterAtlasPosition,
+				{ std::get<0>(chInfo._size), std::get<1>(chInfo._size) },
+				GlyphsLoader::instance().getAtlas()->getSize());
+
+			glUniform1f(/*u_AdjustX*/       2, 0);
+			glUniform1f(/*u_AdjustY*/       3, 0);
+
+			glUniform4fv(/*color_mask*/     4, 1, reinterpret_cast<GLfloat *>(&textObject->getColor()[0]));
+			std::vector<float> colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
+			glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&colorAddition[0]));
+
+			glBindTexture(GL_TEXTURE_2D, GlyphsLoader::instance().getAtlas()->getTextureObject());
+			textObject->getBufferManager()->activateBuffer();
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			textObject->getBufferManager()->deactivateBuffer();
+			//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+			xAllign += ((chInfo._advance >> 6) - std::get<0>(chInfo._bearing)); // Bitshift by 6 to get value in pixels (2^6 = 64)
+		}
+}
+
+//TODO: Need to split text to words and lines only once! at init
+void DrawSystem::textUpdateOld(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
 	std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 	std::tuple<TextAllignment, TextAllignment> textAllignment = textObject->getAllignment();
 	std::tuple<float, float> positionStart = vertexObject->getPosition();

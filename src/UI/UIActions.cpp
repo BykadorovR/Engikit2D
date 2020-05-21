@@ -65,7 +65,7 @@ bool PrintComponentsAction::doAction() {
 		auto printItemsOperation = std::make_shared<ExpressionOperation>("PrintItems");
 		printItemsOperation->addArgument(view->getEntity(), "", "");
 		//TODO: if view isn't composite need to check entity instead of view
-		printItemsOperation->initializeOperation("CLICK ${0}");
+		printItemsOperation->initializeOperation("DOUBLE_CLICK ${0}");
 		auto printItemsAction = std::make_shared<PrintItemsAction>();
 		printItemsAction->setList(_list);
 		printItemsAction->setEntity(_entity);

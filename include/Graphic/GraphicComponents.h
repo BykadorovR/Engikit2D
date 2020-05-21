@@ -130,6 +130,8 @@ private:
 	//if focus == true all keys will be handled as text for this TextComponent
 	float _focus;
 	float _editable;
+	float _verticalScrollerPosition;
+	float _horizontalScrollerPosition;
 	float _page;
 	float _totalPages;
 	float _lineHeight;

@@ -38,7 +38,7 @@ std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
 std::shared_ptr<KeyboardSystem> keyboardSystem;
 
-void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerDecorator> decorator) {
+void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
 	auto printOperation = std::make_shared<ExpressionOperation>();
 	printOperation->addArgument(entity, "", "");
 	printOperation->initializeOperation("CLICK ${0}");
@@ -49,7 +49,7 @@ void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> 
 	entity->createComponent<InteractionComponent>()->attachOperation(printOperation, InteractionType::MOUSE_START);
 }
 
-void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerDecorator> decorator) {
+void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
 	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue(-1, "currentEntity");
 	list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->initializeEmpty("registeredEntities");
 
@@ -91,21 +91,21 @@ void surfaceCreated() {
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
 	{
-		std::shared_ptr<ScrollerDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerDecoratorFactory>(activeScene);
+		std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
 		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
 		list->initialize();
 		list->setSize({ 130, 110 });
 		list->setPosition({ 500, 50 });
-		std::shared_ptr<ScrollerDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
 		scrollerDecoratorList->initialize();
 
 		std::shared_ptr<List> listOperations = std::dynamic_pointer_cast<List>(listFactory->createView());
 		listOperations->initialize();
 		listOperations->setSize({ 130, 110 });
 		listOperations->setPosition({ 500, 170 });
-		std::shared_ptr<ScrollerDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", listOperations));
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", listOperations));
 		scrollerDecoratorListOperations->initialize();
 
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
@@ -115,8 +115,8 @@ void surfaceCreated() {
 		label->setText("Hello");
 		label->setEditable(true);
 
-		std::shared_ptr<ScrollerDecorator> scrollerDecoratorLabel = std::dynamic_pointer_cast<ScrollerDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
-		scrollerDecoratorLabel->initialize();
+		//std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
+		//scrollerDecoratorLabel->initialize();
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		

@@ -95,21 +95,30 @@ void KeyboardSystem::keyboardPressed(int key, int action, int mode) {
 				keyboardComponent->setMember("symbol", "");
 				keyboardComponent->setMember("code", key);
 				switch (key) {
-				case GLFW_KEY_BACKSPACE:
-					auto textComponent = std::get<0>(entity)->getComponent<TextComponent>();
-					if (textComponent && textComponent->getFocus()) {
-						auto stringWithoutLastChar = textComponent->getText();
-						//First convert to wstring
-						std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converterToW;
-						std::wstring intermediate = converterToW.from_bytes(stringWithoutLastChar);
-						//remove last symbol
-						intermediate.pop_back();
-						//remove wstring back to string
-						std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterFromW;
-						std::string result = converterFromW.to_bytes(intermediate);
-						textComponent->setMember("text", result);
+					case GLFW_KEY_BACKSPACE: {
+						auto textComponent = std::get<0>(entity)->getComponent<TextComponent>();
+						if (textComponent && textComponent->getFocus()) {
+							auto text = textComponent->getText();
+							//First convert to wstring
+							std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converterToW;
+							std::wstring intermediate = converterToW.from_bytes(text);
+							//remove last symbol
+							intermediate.pop_back();
+							//remove wstring back to string
+							std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterFromW;
+							std::string result = converterFromW.to_bytes(intermediate);
+							textComponent->setMember("text", result);
+						}
+						break;
 					}
-					break;
+					case GLFW_KEY_ENTER: {
+						auto textComponent = std::get<0>(entity)->getComponent<TextComponent>();
+						if (textComponent && textComponent->getFocus()) {
+							auto text = textComponent->getText();
+							text += '\n';
+							textComponent->setMember("text", text);
+						}
+					}
 				}
 			}
 		}
