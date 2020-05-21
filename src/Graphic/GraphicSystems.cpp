@@ -101,6 +101,8 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 				}
 			}
 			GLfloat xPos = startX + xAllign;
+			if (xPos >= std::get<0>(positionEnd))
+				continue;
 			//allign by the tallest char (bearing is the upper part of symbol)
 			GLfloat yPos = startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing)) + yAllign;
 			//First of all we should change vertex buffer by changing size and position
