@@ -26,7 +26,7 @@ void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) 
 	textureObject->getBufferManager()->deactivateBuffer();
 }
 
-void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float allignBearingY, std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
+void renderWord(std::wstring word, std::tuple<float, float> wordPosition, float allignBearingY, std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
 	int xAllign = 0;
 	float startX = std::get<0>(wordPosition);
 	float startY = std::get<1>(wordPosition);
@@ -65,6 +65,33 @@ void renderChar(std::wstring word, std::tuple<float, float> wordPosition, float 
 	}
 }
 
+bool renderChar(wchar_t c, std::tuple<float, float> charPosition, std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
+	CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[c];
+	GLfloat w = std::get<0>(chInfo._size) * textObject->getScale();
+	GLfloat h = std::get<1>(chInfo._size) * textObject->getScale();
+	//First of all we should change vertex buffer by changing size and position
+	vertexObject->getBufferManager()->changeBuffer(BufferType::Position, charPosition, { w, h }, resolution);
+
+	std::tuple<float, float> characterAtlasPosition = GlyphsLoader::instance().getCharactersAtlasPosition()[c];
+	//Now we should change texture buffer by passing position of current glyph in atlas to OpenGL API
+	textObject->getBufferManager()->changeBuffer(BufferType::Texture, characterAtlasPosition,
+		{ std::get<0>(chInfo._size), std::get<1>(chInfo._size) },
+		GlyphsLoader::instance().getAtlas()->getSize());
+
+	glUniform1f(/*u_AdjustX*/       2, 0);
+	glUniform1f(/*u_AdjustY*/       3, 0);
+
+	glUniform4fv(/*color_mask*/     4, 1, reinterpret_cast<GLfloat *>(&textObject->getColor()[0]));
+	std::vector<float> colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
+	glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&colorAddition[0]));
+
+	glBindTexture(GL_TEXTURE_2D, GlyphsLoader::instance().getAtlas()->getTextureObject());
+	textObject->getBufferManager()->activateBuffer();
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	textObject->getBufferManager()->deactivateBuffer();
+	return false;
+}
+
 void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
 	std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 	std::tuple<TextAllignment, TextAllignment> textAllignment = textObject->getAllignment();
@@ -86,48 +113,44 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	int yAllign = 0;
 	float xPos = startX;
 	float yPos = startY;
-	float verticalScroll = *std::get<0>(textObject->getMemberFloat("verticalScrollerPosition"));
-	float horizontalScroll = *std::get<0>(textObject->getMemberFloat("horizontalScrollerPosition"));
+	float* verticalScroll = std::get<0>(textObject->getMemberFloat("verticalScrollerPosition"));
+	float* horizontalScroll = std::get<0>(textObject->getMemberFloat("horizontalScrollerPosition"));
+	float currentHorizontalScroll = 0;
+	float currentVerticalScroll = 0;
 	//need to find overall width for row
 	for (auto c = text.begin(); c != text.end(); c++) {
-			CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
-			GLfloat w = std::get<0>(chInfo._size) * textObject->getScale();
-			GLfloat h = std::get<1>(chInfo._size) * textObject->getScale();
-			if (*c == '\n') {
-				xAllign = 0;
-				yAllign += GlyphsLoader::instance().getGlyphHeight();
-				if (yPos + yAllign >= std::get<1>(positionEnd)) {
-					break;
-				}
+		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
+		if (*c == '\n') {
+			xAllign = 0;
+			yAllign += GlyphsLoader::instance().getGlyphHeight();
+			currentVerticalScroll++;
+			currentHorizontalScroll = 0;
+			if (yPos + yAllign >= std::get<1>(positionEnd)) {
+				break;
 			}
-			GLfloat xPos = startX + xAllign;
-			if (xPos >= std::get<0>(positionEnd))
-				continue;
-			//allign by the tallest char (bearing is the upper part of symbol)
-			GLfloat yPos = startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing)) + yAllign;
-			//First of all we should change vertex buffer by changing size and position
-			vertexObject->getBufferManager()->changeBuffer(BufferType::Position, { xPos, yPos }, { w, h }, resolution);
-
-			std::tuple<float, float> characterAtlasPosition = GlyphsLoader::instance().getCharactersAtlasPosition()[*c];
-			//Now we should change texture buffer by passing position of current glyph in atlas to OpenGL API
-			textObject->getBufferManager()->changeBuffer(BufferType::Texture, characterAtlasPosition,
-				{ std::get<0>(chInfo._size), std::get<1>(chInfo._size) },
-				GlyphsLoader::instance().getAtlas()->getSize());
-
-			glUniform1f(/*u_AdjustX*/       2, 0);
-			glUniform1f(/*u_AdjustY*/       3, 0);
-
-			glUniform4fv(/*color_mask*/     4, 1, reinterpret_cast<GLfloat *>(&textObject->getColor()[0]));
-			std::vector<float> colorAddition = { 0.0f, 0.0f, 0.0f, 0.0f };
-			glUniform4fv(/*color_addition*/ 5, 1, reinterpret_cast<GLfloat *>(&colorAddition[0]));
-
-			glBindTexture(GL_TEXTURE_2D, GlyphsLoader::instance().getAtlas()->getTextureObject());
-			textObject->getBufferManager()->activateBuffer();
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-			textObject->getBufferManager()->deactivateBuffer();
+		}
+		GLfloat xPos = startX + xAllign;
+		if (xPos >= std::get<0>(positionEnd))
+			continue;
+		//allign by the tallest char (bearing is the upper part of symbol)
+		GLfloat yPos = startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing)) + yAllign;
+		
+		if (*c != '\n') {
+			renderChar(*c, { xPos, yPos }, vertexObject, textObject);
 			//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 			xAllign += ((chInfo._advance >> 6) - std::get<0>(chInfo._bearing)); // Bitshift by 6 to get value in pixels (2^6 = 64)
+			//move horizontal scroll to 1 symbol
+			currentHorizontalScroll++;
 		}
+		if (*std::get<0>(textObject->getMemberFloat("editable")) && 
+			*std::get<0>(textObject->getMemberFloat("focus")) &&
+			currentHorizontalScroll == *horizontalScroll &&
+			currentVerticalScroll == *verticalScroll) {
+			CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
+			renderChar('|', { xPos + std::get<0>(chInfo._size), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
+			   		   vertexObject, textObject);
+		}
+	}
 }
 
 //TODO: Need to split text to words and lines only once! at init
@@ -295,7 +318,7 @@ void DrawSystem::textUpdateOld(std::shared_ptr<ObjectComponent> vertexObject, st
 				std::wstring currentText = word->getText();
 				int currentWordSize = word->getWidth() * textObject->getScale();
 	
-				renderChar(currentText, { xPos + widthAllign, yPos + heightAllign }, *std::get<0>(textObject->getMemberFloat("allignBearingYMax")), vertexObject, textObject);
+				renderWord(currentText, { xPos + widthAllign, yPos + heightAllign }, *std::get<0>(textObject->getMemberFloat("allignBearingYMax")), vertexObject, textObject);
 				xPos += currentWordSize;
 			}
 

@@ -13,6 +13,7 @@ ExpressionOperation::ExpressionOperation(std::string name) {
 		{ "<",			  { 1, "left" } },
 		{ "=",			  { 1, "left" } },
 		{ "!",			  { 1, "left" } },
+		{ "EMPTY",		  { 2, "left" } },
 		{ "CLICK",		  { 2, "left" } },
 		{ "DOUBLE_CLICK", { 2, "left" } },
 		{ "+",			  { 2, "left" } }, 

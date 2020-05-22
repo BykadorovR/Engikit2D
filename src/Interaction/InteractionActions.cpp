@@ -7,15 +7,23 @@ AssignAction::AssignAction() {
 	_actionName = "AssignAction";
 	_supportedOperations =
 	{
-		{ "AND", { 0, "left" } },
-		{ "SET", { 1, "left" } },
-		{ "+",   { 2, "left" } },
-		{ "-",   { 2, "left" } },
-		{ "/",   { 3, "left" } },
-		{ "*",   { 3, "left" } },
-		{ "^",   { 4, "right"} },
-		{ "AT",  { 5, "left" } },
-		{ "SIZE",{ 5, "left" } }
+		{ "AND",		  { 0, "left" } }, //last argument - the order sequence of the same operations should be executed in.
+		{ "OR",			  { 0, "left" } }, //for example: 1 + 2 + 3 - can be processed from left to right BUT
+		{ ">",			  { 1, "left" } }, // 2 ^ 2 ^ 3 - have to be processed from right to left
+		{ "<",			  { 1, "left" } },
+		{ "SET",		  { 1, "left" } },
+		{ "=",			  { 1, "left" } },
+		{ "!",			  { 1, "left" } },
+		{ "EMPTY",		  { 2, "left" } },
+		{ "CLICK",		  { 2, "left" } },
+		{ "DOUBLE_CLICK", { 2, "left" } },
+		{ "+",			  { 2, "left" } },
+		{ "-",			  { 2, "left" } },
+		{ "/",			  { 3, "left" } },
+		{ "*",			  { 3, "left" } },
+		{ "^",			  { 4, "right"} },
+		{ "SIZE",		  { 5, "left" } },
+		{ "AT",			  { 5, "left" } }
 	};
 	_expression = std::make_shared<Expression>(_supportedOperations);
 }

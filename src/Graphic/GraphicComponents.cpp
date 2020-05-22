@@ -295,6 +295,8 @@ bool TextComponent::initialize(std::shared_ptr<BufferManager> bufferManager) {
 	_page = 0;
 	_allignment = {TextAllignment::LEFT, TextAllignment::LEFT};
 	_bufferManager = bufferManager;
+	_horizontalScrollerPosition = 0;
+	_verticalScrollerPosition = 0;
 
 	//Texture buffer with temporal values, should be changed in runtime
 	_bufferManager->addBuffer(BufferType::Texture, { 0, 0 }, { 0, 0 }, GlyphsLoader::instance().getAtlas()->getSize());
@@ -306,6 +308,14 @@ std::shared_ptr<BufferManager> TextComponent::getBufferManager() {
 }
 
 bool TextComponent::setText(std::string text) {
+	for (int i = 0; i < text.size(); i++) {
+		if (text[i] == '\n') {
+			_verticalScrollerPosition += 1;
+			_horizontalScrollerPosition = 0;
+		}
+		else
+			_horizontalScrollerPosition += 1;
+	}
 	//All strings are stored as UTF8, so first we should convert it
 	std::string UTF8String = convertMultibyteToUTF8(text);
 	_text = UTF8String;

@@ -7,6 +7,7 @@
 #include "InteractionActions.h"
 #include "InteractionComponents.h"
 #include "UIActions.h"
+#include "GLFW/glfw3.h"
 
 Label::Label(std::string name = "Label") {
 	_viewName = name;
@@ -25,7 +26,75 @@ bool Label::initialize() {
 
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
+	//--- -3
+	{
+		auto removeLastOperation = std::make_shared<ExpressionOperation>();
+		removeLastOperation->addArgument(_entity, "TextComponent", "focus");
+		removeLastOperation->addArgument(_entity, "TextComponent", "editable");
+		removeLastOperation->addArgument(_entity, "KeyboardComponent", "code");
+		removeLastOperation->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+		removeLastOperation->addArgument(_entity, "TextComponent", "text");
+		removeLastOperation->addArgument(nullptr, "", std::to_string('\n'));
+		removeLastOperation->initializeOperation("${4} AT ( SIZE ${4} - 1 ) = ${5} AND ${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		auto moveCursorBack = std::make_shared<AssignAction>();
+		moveCursorBack->addArgument(_entity, "TextComponent", "horizontalScrollerPosition");
+		moveCursorBack->addArgument(_entity, "TextComponent", "verticalScrollerPosition");
+		//TODO: If text.size() > than line size we have to set to horizontalScrollerPosition -1 for example and handle it in TextUpdate
+		moveCursorBack->addArgument(_entity, "TextComponent", "text");
+		moveCursorBack->initializeAction("${0} SET SIZE ${2} AND ${1} SET ${1} - 1");
+		removeLastOperation->registerAction(moveCursorBack);
+		_entity->createComponent<InteractionComponent>()->attachOperation(removeLastOperation, InteractionType::KEYBOARD_START);
+	}
 
+	//--- -2
+	auto removeLastOperation = std::make_shared<ExpressionOperation>();
+	removeLastOperation->addArgument(_entity, "TextComponent", "focus");
+	removeLastOperation->addArgument(_entity, "TextComponent", "editable");
+	removeLastOperation->addArgument(_entity, "KeyboardComponent", "code");
+	removeLastOperation->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+	removeLastOperation->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+	auto removeLastAction = std::make_shared<AssignAction>();
+	removeLastAction->addArgument(_entity, "TextComponent", "text");
+	removeLastAction->initializeAction("${0} SET ${0} - 1");
+	removeLastOperation->registerAction(removeLastAction);
+	auto moveCursorBack = std::make_shared<AssignAction>();
+	moveCursorBack->addArgument(_entity, "TextComponent", "horizontalScrollerPosition");
+	moveCursorBack->initializeAction("${0} SET ${0} - 1");
+	removeLastOperation->registerAction(moveCursorBack);
+	_entity->createComponent<InteractionComponent>()->attachOperation(removeLastOperation, InteractionType::KEYBOARD_START);
+
+	//--- -1
+	auto setBreakLineOperation = std::make_shared<ExpressionOperation>();
+	setBreakLineOperation->addArgument(_entity, "TextComponent", "focus");
+	setBreakLineOperation->addArgument(_entity, "TextComponent", "editable");
+	setBreakLineOperation->addArgument(_entity, "KeyboardComponent", "code");
+	setBreakLineOperation->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+	setBreakLineOperation->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+	auto setBreakLineAction = std::make_shared<AssignAction>();
+	setBreakLineAction->addArgument(_entity, "TextComponent", "text");
+	setBreakLineAction->addArgument(nullptr, "", std::to_string('\n'));
+	setBreakLineAction->initializeAction("${0} SET ${0} + ${1}");
+	setBreakLineOperation->registerAction(setBreakLineAction);
+	auto moveCursorDown = std::make_shared<AssignAction>();
+	moveCursorDown->addArgument(_entity, "TextComponent", "verticalScrollerPosition");
+	moveCursorDown->addArgument(_entity, "TextComponent", "horizontalScrollerPosition");
+	moveCursorDown->initializeAction("${0} SET ${0} + 1 AND ${1} SET 0");
+	setBreakLineOperation->registerAction(moveCursorDown);
+	_entity->createComponent<InteractionComponent>()->attachOperation(setBreakLineOperation, InteractionType::KEYBOARD_START);
+
+	//--- 0
+	auto changeCursorNewSymbol = std::make_shared<ExpressionOperation>();
+	changeCursorNewSymbol->addArgument(_entity, "TextComponent", "focus");
+	changeCursorNewSymbol->addArgument(_entity, "TextComponent", "editable");
+	changeCursorNewSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+	changeCursorNewSymbol->addArgument(nullptr, "", std::to_string('\n'));
+	changeCursorNewSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( SIZE ${2} = 0 ) AND ! ( ${2} = ${3} )");
+	auto moveNewSymbol = std::make_shared<AssignAction>();
+	moveNewSymbol->addArgument(_entity, "TextComponent", "horizontalScrollerPosition");
+	moveNewSymbol->initializeAction("${0} SET ${0} + 1");
+	changeCursorNewSymbol->registerAction(moveNewSymbol);
+	_entity->createComponent<InteractionComponent>()->attachOperation(changeCursorNewSymbol, InteractionType::KEYBOARD_START);
+	
 	//--- 1
 	auto changeText = std::make_shared<ExpressionOperation>();
 	changeText->addArgument(_entity, "TextComponent", "focus");

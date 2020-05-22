@@ -51,6 +51,12 @@ std::tuple<std::string, int> Expression::arithmeticOperationString(std::string o
 	std::tuple<std::string, int> result;
 	if (operation == "+")
 		result = { (operand[1] + operand[0]), 1 };
+	else if (operation == "-") {
+		std::string tmp = operand[1];
+		int removeNumber = *(operand[0].c_str());
+		tmp.erase(tmp.end() - removeNumber, tmp.end());
+		result = { tmp , 1 };
+	}
 	else if (operation == "=")
 		result = { std::to_string(operand[1] == operand[0]), 1 };
 	else if (operation == ">")
@@ -134,6 +140,10 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 			int vectorSize = std::get<0>(std::get<0>(item)->getMemberVectorString(std::get<1>(item)))->size();
 			result = { std::to_string(vectorSize), 1 };
 		}
+		else if (vectorType == VariableType::varString) {
+			int stringSize = std::get<0>(std::get<0>(item)->getMemberString(std::get<1>(item)))->size();
+			result = { std::to_string(stringSize), 1 };
+		}
 		else if (vectorType == VariableType::varUnknown) {
 			result = { std::to_string(false), 0 };
 		}
@@ -208,8 +218,14 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 		}
 		else if (operandType[i] == VariableType::varString) {
 			auto operandValue = std::get<0>(operandTuple[i])->getMemberString(std::get<1>(operandTuple[i]));
-			if (std::get<1>(operandValue))
-				operandString[i] = { *std::get<0>(operandValue), true };
+			if (std::get<1>(operandValue)) {
+				int index = std::get<2>(operandTuple[i]);
+				if (index >= 0) {
+					operandString[i] = { std::string(1, std::get<0>(operandValue)->at(index)), true };
+				}
+				else
+					operandString[i] = { *std::get<0>(operandValue), true };
+			}
 			else
 				result = { nullptr, std::to_string(false), 0, 0 };
 		}
@@ -266,7 +282,16 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 		}
 		else {
 			OUT_STREAM("WARNING: arithmetic operaton with different argument's type. Casting both to string.\n");
-			std::string operand[2] = { std::to_string((int)std::get<0>(operandFloat[0])), std::get<0>(operandString[1]) };
+			std::string operand[2];
+			operand[1] = std::get<0>(operandString[1]);
+			char symbol = (char)std::get<0>(operandFloat[0]);
+			//if symbol can be treated as char let's convert to char otherwise interpret as int
+			if (std::get<0>(operandFloat[0]) >= 0 && std::get<0>(operandFloat[0]) <= 255) {
+				operand[0] = std::string(1, symbol); 
+			} else {
+				operand[0] = std::to_string(symbol);
+			}
+
 			auto arithmeticResult = arithmeticOperationString(operand, operation);
 			if (std::get<1>(arithmeticResult))
 				result = { nullptr, std::get<0>(arithmeticResult), -1, 1 };
