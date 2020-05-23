@@ -391,27 +391,28 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 			else
 				assert("Not implemented");
 		}
-		auto valueType = std::get<0>(item2)->getVariableType(std::get<1>(item2));
-		if (valueType == VariableType::varFloat) {
-			float value;
-			if (std::get<0>(item2) == nullptr)
-				value = atof(std::get<1>(item2).c_str());
-			else {
-				value = *std::get<0>(std::get<0>(item2)->getMemberFloat(std::get<1>(item2)));
-			}
-			auto targetVector = std::get<0>(std::get<0>(item3)->getMemberVectorFloat(std::get<1>(item3)));
-			targetVector->insert(targetVector->begin() + index, value);
-		}
-		else if (valueType == VariableType::varString) {
+		auto containerType = std::get<0>(item3)->getVariableType(std::get<1>(item3));
+		if (containerType == VariableType::varString) {
 			std::string value;
 			if (std::get<0>(item2) == nullptr)
 				value = std::get<1>(item2);
 			else {
 				value = *std::get<0>(std::get<0>(item2)->getMemberString(std::get<1>(item2)));
 			}
+			
+			if (isNumber(value)) {
+				//interpret second argument as 1 symbol
+				char symbol = (char) atoi(value.c_str());
+				if (symbol == atoi(value.c_str())) {
+					value = std::string(1, symbol);
+				}
+			}
+			
 			auto targetString = std::get<0>(std::get<0>(item3)->getMemberString(std::get<1>(item3)));
 			targetString->insert(targetString->begin() + index, *value.c_str());
 		}
+		else
+			assert("Not implemented");
 		result = { nullptr, std::to_string(true), -1, 1 };
 	}
 	else {

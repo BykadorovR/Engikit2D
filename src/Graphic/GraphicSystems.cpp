@@ -113,18 +113,14 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	int yAllign = 0;
 	float xPos = startX;
 	float yPos = startY;
-	float* verticalScroll = std::get<0>(textObject->getMemberFloat("verticalScrollerPosition"));
-	float* horizontalScroll = std::get<0>(textObject->getMemberFloat("horizontalScrollerPosition"));
-	float currentHorizontalScroll = 0;
-	float currentVerticalScroll = 0;
+	float* scrollerPosition = std::get<0>(textObject->getMemberFloat("scrollerPosition"));
+	float currentScroll = 0;
 	//need to find overall width for row
 	for (auto c = text.begin(); c != text.end(); c++) {
 		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 		if (*c == '\n') {
 			xAllign = 0;
 			yAllign += GlyphsLoader::instance().getGlyphHeight();
-			currentVerticalScroll++;
-			currentHorizontalScroll = 0;
 			if (yPos + yAllign >= std::get<1>(positionEnd)) {
 				break;
 			}
@@ -140,19 +136,13 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 			//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 			xAllign += ((chInfo._advance >> 6) - std::get<0>(chInfo._bearing)); // Bitshift by 6 to get value in pixels (2^6 = 64)
 			//move horizontal scroll to 1 symbol
-			currentHorizontalScroll++;
 		}
 
+		currentScroll++;
 		//TODO: add check that text doesn't go to out of bounds and we don't handle it here
-		if (*horizontalScroll < 0 &&
-			currentVerticalScroll == *verticalScroll &&
-			std::next(c) == text.end())
-			textObject->setMember("horizontalScrollerPosition", currentHorizontalScroll);
-
 		if (*std::get<0>(textObject->getMemberFloat("editable")) && 
 			*std::get<0>(textObject->getMemberFloat("focus")) &&
-			(currentHorizontalScroll == *horizontalScroll) &&
-			currentVerticalScroll == *verticalScroll) {
+			currentScroll == *scrollerPosition) {
 			CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
 			renderChar('|', { xPos + std::get<0>(chInfo._size), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
 			   		   vertexObject, textObject);
