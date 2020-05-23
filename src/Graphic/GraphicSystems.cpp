@@ -142,9 +142,16 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 			//move horizontal scroll to 1 symbol
 			currentHorizontalScroll++;
 		}
+
+		//TODO: add check that text doesn't go to out of bounds and we don't handle it here
+		if (*horizontalScroll < 0 &&
+			currentVerticalScroll == *verticalScroll &&
+			std::next(c) == text.end())
+			textObject->setMember("horizontalScrollerPosition", currentHorizontalScroll);
+
 		if (*std::get<0>(textObject->getMemberFloat("editable")) && 
 			*std::get<0>(textObject->getMemberFloat("focus")) &&
-			currentHorizontalScroll == *horizontalScroll &&
+			(currentHorizontalScroll == *horizontalScroll) &&
 			currentVerticalScroll == *verticalScroll) {
 			CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
 			renderChar('|', { xPos + std::get<0>(chInfo._size), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },

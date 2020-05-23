@@ -3,29 +3,10 @@
 #include <regex>
 #include "Common.h"
 
-AssignAction::AssignAction() {
-	_actionName = "AssignAction";
-	_supportedOperations =
-	{
-		{ "AND",		  { 0, "left" } }, //last argument - the order sequence of the same operations should be executed in.
-		{ "OR",			  { 0, "left" } }, //for example: 1 + 2 + 3 - can be processed from left to right BUT
-		{ ">",			  { 1, "left" } }, // 2 ^ 2 ^ 3 - have to be processed from right to left
-		{ "<",			  { 1, "left" } },
-		{ "SET",		  { 1, "left" } },
-		{ "=",			  { 1, "left" } },
-		{ "!",			  { 1, "left" } },
-		{ "EMPTY",		  { 2, "left" } },
-		{ "CLICK",		  { 2, "left" } },
-		{ "DOUBLE_CLICK", { 2, "left" } },
-		{ "+",			  { 2, "left" } },
-		{ "-",			  { 2, "left" } },
-		{ "/",			  { 3, "left" } },
-		{ "*",			  { 3, "left" } },
-		{ "^",			  { 4, "right"} },
-		{ "SIZE",		  { 5, "left" } },
-		{ "AT",			  { 5, "left" } }
-	};
-	_expression = std::make_shared<Expression>(_supportedOperations);
+AssignAction::AssignAction(std::string actionName) {
+	_actionName = actionName;
+	_expression = std::make_shared<Expression>();
+	_expression->addSupportedOperation("SET",  { 1, "left" });
 }
 
 //TODO: separate common parts from operations and actions
@@ -41,10 +22,11 @@ bool AssignAction::initializeAction(std::string condition) {
 }
 
 bool AssignAction::doAction() {
+	auto supportedOperations = _expression->getSupportedOperations();
 	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > intermediate;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
-		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
+		if (supportedOperations.find(*word) != supportedOperations.end()) {
 			//operations with only 1 argument
 			if (intermediate.size() > 0) {
 				auto oneArgumentResult = _expression->oneArgumentOperation(intermediate.back(), *word);
@@ -61,10 +43,21 @@ bool AssignAction::doAction() {
 					intermediate.pop_back();
 					intermediate.pop_back();
 					intermediate.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult) });
+					continue;
 				}
-				else {
-					assert("Can't find operation");
+
+				auto threeArgumentResult = _expression->threeArgumentOperation(intermediate[intermediate.size() - 1],
+																			   intermediate[intermediate.size() - 2],
+																			   intermediate[intermediate.size() - 3],
+																			   *word);
+				if (std::get<3>(threeArgumentResult)) {
+					intermediate.pop_back();
+					intermediate.pop_back();
+					intermediate.pop_back();
+					intermediate.push_back({ std::get<0>(threeArgumentResult), std::get<1>(threeArgumentResult), std::get<2>(threeArgumentResult) });
+					continue;
 				}
+				assert("Can't find operation");
 			}
 			else
 				assert("Incorrect implementation");

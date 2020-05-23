@@ -37,6 +37,7 @@ PrintComponentsAction::PrintComponentsAction() {
 }
 
 bool PrintComponentsAction::doAction() {
+	//TODO: Once Enter is clicked need to remove focus and editable
 	//should be like a critical section
 	if (*std::get<0>(_list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->getMemberFloat("currentEntity")) == -1) {
 		_list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue(_entity->getIndex(), "currentEntity");

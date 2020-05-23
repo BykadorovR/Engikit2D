@@ -11,7 +11,6 @@ private:
 	std::shared_ptr<Expression> _expression;
 
 	std::vector<std::string> _postfix;
-	std::map<std::string, std::tuple<int, std::string> > _supportedOperations;
 	std::map<int, std::tuple<std::shared_ptr<Entity>, std::string, std::string> > _arguments;
 	std::map<int, std::shared_ptr<View> > _views;
 public:

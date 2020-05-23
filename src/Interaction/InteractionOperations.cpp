@@ -5,26 +5,7 @@
 #include <sstream>
 ExpressionOperation::ExpressionOperation(std::string name) {
 	_name = name;
-	_supportedOperations =
-	{
-		{ "AND",		  { 0, "left" } }, //last argument - the order sequence of the same operations should be executed in.
-		{ "OR",			  { 0, "left" } }, //for example: 1 + 2 + 3 - can be processed from left to right BUT
-		{ ">",			  { 1, "left" } }, // 2 ^ 2 ^ 3 - have to be processed from right to left
-		{ "<",			  { 1, "left" } },
-		{ "=",			  { 1, "left" } },
-		{ "!",			  { 1, "left" } },
-		{ "EMPTY",		  { 2, "left" } },
-		{ "CLICK",		  { 2, "left" } },
-		{ "DOUBLE_CLICK", { 2, "left" } },
-		{ "+",			  { 2, "left" } }, 
-		{ "-",			  { 2, "left" } },
-		{ "/",			  { 3, "left" } },
-		{ "*",			  { 3, "left" } },
-		{ "^",			  { 4, "right"} },
-		{ "SIZE",		  { 5, "left" } },
-		{ "AT",			  { 5, "left" } }
-	};
-	_expression = std::make_shared<Expression>(_supportedOperations);
+	_expression = std::make_shared<Expression>();
 }
 
 std::string ExpressionOperation::addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name) {
@@ -49,12 +30,13 @@ bool ExpressionOperation::initializeOperation(std::string condition) {
 }
 
 bool ExpressionOperation::checkOperation() {
+	auto supportedOperations = _expression->getSupportedOperations();
 	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > intermediate;
 	std::vector<std::shared_ptr<Entity> > intermediateEntities;
 	std::vector<std::shared_ptr<Entity> > intermediateBatchEntities;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
 		//word (token) is operator
-		if (_supportedOperations.find(*word) != _supportedOperations.end()) {
+		if (supportedOperations.find(*word) != supportedOperations.end()) {
 			if (intermediateEntities.size() > 0) {
 				auto result = _expression->oneArgumentOperation(intermediateEntities.back(), *word);
 				if (std::get<1>(result)) {
@@ -86,11 +68,21 @@ bool ExpressionOperation::checkOperation() {
 				intermediate.pop_back();
 				intermediate.pop_back();
 				intermediate.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult) });
-			}
-			else {
-				assert("Can't find operation");
+				continue;
 			}
 			
+			auto threeArgumentResult = _expression->threeArgumentOperation(intermediate[intermediate.size() - 1], 
+																		   intermediate[intermediate.size() - 2],
+																		   intermediate[intermediate.size() - 3],
+																		   *word);
+			if (std::get<3>(threeArgumentResult)) {
+				intermediate.pop_back();
+				intermediate.pop_back();
+				intermediate.pop_back();
+				intermediate.push_back({ std::get<0>(threeArgumentResult), std::get<1>(threeArgumentResult), std::get<2>(threeArgumentResult) });
+				continue;
+			}
+			assert("Can't find operation");
 		}
 		//word (token) is operand
 		else {

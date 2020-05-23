@@ -277,6 +277,7 @@ TextComponent::TextComponent() {
 		{"allignBearingYMax", &_allignBearingYMax},
 		{"verticalScrollerPosition", &_verticalScrollerPosition},
 		{"horizontalScrollerPosition", &_horizontalScrollerPosition},
+		{"continuousScrollerPosition", &_continuousScrollerPosition},
 	};
 	
 	_classVariablesString =
@@ -297,6 +298,7 @@ bool TextComponent::initialize(std::shared_ptr<BufferManager> bufferManager) {
 	_bufferManager = bufferManager;
 	_horizontalScrollerPosition = 0;
 	_verticalScrollerPosition = 0;
+	_continuousScrollerPosition = 0;
 
 	//Texture buffer with temporal values, should be changed in runtime
 	_bufferManager->addBuffer(BufferType::Texture, { 0, 0 }, { 0, 0 }, GlyphsLoader::instance().getAtlas()->getSize());
@@ -315,6 +317,7 @@ bool TextComponent::setText(std::string text) {
 		}
 		else
 			_horizontalScrollerPosition += 1;
+		_continuousScrollerPosition += 1;
 	}
 	//All strings are stored as UTF8, so first we should convert it
 	std::string UTF8String = convertMultibyteToUTF8(text);

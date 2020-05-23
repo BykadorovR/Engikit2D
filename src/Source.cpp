@@ -212,6 +212,7 @@ int main(int argc, char **argv) {
 	while (!glfwWindowShouldClose(mainWindow)) {
 		std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
 		// OpenGL API calls go here...
+		//TODO: separate display and bussness logic (display will be at 60 FPS, but business w/o restriction)
 		drawFrame();
 		glfwSwapBuffers(mainWindow);
 		glfwPollEvents();

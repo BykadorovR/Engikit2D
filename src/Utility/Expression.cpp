@@ -4,8 +4,42 @@
 #include "GraphicComponents.h"
 #include "Common.h"
 
-Expression::Expression(std::map<std::string, std::tuple<int, std::string> > supportedOperations) {
-	_supportedOperations = supportedOperations;
+Expression::Expression() {
+	_supportedOperations =
+	{
+		//TODO: if AND is found need to understand somehow that further processing is unneccessary!!
+
+		{ "AND",		  { 0, "left" } }, //last argument - the order sequence of the same operations should be executed in.
+		{ "OR",			  { 0, "left" } }, //for example: 1 + 2 + 3 - can be processed from left to right BUT
+		{ ">",			  { 1, "left" } }, // 2 ^ 2 ^ 3 - have to be processed from right to left
+		{ "<",			  { 1, "left" } },
+		{ "=",			  { 1, "left" } },
+		{ "!",			  { 1, "left" } },
+		{ "INSERT",       { 1, "left" } },
+		{ "EMPTY",		  { 2, "left" } },
+		{ "CLICK",		  { 2, "left" } },
+		{ "REMOVE",       { 2, "left" } },
+		{ "DOUBLE_CLICK", { 2, "left" } },
+		{ "+",			  { 2, "left" } },
+		{ "-",			  { 2, "left" } },
+		{ "/",			  { 3, "left" } },
+		{ "*",			  { 3, "left" } },
+		{ "^",			  { 4, "right"} },
+		{ "SIZE",		  { 5, "left" } },
+		{ "AT",			  { 5, "left" } }
+	};
+}
+
+bool Expression::addSupportedOperation(std::string name, std::tuple<int, std::string> operation) {
+	if (_supportedOperations.find(name) == _supportedOperations.end()) {
+		_supportedOperations.insert({ name, operation });
+		return false;
+	}
+	return true;
+}
+
+std::map<std::string, std::tuple<int, std::string> > Expression::getSupportedOperations() {
+	return _supportedOperations;
 }
 
 bool Expression::setCondition(std::string condition) {
@@ -262,6 +296,28 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 		}
 		result = { nullptr, "1", -1, 1 };
 	}
+	else if (operation == "REMOVE") {
+		if (!std::get<1>(operandFloat[0]))
+			assert("index is not float");
+
+		int index = std::get<0>(operandFloat[0]);
+		if (operandType[1] == VariableType::varString) {
+			auto targetString = std::get<0>(std::get<0>(operandTuple[1])->getMemberString(std::get<1>(operandTuple[1])));
+			targetString->erase(targetString->begin() + index - 1);
+		}
+		else if (VariableType::varStringVector) {
+			auto targetStringVector = std::get<0>(std::get<0>(operandTuple[1])->getMemberVectorString(std::get<1>(operandTuple[1])));
+			targetStringVector->erase(targetStringVector->begin() + index - 1);
+		}
+		else if (VariableType::varFloatVector) {
+			auto targetFloatVector = std::get<0>(std::get<0>(operandTuple[1])->getMemberVectorFloat(std::get<1>(operandTuple[1])));
+			targetFloatVector->erase(targetFloatVector->begin() + index - 1);
+		}
+		else {
+			assert("not implemented");
+		}
+		result = { nullptr, "1", -1, 1 };
+	}
 	else {
 		//TODO: if operands are different
 		if (std::get<1>(operandFloat[0]) && std::get<1>(operandFloat[1])) {
@@ -283,21 +339,83 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 		else {
 			OUT_STREAM("WARNING: arithmetic operaton with different argument's type. Casting both to string.\n");
 			std::string operand[2];
-			operand[1] = std::get<0>(operandString[1]);
-			char symbol = (char)std::get<0>(operandFloat[0]);
-			//if symbol can be treated as char let's convert to char otherwise interpret as int
-			if (std::get<0>(operandFloat[0]) >= 0 && std::get<0>(operandFloat[0]) <= 255) {
-				operand[0] = std::string(1, symbol); 
-			} else {
-				operand[0] = std::to_string(symbol);
-			}
+			if (operandType[1] == VariableType::varString) {
+				//can contain any amount of symbols
+				operand[1] = std::get<0>(operandString[1]);
 
+				//interpret second argument as 1 symbol
+				char symbol = (char)std::get<0>(operandFloat[0]);
+				//compare if values are equal so we don't lose info due to conversion
+				if (symbol == std::get<0>(operandFloat[0]))
+					operand[0] = std::string(1, symbol);
+				else 
+					//otherwise convert it to string
+					operand[0] = std::to_string(std::get<0>(operandFloat[0]));
+			}
+			else {
+				assert("Not implemented");
+			}
+			
 			auto arithmeticResult = arithmeticOperationString(operand, operation);
 			if (std::get<1>(arithmeticResult))
 				result = { nullptr, std::get<0>(arithmeticResult), -1, 1 };
 			else
 				assert("Not defined arithmetic operation");
 		}
+	}
+
+	return result;
+}
+
+std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expression::threeArgumentOperation(std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item1,
+																										  std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item2,
+																										  std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item3,
+																										  std::string operation) {
+	std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> result;
+	//item3 - container we wanna insert to
+	//item2 - value
+	//item1 - position
+	//TODO: use approach from two arguments to determine type/const/etc
+	if (operation == "INSERT") {
+		int index;
+		//index can be const
+		if (std::get<0>(item1) == nullptr)
+			//Suppose index is float
+			index = atoi(std::get<1>(item1).c_str());
+		else {
+			auto type = std::get<0>(item1)->getVariableType(std::get<1>(item1));
+			if (type == VariableType::varFloat)
+				index = *std::get<0>(std::get<0>(item1)->getMemberFloat(std::get<1>(item1)));
+			else if (type == VariableType::varFloatVector)
+				index = std::get<0>(std::get<0>(item1)->getMemberVectorFloat(std::get<1>(item1)))->at(std::get<2>(item1));
+			else
+				assert("Not implemented");
+		}
+		auto valueType = std::get<0>(item2)->getVariableType(std::get<1>(item2));
+		if (valueType == VariableType::varFloat) {
+			float value;
+			if (std::get<0>(item2) == nullptr)
+				value = atof(std::get<1>(item2).c_str());
+			else {
+				value = *std::get<0>(std::get<0>(item2)->getMemberFloat(std::get<1>(item2)));
+			}
+			auto targetVector = std::get<0>(std::get<0>(item3)->getMemberVectorFloat(std::get<1>(item3)));
+			targetVector->insert(targetVector->begin() + index, value);
+		}
+		else if (valueType == VariableType::varString) {
+			std::string value;
+			if (std::get<0>(item2) == nullptr)
+				value = std::get<1>(item2);
+			else {
+				value = *std::get<0>(std::get<0>(item2)->getMemberString(std::get<1>(item2)));
+			}
+			auto targetString = std::get<0>(std::get<0>(item3)->getMemberString(std::get<1>(item3)));
+			targetString->insert(targetString->begin() + index, *value.c_str());
+		}
+		result = { nullptr, std::to_string(true), -1, 1 };
+	}
+	else {
+		result = { nullptr, std::to_string(false), -1, 1 };
 	}
 
 	return result;

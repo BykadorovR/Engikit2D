@@ -132,6 +132,7 @@ private:
 	float _editable;
 	float _verticalScrollerPosition;
 	float _horizontalScrollerPosition;
+	float _continuousScrollerPosition;
 	float _page;
 	float _totalPages;
 	float _lineHeight;
