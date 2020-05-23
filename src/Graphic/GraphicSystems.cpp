@@ -144,7 +144,7 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 			*std::get<0>(textObject->getMemberFloat("focus")) &&
 			currentScroll == *scrollerPosition) {
 			CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
-			renderChar('|', { xPos + std::get<0>(chInfo._size), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
+			renderChar('|', { xPos + (chInfo._advance >> 6), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
 			   		   vertexObject, textObject);
 		}
 	}
