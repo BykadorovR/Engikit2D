@@ -6,9 +6,128 @@
 #include "InteractionActions.h"
 #include "InteractionComponents.h"
 #include "CustomComponents.h"
+#include "GLFW/glfw3.h"
 
 ScrollerVerticalDecorator::ScrollerVerticalDecorator(std::string name) {
 	_viewName = name;
+}
+
+bool ScrollerVerticalDecorator::initialize() {
+	//TODO: we should add custom component to entity?
+	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
+	//entity == nullptr means that view is composite
+	if (parentEntity == nullptr) {
+		for (auto view : _parent->getViews()) {
+			//attach all components to parent entity or first child view
+			if (view->getEntity()->getComponent<ObjectComponent>()) {
+				parentEntity = view->getEntity();
+				break;
+			}
+		}
+	}
+
+	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
+	std::tuple<float, float> scrollerSize = { 20, 20 };
+	std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
+	std::tuple<float, float> scrollerDownPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) + std::get<1>(size) - std::get<0>(scrollerSize) };
+	if (_parent->getName() == "List") {
+		auto lastPosition = _parent->getViews().back()->getEntity()->getComponent<ObjectComponent>()->getPosition();
+		auto lastSize = _parent->getViews().back()->getEntity()->getComponent<ObjectComponent>()->getSize();
+		scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(lastSize), std::get<1>(lastPosition) + std::get<1>(lastSize) - std::get<0>(scrollerSize) };
+	}
+	std::tuple<float, float> scrollerProgressSize = { 20, 10 };
+	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
+
+	getScrollerProgress()->initialize();
+	getScrollerProgress()->setSize(scrollerProgressSize);
+	getScrollerProgress()->setColorMask({ 0, 0, 0, 0 });
+	getScrollerProgress()->setColorAddition({ 0.5, 0.5, 0, 1 });
+	getScrollerProgress()->getEntity()->createComponent<MouseComponent>();
+	getScrollerProgress()->getEntity()->createComponent<KeyboardComponent>();
+
+	getScrollerUp()->initialize();
+	getScrollerUp()->setSize(scrollerSize);
+	getScrollerUp()->setColorMask({ 0, 0, 0, 0 });
+	getScrollerUp()->setColorAddition({ 1, 0, 0.5, 1 });
+	getScrollerUp()->getEntity()->createComponent<MouseComponent>();
+	getScrollerUp()->getEntity()->createComponent<KeyboardComponent>();
+
+	getScrollerDown()->initialize();
+	getScrollerDown()->setSize(scrollerSize);
+	getScrollerDown()->setColorMask({ 0, 0, 0, 0 });
+	getScrollerDown()->setColorAddition({ 0, 1, 1, 1 });
+	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
+	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
+
+	if (_parent->getName() == "Label") {
+		//in init we should parse text and find all \n to do initial initialization
+		auto text = parentEntity->getComponent<TextComponent>()->getText();
+		int totalPages = 0;
+		for (int i = 0; i < text.size(); i++) {
+			if (text[i] == '\n')
+				totalPages++;
+		}
+		parentEntity->createComponent<CustomFloatComponent>()->setMember("startPage", 0);
+		parentEntity->createComponent<CustomFloatComponent>()->setMember("totalPages", totalPages);
+	}
+
+	if (_parent->getName() == "Label") {
+		//if pressed enter = totalPages +1
+		//if pressed backspace and symbol under cursor is \n = totalPages -1
+		//if totalPages - startPage > object can have = startPage +1
+
+		//--- 0
+		{
+			auto enterPressed = std::make_shared<ExpressionOperation>();
+			enterPressed->addArgument(parentEntity, "TextComponent", "focus");
+			enterPressed->addArgument(parentEntity, "TextComponent", "editable");
+			enterPressed->addArgument(parentEntity, "KeyboardComponent", "code");
+			enterPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+			enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+			auto increaseTotalPages = std::make_shared<AssignAction>();
+			increaseTotalPages->addArgument(parentEntity, "CustomFloatComponent", "totalPages");
+			increaseTotalPages->initializeAction("${0} SET ${0} + 1");
+			enterPressed->registerAction(increaseTotalPages);
+			parentEntity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
+		}
+		//--- 1
+		{
+			auto backspacePressed = std::make_shared<ExpressionOperation>();
+			backspacePressed->addArgument(parentEntity, "TextComponent", "focus");
+			backspacePressed->addArgument(parentEntity, "TextComponent", "editable");
+			backspacePressed->addArgument(parentEntity, "KeyboardComponent", "code");
+			backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+			backspacePressed->addArgument(parentEntity, "TextComponent", "text");
+			backspacePressed->addArgument(nullptr, "", std::to_string('\n'));
+			backspacePressed->addArgument(parentEntity, "TextComponent", "cursorPosition");
+			backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} AT ${6} = ${5}");
+			auto decreaseTotalPages = std::make_shared<AssignAction>();
+			decreaseTotalPages->addArgument(parentEntity, "CustomFloatComponent", "totalPages");
+			decreaseTotalPages->initializeAction("${0} SET ${0} - 1");
+			backspacePressed->registerAction(decreaseTotalPages);
+			_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_START);
+		}
+
+		//--- 2
+		{
+			auto textIsInBounds = std::make_shared<ExpressionOperation>();
+			textIsInBounds->addArgument(_entity, "TextComponent", "focus");
+			textIsInBounds->addArgument(_entity, "TextComponent", "editable");
+			textIsInBounds->addArgument(_entity, "CustomFloatComponent", "totalPages");
+			textIsInBounds->addArgument(_entity, "CustomFloatComponent", "startPages");
+			textIsInBounds->addArgument(_entity, "ObjectComponent", "sizeY");
+			textIsInBounds->addArgument(nullptr, "", std::to_string(GlyphsLoader::instance().getGlyphHeight()));
+			textIsInBounds->initializeOperation("${0} = 1 AND ${1} = 1 AND ( ${2} - ${3} ) * ${5} > ${4}");
+			auto increaseStartPage = std::make_shared<AssignAction>();
+			increaseStartPage->addArgument(parentEntity, "CustomFloatComponent", "startPage");
+			increaseStartPage->initializeAction("${0} SET ${0} + 1");
+			textIsInBounds->registerAction(increaseStartPage);
+			_entity->createComponent<InteractionComponent>()->attachOperation(textIsInBounds, InteractionType::KEYBOARD_START);
+		}
+	}
+	
+	return false;
 }
 
 /*
@@ -22,7 +141,13 @@ List of operation-actions:
 6) if "current page > 1" then "show decorator"
 7) if "page == 0 and text size < view height" then "hide decorator"
 */
-bool ScrollerVerticalDecorator::initialize() {
+bool ScrollerVerticalDecorator::initializeOld() {
+	//TODO: we should add custom component to entity?
+	//if pressed enter = totalPages +1 +
+	//if pressed backspace and symbol under cursor is \n = totalPages -1 +
+	//in init we should parse text and find all \n to do initial initialization +
+	//if totalPages - startPage > object can have = startPage +1
+	//in GraphicSystem we check if customComponent with ScrollerVerticalDecorator exists and render chars starting from startPage
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
 	//entity == nullptr means that view is composite
 	if (parentEntity == nullptr) {
@@ -69,6 +194,71 @@ bool ScrollerVerticalDecorator::initialize() {
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
 
+	if (_parent->getName() == "Label") {
+		auto text = parentEntity->getComponent<TextComponent>()->getText();
+		int totalPages = 0;
+		for (int i = 0; i < text.size(); i++) {
+			if (text[i] == '\n')
+				totalPages++;
+		}
+		parentEntity->createComponent<CustomFloatComponent>()->setMember("startPage", 0);
+		parentEntity->createComponent<CustomFloatComponent>()->setMember("totalPages", totalPages);
+	}
+	else if (_parent->getName() == "List") {
+		parentEntity->createComponent<CustomFloatComponent>()->setMember("startPage", 0);
+	}
+
+	if (_parent->getName() == "Label") {
+		//--- 0
+		{
+			auto enterPressed = std::make_shared<ExpressionOperation>();
+			enterPressed->addArgument(parentEntity, "TextComponent", "focus");
+			enterPressed->addArgument(parentEntity, "TextComponent", "editable");
+			enterPressed->addArgument(parentEntity, "KeyboardComponent", "code");
+			enterPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+			enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+			auto increaseTotalPages = std::make_shared<AssignAction>();
+			increaseTotalPages->addArgument(parentEntity, "CustomFloatComponent", "totalPages");
+			increaseTotalPages->initializeAction("${0} SET ${0} + 1");
+			enterPressed->registerAction(increaseTotalPages);
+			parentEntity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
+		}
+		//--- 1
+		{
+			auto backspacePressed = std::make_shared<ExpressionOperation>();
+			backspacePressed->addArgument(parentEntity, "TextComponent", "focus");
+			backspacePressed->addArgument(parentEntity, "TextComponent", "editable");
+			backspacePressed->addArgument(parentEntity, "KeyboardComponent", "code");
+			backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+			backspacePressed->addArgument(parentEntity, "TextComponent", "text");
+			backspacePressed->addArgument(nullptr, "", std::to_string('\n'));
+			backspacePressed->addArgument(parentEntity, "TextComponent", "cursorPosition");
+			backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} AT ${6} = ${5}");
+			auto decreaseTotalPages = std::make_shared<AssignAction>();
+			decreaseTotalPages->addArgument(parentEntity, "CustomFloatComponent", "totalPages");
+			decreaseTotalPages->initializeAction("${0} SET ${0} - 1");
+			backspacePressed->registerAction(decreaseTotalPages);
+			_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_START);
+		}
+
+		//--- 2
+		{
+			//if totalPages - startPage > object can have = startPage +1
+			auto textIsInBounds = std::make_shared<ExpressionOperation>();
+			textIsInBounds->addArgument(_entity, "TextComponent", "focus");
+			textIsInBounds->addArgument(_entity, "TextComponent", "editable");
+			textIsInBounds->addArgument(_entity, "CustomFloatComponent", "totalPages");
+			textIsInBounds->addArgument(_entity, "CustomFloatComponent", "startPages");
+			textIsInBounds->addArgument(_entity, "ObjectComponent", "sizeY");
+			textIsInBounds->addArgument(nullptr, "", std::to_string(GlyphsLoader::instance().getGlyphHeight()));
+			textIsInBounds->initializeOperation("${0} = 1 AND ${1} = 1 AND ( ${2} - ${3} ) * ${5} > ${4}");
+			auto increaseStartPage = std::make_shared<AssignAction>();
+			increaseStartPage->addArgument(parentEntity, "CustomFloatComponent", "totalPages");
+			increaseStartPage->initializeAction("${0} SET ${0} - 1");
+			textIsInBounds->registerAction(increaseStartPage);
+			_entity->createComponent<InteractionComponent>()->attachOperation(textIsInBounds, InteractionType::KEYBOARD_START);
+		}
+	}
 	//--- 0 //TODO: need to make some more smart condition
 	auto keepPosition = std::make_shared<ExpressionOperation>();
 	keepPosition->initializeOperation("1");
@@ -113,7 +303,7 @@ bool ScrollerVerticalDecorator::initialize() {
 		//--- 1
 		auto textOutOfBoundsDown = std::make_shared<ExpressionOperation>();
 		textOutOfBoundsDown->addArgument(parentEntity, "ObjectComponent", "sizeY");
-		textOutOfBoundsDown->addArgument(parentEntity, "TextComponent", "lineHeight");
+		textOutOfBoundsDown->addArgument(nullptr, "", std::to_string(GlyphsLoader::instance().getGlyphHeight()));
 		textOutOfBoundsDown->addArgument(parentEntity, "TextComponent", "page");
 		textOutOfBoundsDown->addArgument(parentEntity, "TextComponent", "totalPages");
 		textOutOfBoundsDown->addArgument(parentEntity, "TextComponent", "spacingCoeff");

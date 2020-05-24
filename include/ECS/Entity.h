@@ -5,7 +5,7 @@
 
 class Entity {
 public:
-	Entity();
+	Entity(std::string name = "Entity");
 	/*
 	Create component if doesn't exist.
 	*/
@@ -52,8 +52,11 @@ public:
 	std::shared_ptr<Component> getComponent(std::string name);
 	std::vector<std::shared_ptr<Component> > getComponents();
 
+	std::string getName();
+
 private:
 	std::vector<std::shared_ptr<Component> > _components;
 	bool _editorMode;
 	int _index;
+	std::string _name;
 };

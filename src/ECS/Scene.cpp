@@ -7,8 +7,8 @@ Scene::Scene(std::string name) {
 	_name = name;
 }
 
-std::shared_ptr<Entity> Scene::createEntity() {
-	std::shared_ptr<Entity> entity = _entityManager->create();
+std::shared_ptr<Entity> Scene::createEntity(std::string name) {
+	std::shared_ptr<Entity> entity = _entityManager->create(name);
 	return entity;
 }
 

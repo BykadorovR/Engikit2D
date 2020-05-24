@@ -1,8 +1,9 @@
 #include "Entity.h"
 
-Entity::Entity() {
+Entity::Entity(std::string name) {
 	_index = -1;
 	_editorMode = true;
+	_name = name;
 }
 
 int Entity::getIndex() {
@@ -42,4 +43,8 @@ std::shared_ptr<Component> Entity::getComponent(std::string name) {
 	}
 
 	return nullptr;
+}
+
+std::string Entity::getName() {
+	return _name;
 }

@@ -1,8 +1,8 @@
 #include "EntityManager.h"
 #include <array>
 
-std::shared_ptr<Entity> EntityManager::create() {
-	std::shared_ptr<Entity> entity = std::make_shared<Entity>();
+std::shared_ptr<Entity> EntityManager::create(std::string name) {
+	std::shared_ptr<Entity> entity = std::make_shared<Entity>(name);
 	_entities.push_back({ entity, EntityState::ENTITY_REGISTERED });
 	int index = _entities.size() == 1 ? 0 : _entities.size() - 2;
 	entity->setIndex(std::get<0>(_entities[index])->getIndex() + 1);

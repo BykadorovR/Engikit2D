@@ -6,7 +6,7 @@
 #include <locale>
 #include <codecvt>
 #include <chrono>
-
+#include "CustomComponents.h"
 DrawSystem::DrawSystem() {
 }
 
@@ -92,8 +92,10 @@ bool renderChar(wchar_t c, std::tuple<float, float> charPosition, std::shared_pt
 	return false;
 }
 
-void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::shared_ptr<TextComponent> textObject) {
+void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 	std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+	std::shared_ptr<ObjectComponent> vertexObject = entity->getComponent<ObjectComponent>();
+	std::shared_ptr<TextComponent> textObject = entity->getComponent<TextComponent>();
 	std::tuple<TextAllignment, TextAllignment> textAllignment = textObject->getAllignment();
 	std::tuple<float, float> positionStart = vertexObject->getPosition();
 	std::tuple<float, float> positionEnd = { std::get<0>(vertexObject->getPosition()) + std::get<0>(vertexObject->getSize()),
@@ -113,18 +115,36 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 	int yAllign = 0;
 	float xPos = startX;
 	float yPos = startY;
-	float* scrollerPosition = std::get<0>(textObject->getMemberFloat("scrollerPosition"));
-	float currentScroll = 0;
-	//need to find overall width for row
+	float* cursorPosition = std::get<0>(textObject->getMemberFloat("cursorPosition"));
+	float currentCursor = 0;
+	float currentPage = 0;
+	std::tuple<float, bool> startPage = { 0, false };
+	//in GraphicSystem we check if customComponent with ScrollerVerticalDecorator exists and render chars starting from startPage
+	auto customFloatObject = entity->getComponent<CustomFloatComponent>();
+	if (customFloatObject) {
+		bool correctness = std::get<1>(customFloatObject->getMemberFloat("startPage"));
+		std::get<1>(startPage) = correctness;
+		if (correctness)
+			std::get<0>(startPage) = *std::get<0>(customFloatObject->getMemberFloat("startPage"));
+	}
 	for (auto c = text.begin(); c != text.end(); c++) {
-		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 		if (*c == '\n') {
 			xAllign = 0;
 			yAllign += GlyphsLoader::instance().getGlyphHeight();
+			currentPage++;
+			//once we reach the same page as in decorator we should start from 0;0
+			if (std::get<1>(startPage) && std::get<0>(startPage) > 0 && std::get<0>(startPage) == currentPage)
+				yAllign = 0;
+
 			if (yPos + yAllign >= std::get<1>(positionEnd)) {
 				break;
 			}
 		}
+
+		if (std::get<1>(startPage) && currentPage < std::get<0>(startPage))
+			continue;
+
+		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 		GLfloat xPos = startX + xAllign;
 		if (xPos >= std::get<0>(positionEnd))
 			continue;
@@ -138,11 +158,11 @@ void DrawSystem::textUpdate(std::shared_ptr<ObjectComponent> vertexObject, std::
 			//move horizontal scroll to 1 symbol
 		}
 
-		currentScroll++;
+		currentCursor++;
 		//TODO: add check that text doesn't go to out of bounds and we don't handle it here
 		if (*std::get<0>(textObject->getMemberFloat("editable")) && 
 			*std::get<0>(textObject->getMemberFloat("focus")) &&
-			currentScroll == *scrollerPosition) {
+			currentCursor == *cursorPosition) {
 			CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
 			renderChar('|', { xPos + (chInfo._advance >> 6), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
 			   		   vertexObject, textObject);
@@ -344,7 +364,7 @@ void DrawSystem::update() {
 			textureUpdate(textureObject);
 
 		auto textObject = std::get<0>(entity)->getComponent<TextComponent>();
-		if (textObject)
-			textUpdate(vertexObject, textObject);
+		if (textObject && vertexObject)
+			textUpdate(std::get<0>(entity));
 	}
 }

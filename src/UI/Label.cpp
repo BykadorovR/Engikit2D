@@ -14,10 +14,13 @@ Label::Label(std::string name = "Label") {
 }
 
 /*
-List of operation-actions:
-1) if "focus && editable" then "add symbol to text"
-2) if "clicked inside" then "set focus"
-3) if "clicked outside" then "unset focus"
+0) if "clicked outside" then "unset focus"
+1) if "clicked inside" then "set focus"
+2) if "focus && editable && left key" then "decrease cursor position"
+3) if "focus && editable && right key" then "increase cursor position"
+4) if "focus && editable && backspace" then "remove left from cursor symbol && decrease cursor position"
+5) if "focus && editable && enter" then "insert line break && increase cursor position"
+6) if "focus && editable && any symbol != "" " then "add symbol && increase cursor position"
 */
 bool Label::initialize() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
@@ -27,122 +30,121 @@ bool Label::initialize() {
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
 
-	//--- -4
-	{
-		auto removeLastOperation = std::make_shared<ExpressionOperation>();
-		removeLastOperation->addArgument(_entity, "TextComponent", "focus");
-		removeLastOperation->addArgument(_entity, "TextComponent", "editable");
-		removeLastOperation->addArgument(_entity, "KeyboardComponent", "code");
-		removeLastOperation->addArgument(nullptr, "", std::to_string(GLFW_KEY_LEFT));
-		removeLastOperation->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
-		auto moveCursorBack = std::make_shared<AssignAction>();
-		moveCursorBack->addArgument(_entity, "TextComponent", "scrollerPosition");
-		moveCursorBack->initializeAction("${0} SET ${0} - 1");
-		removeLastOperation->registerAction(moveCursorBack);
-		_entity->createComponent<InteractionComponent>()->attachOperation(removeLastOperation, InteractionType::KEYBOARD_START);
-	}
-
-	//--- -4
-	{
-		auto removeLastOperation = std::make_shared<ExpressionOperation>();
-		removeLastOperation->addArgument(_entity, "TextComponent", "focus");
-		removeLastOperation->addArgument(_entity, "TextComponent", "editable");
-		removeLastOperation->addArgument(_entity, "KeyboardComponent", "code");
-		removeLastOperation->addArgument(nullptr, "", std::to_string(GLFW_KEY_RIGHT));
-		removeLastOperation->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
-		auto moveCursorBack = std::make_shared<AssignAction>();
-		moveCursorBack->addArgument(_entity, "TextComponent", "scrollerPosition");
-		moveCursorBack->initializeAction("${0} SET ${0} + 1");
-		removeLastOperation->registerAction(moveCursorBack);
-		_entity->createComponent<InteractionComponent>()->attachOperation(removeLastOperation, InteractionType::KEYBOARD_START);
-	}
-
-	//--- -2
-	auto removeLastOperation = std::make_shared<ExpressionOperation>();
-	removeLastOperation->addArgument(_entity, "TextComponent", "focus");
-	removeLastOperation->addArgument(_entity, "TextComponent", "editable");
-	removeLastOperation->addArgument(_entity, "KeyboardComponent", "code");
-	removeLastOperation->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
-	removeLastOperation->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
-	auto removeLastAction = std::make_shared<AssignAction>();
-	removeLastAction->addArgument(_entity, "TextComponent", "text");
-	removeLastAction->addArgument(_entity, "TextComponent", "scrollerPosition");
-	removeLastAction->initializeAction("${0} REMOVE ${1}");
-	removeLastOperation->registerAction(removeLastAction);
-	auto moveCursorBack = std::make_shared<AssignAction>();
-	moveCursorBack->addArgument(_entity, "TextComponent", "scrollerPosition");
-	moveCursorBack->initializeAction("${0} SET ${0} - 1");
-	removeLastOperation->registerAction(moveCursorBack);
-	_entity->createComponent<InteractionComponent>()->attachOperation(removeLastOperation, InteractionType::KEYBOARD_START);
-
-	//--- -1
-	auto setBreakLineOperation = std::make_shared<ExpressionOperation>();
-	setBreakLineOperation->addArgument(_entity, "TextComponent", "focus");
-	setBreakLineOperation->addArgument(_entity, "TextComponent", "editable");
-	setBreakLineOperation->addArgument(_entity, "KeyboardComponent", "code");
-	setBreakLineOperation->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
-	setBreakLineOperation->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
-	auto setBreakLineAction = std::make_shared<AssignAction>();
-	setBreakLineAction->addArgument(_entity, "TextComponent", "text");
-	setBreakLineAction->addArgument(nullptr, "", std::to_string('\n'));
-	setBreakLineAction->addArgument(_entity, "TextComponent", "scrollerPosition");
-	setBreakLineAction->initializeAction("${0} INSERT ${1} ${2}");
-	setBreakLineOperation->registerAction(setBreakLineAction);
-	auto moveCursorDown = std::make_shared<AssignAction>();
-	moveCursorDown->addArgument(_entity, "TextComponent", "scrollerPosition");
-	moveCursorDown->initializeAction("${0} SET ${0} + 1");
-	setBreakLineOperation->registerAction(moveCursorDown);
-	_entity->createComponent<InteractionComponent>()->attachOperation(setBreakLineOperation, InteractionType::KEYBOARD_START);
-
-	//--- 1
-	auto changeText = std::make_shared<ExpressionOperation>();
-	changeText->addArgument(_entity, "TextComponent", "focus");
-	changeText->addArgument(_entity, "TextComponent", "editable");
-	changeText->addArgument(_entity, "KeyboardComponent", "symbol");
-	changeText->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
-	auto editText = std::make_shared<AssignAction>();
-	editText->addArgument(_entity, "KeyboardComponent", "symbol");
-	editText->addArgument(_entity, "TextComponent", "text");
-	editText->addArgument(_entity, "TextComponent", "scrollerPosition");
-	editText->initializeAction("${1} INSERT ${0} ${2}");
-	changeText->registerAction(editText);
-	_entity->createComponent<InteractionComponent>()->attachOperation(changeText, InteractionType::KEYBOARD_START);
-	//--- 1
-	
 	//--- 0
-	auto changeCursorNewSymbol = std::make_shared<ExpressionOperation>();
-	changeCursorNewSymbol->addArgument(_entity, "TextComponent", "focus");
-	changeCursorNewSymbol->addArgument(_entity, "TextComponent", "editable");
-	changeCursorNewSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
-	changeCursorNewSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( SIZE ${2} = 0 )");
-	auto moveNewSymbol = std::make_shared<AssignAction>();
-	moveNewSymbol->addArgument(_entity, "TextComponent", "scrollerPosition");
-	moveNewSymbol->initializeAction("${0} SET ${0} + 1");
-	changeCursorNewSymbol->registerAction(moveNewSymbol);
-	_entity->createComponent<InteractionComponent>()->attachOperation(changeCursorNewSymbol, InteractionType::KEYBOARD_START);
+	{
+		auto clickInside = std::make_shared<ExpressionOperation>();
+		clickInside->addArgument(_entity, "", "");
+		//TODO: Add constants support to operations
+		clickInside->initializeOperation("CLICK ${0}");
+		auto changeFocusOn = std::make_shared<AssignAction>();
+		changeFocusOn->addArgument(_entity, "TextComponent", "focus");
+		changeFocusOn->initializeAction("${0} SET 1");
+		clickInside->registerAction(changeFocusOn);
+		_entity->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE_START);
+	}
+
+	//--- 1
+	{
+		auto clickOutside = std::make_shared<ExpressionOperation>();
+		clickOutside->addArgument(_entity, "", "");
+		clickOutside->initializeOperation("! ( CLICK ${0} )");
+		auto changeFocusOff = std::make_shared<AssignAction>();
+		changeFocusOff->addArgument(_entity, "TextComponent", "focus");
+		changeFocusOff->initializeAction("${0} SET 0");
+		clickOutside->registerAction(changeFocusOff);
+		_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE_START);
+	}
 
 	//--- 2
-	auto clickInside = std::make_shared<ExpressionOperation>();
-	clickInside->addArgument(_entity, "", "");
-	//TODO: Add constants support to operations
-	clickInside->initializeOperation("CLICK ${0}");
-	auto changeFocusOn = std::make_shared<AssignAction>();
-	changeFocusOn->addArgument(_entity, "TextComponent", "focus");
-	changeFocusOn->initializeAction("${0} SET 1");
-	clickInside->registerAction(changeFocusOn);
-	_entity->createComponent<InteractionComponent>()->attachOperation(clickInside, InteractionType::MOUSE_START);
-	//--- 2
+	{
+		auto leftKeyPressed = std::make_shared<ExpressionOperation>();
+		leftKeyPressed->addArgument(_entity, "TextComponent", "focus");
+		leftKeyPressed->addArgument(_entity, "TextComponent", "editable");
+		leftKeyPressed->addArgument(_entity, "KeyboardComponent", "code");
+		leftKeyPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_LEFT));
+		leftKeyPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		auto changeScrollerLeft = std::make_shared<AssignAction>();
+		changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
+		changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
+		leftKeyPressed->registerAction(changeScrollerLeft);
+		_entity->createComponent<InteractionComponent>()->attachOperation(leftKeyPressed, InteractionType::KEYBOARD_START);
+	}
 
 	//--- 3
-	auto clickOutside = std::make_shared<ExpressionOperation>();
-	clickOutside->addArgument(_entity, "", "");
-	clickOutside->initializeOperation("! ( CLICK ${0} )");
-	auto changeFocusOff = std::make_shared<AssignAction>();
-	changeFocusOff->addArgument(_entity, "TextComponent", "focus");
-	changeFocusOff->initializeAction("${0} SET 0");
-	clickOutside->registerAction(changeFocusOff);
-	_entity->createComponent<InteractionComponent>()->attachOperation(clickOutside, InteractionType::MOUSE_START);
-	//--- 3
+	{
+		auto rightKeyPressed = std::make_shared<ExpressionOperation>();
+		rightKeyPressed->addArgument(_entity, "TextComponent", "focus");
+		rightKeyPressed->addArgument(_entity, "TextComponent", "editable");
+		rightKeyPressed->addArgument(_entity, "KeyboardComponent", "code");
+		rightKeyPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_RIGHT));
+		rightKeyPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		auto changeScrollerRight = std::make_shared<AssignAction>();
+		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+		rightKeyPressed->registerAction(changeScrollerRight);
+		_entity->createComponent<InteractionComponent>()->attachOperation(rightKeyPressed, InteractionType::KEYBOARD_START);
+	}
+
+	//--- 4
+	{
+		auto backspacePressed = std::make_shared<ExpressionOperation>();
+		backspacePressed->addArgument(_entity, "TextComponent", "focus");
+		backspacePressed->addArgument(_entity, "TextComponent", "editable");
+		backspacePressed->addArgument(_entity, "KeyboardComponent", "code");
+		backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+		backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		auto removeLastSymbol = std::make_shared<AssignAction>();
+		removeLastSymbol->addArgument(_entity, "TextComponent", "text");
+		removeLastSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+		removeLastSymbol->initializeAction("${0} REMOVE ${1}");
+		backspacePressed->registerAction(removeLastSymbol);
+		auto changeScrollerLeft = std::make_shared<AssignAction>();
+		changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
+		changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
+		backspacePressed->registerAction(changeScrollerLeft);
+		_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_START);
+	}
+
+	//--- 5
+	{
+		auto enterPressed = std::make_shared<ExpressionOperation>();
+		enterPressed->addArgument(_entity, "TextComponent", "focus");
+		enterPressed->addArgument(_entity, "TextComponent", "editable");
+		enterPressed->addArgument(_entity, "KeyboardComponent", "code");
+		enterPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+		enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		auto addBreakLine = std::make_shared<AssignAction>();
+		addBreakLine->addArgument(_entity, "TextComponent", "text");
+		addBreakLine->addArgument(nullptr, "", std::to_string('\n'));
+		addBreakLine->addArgument(_entity, "TextComponent", "cursorPosition");
+		addBreakLine->initializeAction("${0} INSERT ${1} ${2}");
+		enterPressed->registerAction(addBreakLine);
+		auto changeScrollerRight = std::make_shared<AssignAction>();
+		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+		enterPressed->registerAction(changeScrollerRight);
+		_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
+	}
+
+	//--- 6
+	{
+		auto inputSymbol = std::make_shared<ExpressionOperation>();
+		inputSymbol->addArgument(_entity, "TextComponent", "focus");
+		inputSymbol->addArgument(_entity, "TextComponent", "editable");
+		inputSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+		inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
+		auto addSymbol = std::make_shared<AssignAction>();
+		addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+		addSymbol->addArgument(_entity, "TextComponent", "text");
+		addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+		addSymbol->initializeAction("${1} INSERT ${0} ${2}");
+		inputSymbol->registerAction(addSymbol);
+		auto changeScrollerRight = std::make_shared<AssignAction>();
+		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+		inputSymbol->registerAction(changeScrollerRight);
+		_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
+	}
 
 	return false;
 }
@@ -209,7 +211,7 @@ LabelFactory::LabelFactory(std::shared_ptr<Scene> activeScene) {
 
 std::shared_ptr<View> LabelFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<Label> label = std::make_shared<Label>(name);
-	label->setEntity(_activeScene->createEntity());
+	label->setEntity(_activeScene->createEntity("Label"));
 	label->getEntity()->createComponent<ObjectComponent>();
 	label->getEntity()->createComponent<TextComponent>();
 	label->setParent(parent);

@@ -12,7 +12,7 @@ private:
 public:
 	Scene(std::string name);
 
-	std::shared_ptr<Entity> createEntity();
+	std::shared_ptr<Entity> createEntity(std::string name = "Entity");
 	bool removeEntity(int entityID);
 	bool removeEntity(const std::shared_ptr<Entity>& entity);
 	bool addEntity(std::shared_ptr<Entity> entity);

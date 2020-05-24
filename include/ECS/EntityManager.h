@@ -11,7 +11,7 @@ enum EntityState {
 
 class EntityManager {
 public:
-	std::shared_ptr<Entity> create();
+	std::shared_ptr<Entity> create(std::string name);
 	bool unregisterEntity(std::shared_ptr<Entity> entity);
 	bool registerEntity(std::shared_ptr<Entity> entity);
 	bool removeEntity(const std::shared_ptr<Entity>& entity);

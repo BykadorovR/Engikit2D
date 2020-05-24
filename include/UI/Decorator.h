@@ -6,6 +6,7 @@ class ScrollerVerticalDecorator : public View {
 public:
 	ScrollerVerticalDecorator(std::string name = "ScrollerDecorator");
 	bool initialize();
+	bool initializeOld();
 
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
 	bool setScrollerDown(std::shared_ptr<View> scrollerDown);
