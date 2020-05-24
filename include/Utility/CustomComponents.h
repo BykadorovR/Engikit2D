@@ -16,7 +16,7 @@ class CustomFloatArrayComponent : public OperationComponent {
 public:
 	CustomFloatArrayComponent();
 	bool initializeEmpty(std::string name);
-	bool addCustomValue(float value, std::string name);
+	bool addCustomValue(std::string name, float value);
 	bool clear(std::string name);
 private:
 	//should be extended to map or vector of vectors
@@ -27,7 +27,7 @@ class CustomFloatComponent : public OperationComponent {
 public:
 	CustomFloatComponent();
 	bool initializeEmpty(std::string name);
-	bool addCustomValue(float value, std::string name);
+	bool addCustomValue(std::string name, float value);
 private:
 	std::map<std::string, float > _floats;
 };

@@ -136,20 +136,21 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			if (std::get<1>(startPage) && std::get<0>(startPage) > 0 && std::get<0>(startPage) == currentPage)
 				yAllign = 0;
 
-			if (yPos + yAllign >= std::get<1>(positionEnd)) {
+			if (yPos + GlyphsLoader::instance().getGlyphHeight() >= std::get<1>(positionEnd)) {
 				break;
 			}
 		}
 
+		currentCursor++;
 		if (std::get<1>(startPage) && currentPage < std::get<0>(startPage))
 			continue;
 
 		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
-		GLfloat xPos = startX + xAllign;
+		xPos = startX + xAllign;
 		if (xPos >= std::get<0>(positionEnd))
 			continue;
 		//allign by the tallest char (bearing is the upper part of symbol)
-		GLfloat yPos = startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing)) + yAllign;
+		yPos = startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing)) + yAllign;
 		
 		if (*c != '\n') {
 			renderChar(*c, { xPos, yPos }, vertexObject, textObject);
@@ -158,7 +159,6 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			//move horizontal scroll to 1 symbol
 		}
 
-		currentCursor++;
 		//TODO: add check that text doesn't go to out of bounds and we don't handle it here
 		if (*std::get<0>(textObject->getMemberFloat("editable")) && 
 			*std::get<0>(textObject->getMemberFloat("focus")) &&

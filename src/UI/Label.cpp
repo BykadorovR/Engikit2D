@@ -87,6 +87,7 @@ bool Label::initialize() {
 
 	//--- 4
 	{
+		//TODO: DISABLE REMOVE SYMBOLS OUT OF BOUNDS
 		auto backspacePressed = std::make_shared<ExpressionOperation>();
 		backspacePressed->addArgument(_entity, "TextComponent", "focus");
 		backspacePressed->addArgument(_entity, "TextComponent", "editable");
@@ -102,7 +103,7 @@ bool Label::initialize() {
 		changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
 		changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
 		backspacePressed->registerAction(changeScrollerLeft);
-		_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_START);
+		_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_END);
 	}
 
 	//--- 5
@@ -123,6 +124,8 @@ bool Label::initialize() {
 		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
 		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
 		enterPressed->registerAction(changeScrollerRight);
+		//We should delete at the end
+		//TODO: add some priorities, it's really important that remove will be the last
 		_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
 	}
 

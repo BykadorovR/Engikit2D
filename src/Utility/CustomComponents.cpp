@@ -21,7 +21,7 @@ bool CustomFloatArrayComponent::initializeEmpty(std::string name) {
 
 //TODO: MAKE NORMAL RETURN CODES!!!
 //TODO: swap float and string
-bool CustomFloatArrayComponent::addCustomValue(float value, std::string name) {
+bool CustomFloatArrayComponent::addCustomValue(std::string name, float value) {
 	if (!initializeEmpty(name))
 		_floats[name].push_back(value);
 	return false;
@@ -85,7 +85,7 @@ bool CustomFloatComponent::initializeEmpty(std::string name) {
 }
 
 //TODO: make adequate return statuses
-bool CustomFloatComponent::addCustomValue(float value, std::string name) {
+bool CustomFloatComponent::addCustomValue(std::string name, float value) {
 	if (!initializeEmpty(name))
 		_floats[name] = value;
 	return false;
