@@ -108,173 +108,16 @@ std::shared_ptr<BufferManager> TextureComponent::getBufferManager() {
 	return _bufferManager;
 }
 
-Symbol::Symbol() {
-
-}
-
-Symbol::Symbol(std::tuple<wchar_t, CharacterInfo> params) {
-	_text = std::get<0>(params);
-	_chInfo = std::get<1>(params);
-}
-
-CharacterInfo Symbol::getCharacterInfo() {
-	return _chInfo;
-}
-
-wchar_t Symbol::getText() {
-	return _text;
-}
-
-Word::Word() {
-}
-
-std::wstring Word::getText() {
-	std::wstring text;
-	for (auto symbol : _text) {
-		text += symbol.getText();
-	}
-	return text;
-}
-
-int Word::getSize() {
-	return _text.size();
-}
-
-int Word::getWidth() {
-	int size = 0;
-	for (auto symbol : _text) {
-		size += symbol.getCharacterInfo()._advance >> 6;
-	}
-	return size;
-}
-
-int Word::getHeight() {
-	int size = 0;
-	for (auto symbol : _text) {
-		size = std::max(std::get<1>(symbol.getCharacterInfo()._size), size);
-	}
-	return size;
-}
-
-int Word::getHeightAdjusted(int bearingYMax) {
-	int size = 0;
-	for (auto symbol : _text) {
-		size = std::max(std::get<1>(symbol.getCharacterInfo()._size) + bearingYMax - std::get<1>(symbol.getCharacterInfo()._bearing), size);
-	}
-	return size;
-}
-
-bool Word::clear() {
-	_text.clear();
-	return false;
-}
-
-bool Word::cropTrailingSpace() {
-	if (_text.back().getText() == wordsDelimiter)
-		_text.pop_back();
-	return false;
-}
-
-int Word::getBearingYMin() {
-	int size = INT_MAX;
-	for (auto symbol : _text) {
-		size = std::min(std::get<1>(symbol.getCharacterInfo()._bearing), size);
-	}
-	return size;
-}
-
-int Word::getBearingYMax() {
-	int size = INT_MIN;
-	for (auto symbol : _text) {
-		size = std::max(std::get<1>(symbol.getCharacterInfo()._bearing), size);
-	}
-	return size;
-}
-
-std::wstring Word::operator+=(std::tuple<wchar_t, CharacterInfo> rhs) {
-	_text.push_back(rhs);
-	return getText();
-}
-
-Line::Line() {
-
-}
-
-bool Line::addWord(Word word) {
-	_text.push_back(word);
-	return false;
-}
-
-int Line::getWidth() {
-	int width = 0;
-	for (auto word : _text) {
-		width += word.getWidth();
-	}
-	return width;
-}
-
-int Line::getHeight() {
-	int height = 0;
-	for (auto word : _text) {
-		height = std::max(word.getHeight(), height);
-	}
-	return height;
-}
-
-int Line::getHeightAdjusted(int bearingYMax) {
-	int height = 0;
-	for (auto word : _text) {
-		height = std::max(word.getHeightAdjusted(bearingYMax), height);
-	}
-	return height;
-}
-
-int Line::getBearingYMin() {
-	int size = INT_MAX;
-	for (auto symbol : _text) {
-		size = std::min(symbol.getBearingYMin(), size);
-	}
-	return size;
-}
-
-int Line::getBearingYMax() {
-	int size = INT_MIN;
-	for (auto symbol : _text) {
-		size = std::max(symbol.getBearingYMax(), size);
-	}
-	return size;
-}
-
-int Line::getSize() {
-	int size = 0;
-	for (auto word : _text) {
-		size += word.getSize();
-	}
-	return size;
-}
-
-std::vector<Word>& Line::getText() {
-	return _text;
-}
-
 TextComponent::TextComponent() {
 	_focus = 0;
-	_page = 0;
-	_lineHeight = 0;
-	_totalPages = 1;
 	_editable = 0;
-	_prevTextSize = 0;
 
 	_classVariablesFloat =
 	{
-		{"page", &_page},
-		{"totalPages", &_totalPages},
 		{"focus", &_focus},
-		{"lineHeight", &_lineHeight},
 		{"spacingCoeff", &_lineSpacingCoeff},
 		{"scale", &_scale},
 		{"editable", &_editable},
-		{"allignBearingYMax", &_allignBearingYMax},
 		{"cursorPosition", &_cursorPosition},
 	};
 	
@@ -291,7 +134,6 @@ bool TextComponent::initialize(std::shared_ptr<BufferManager> bufferManager) {
 	_scale = 1.f;
 	_color = {1.f, 1.f, 1.f, 1.f};
 	_lineSpacingCoeff = 1;
-	_page = 0;
 	_allignment = {TextAllignment::LEFT, TextAllignment::LEFT};
 	_bufferManager = bufferManager;
 	_cursorPosition = 0;
@@ -307,9 +149,6 @@ std::shared_ptr<BufferManager> TextComponent::getBufferManager() {
 
 bool TextComponent::setText(std::string text) {
 	for (int i = 0; i < text.size(); i++) {
-		if (text[i] == '\n')
-			_page++;
-
 		_cursorPosition += 1;
 	}
 	//All strings are stored as UTF8, so first we should convert it
@@ -323,14 +162,6 @@ std::string TextComponent::getText() {
 	return _text;
 }
 
-int TextComponent::getPrevTextSize() {
-	return _prevTextSize;
-}
-bool TextComponent::setPrevTextSize(int size) {
-	_prevTextSize = size;
-	return false;
-}
-
 bool TextComponent::setScale(float scale) {
 	_scale = scale;
 	return false;
@@ -338,24 +169,6 @@ bool TextComponent::setScale(float scale) {
 
 float TextComponent::getScale() {
 	return _scale;
-}
-
-bool TextComponent::setLines(std::vector<Line> lines) {
-	_lines = lines;
-	return false;
-}
-
-std::vector<Line> TextComponent::getLines() {
-	return _lines;
-}
-
-bool TextComponent::setPageNumber(int page) {
-	_page = page;
-	return false;
-}
-
-int TextComponent::getPageNumber() {
-	return _page;
 }
 
 bool TextComponent::setColor(std::vector<float> color) {

@@ -37,19 +37,11 @@ bool AssignAction::doAction() {
 				}
 			}
 			
-			if (intermediate.size() > 1) {
-				auto twoArgumentResult = _expression->twoArgumentOperation(intermediate[intermediate.size() - 1], intermediate[intermediate.size() - 2], *word);
-				if (std::get<3>(twoArgumentResult)) {
-					intermediate.pop_back();
-					intermediate.pop_back();
-					intermediate.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult) });
-					continue;
-				}
-
+			if (intermediate.size() > 2) {
 				auto threeArgumentResult = _expression->threeArgumentOperation(intermediate[intermediate.size() - 1],
-																			   intermediate[intermediate.size() - 2],
-																			   intermediate[intermediate.size() - 3],
-																			   *word);
+					intermediate[intermediate.size() - 2],
+					intermediate[intermediate.size() - 3],
+					*word);
 				if (std::get<3>(threeArgumentResult)) {
 					intermediate.pop_back();
 					intermediate.pop_back();
@@ -57,10 +49,20 @@ bool AssignAction::doAction() {
 					intermediate.push_back({ std::get<0>(threeArgumentResult), std::get<1>(threeArgumentResult), std::get<2>(threeArgumentResult) });
 					continue;
 				}
-				assert("Can't find operation");
 			}
-			else
-				assert("Incorrect implementation");
+
+			if (intermediate.size() > 1) {
+				//should be at the end because contains arithmetic operation (//TODO: parse operation for arithmetic operations too, so not just "else"
+				auto twoArgumentResult = _expression->twoArgumentOperation(intermediate[intermediate.size() - 1], intermediate[intermediate.size() - 2], *word);
+				if (std::get<3>(twoArgumentResult)) {
+					intermediate.pop_back();
+					intermediate.pop_back();
+					intermediate.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult) });
+					continue;
+				}
+			}
+			
+			assert("Can't find operation");
 
 			//operand[0] - second operand, operand[1] - first operand
 			//operandTuple vice versa

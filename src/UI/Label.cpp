@@ -8,6 +8,7 @@
 #include "InteractionComponents.h"
 #include "UIActions.h"
 #include "GLFW/glfw3.h"
+#include "CustomComponents.h"
 
 Label::Label(std::string name = "Label") {
 	_viewName = name;
@@ -29,6 +30,7 @@ bool Label::initialize() {
 
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
+	_entity->createComponent<CustomFloatComponent>()->addCustomValue("textStartPage", 0);
 
 	//--- 0
 	{
@@ -189,11 +191,6 @@ bool Label::setColor(std::vector<float> color) {
 
 bool Label::setScale(float scale) {
 	_entity->getComponent<TextComponent>()->setScale(scale);
-	return false;
-}
-
-bool Label::setPageNumber(int pageNumber) {
-	_entity->getComponent<TextComponent>()->setPageNumber(pageNumber);
 	return false;
 }
 

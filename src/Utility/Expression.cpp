@@ -399,7 +399,6 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 			else {
 				value = *std::get<0>(std::get<0>(item2)->getMemberString(std::get<1>(item2)));
 			}
-			
 			if (isNumber(value)) {
 				//interpret second argument as 1 symbol
 				char symbol = (char) atoi(value.c_str());
@@ -407,7 +406,6 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 					value = std::string(1, symbol);
 				}
 			}
-			
 			auto targetString = std::get<0>(std::get<0>(item3)->getMemberString(std::get<1>(item3)));
 			targetString->insert(targetString->begin() + index, *value.c_str());
 		}
@@ -416,7 +414,7 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 		result = { nullptr, std::to_string(true), -1, 1 };
 	}
 	else {
-		result = { nullptr, std::to_string(false), -1, 1 };
+		result = { nullptr, std::to_string(false), -1, 0 };
 	}
 
 	return result;

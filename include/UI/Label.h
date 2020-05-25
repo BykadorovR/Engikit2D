@@ -20,7 +20,6 @@ public:
 	std::tuple<float, float> getPosition();
 	std::tuple<float, float> getSize();
 
-	bool setPageNumber(int pageNumber);
 	bool setTextAllignment(std::tuple<TextAllignment, TextAllignment> allignment);
 	bool setLineSpacingCoeff(float coeff);
 };

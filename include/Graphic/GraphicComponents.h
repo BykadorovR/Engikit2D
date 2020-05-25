@@ -56,53 +56,6 @@ enum TextAllignment {
 	RIGHT = 2
 };
 
-
-class Symbol {
-public:
-	Symbol();
-	Symbol(std::tuple<wchar_t, CharacterInfo> params);
-	CharacterInfo getCharacterInfo();
-	wchar_t getText();
-private:
-	CharacterInfo _chInfo;
-	wchar_t _text;
-};
-
-class Word {
-public:
-	Word();
-	std::wstring getText();
-	int getSize();
-	int getWidth();
-	int getHeight();
-	//bearingMax - bearingCurrent + height so we get size of char on screen with bearing padding
-	int getHeightAdjusted(int bearingYMax);
-	bool clear();
-	bool cropTrailingSpace();
-	int getBearingYMin();
-	int getBearingYMax();
-	std::wstring operator+=(std::tuple<wchar_t, CharacterInfo> rhs);
-private:
-	std::vector<Symbol> _text;
-};
-
-class Line {
-public:
-	Line();
-
-	bool addWord(Word word);
-	int getWidth();
-	int getHeight();
-	int getHeightAdjusted(int bearingYMax);
-	int getBearingYMin();
-	int getBearingYMax();
-	int getSize();
-	std::vector<Word>& getText();
-private:
-	std::vector<Word> _text;
-};
-
-
 class TextComponent : public OperationComponent {
 public:
 	TextComponent();
@@ -111,16 +64,10 @@ public:
 	bool getFocus();
 	std::string getText();
 	bool setText(std::string text);
-	int getPrevTextSize();
-	bool setPrevTextSize(int size);
 	bool setScale(float scale);
 	float getScale();
-	bool setLines(std::vector<Line> lines);
-	std::vector<Line> getLines();
 	bool setColor(std::vector<float> color);
 	std::vector<float> getColor();
-	bool setPageNumber(int page);
-	int getPageNumber();
 	bool setAllignment(std::tuple<TextAllignment, TextAllignment> allignment);
 	std::tuple<TextAllignment, TextAllignment> getAllignment();
 	bool setLineSpacingCoeff(float coeff);
@@ -131,14 +78,8 @@ private:
 	float _focus;
 	float _editable;
 	float _cursorPosition;
-	float _page;
-	float _totalPages;
-	float _lineHeight;
 	std::string _text;
-	int _prevTextSize;
-	std::vector<Line> _lines;
 	float _scale;
-	float _allignBearingYMax;
 	float _lineSpacingCoeff;
 	std::vector<float> _color;
 	std::shared_ptr<BufferManager> _bufferManager;
