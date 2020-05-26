@@ -41,6 +41,7 @@ bool ScrollerVerticalDecorator::initialize() {
 	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
 
 	getScrollerProgress()->initialize();
+	getScrollerProgress()->setPosition(scrollerProgressPosition);
 	getScrollerProgress()->setSize(scrollerProgressSize);
 	getScrollerProgress()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerProgress()->setColorAddition({ 0.5, 0.5, 0, 1 });
@@ -48,6 +49,7 @@ bool ScrollerVerticalDecorator::initialize() {
 	getScrollerProgress()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerUp()->initialize();
+	getScrollerUp()->setPosition(scrollerUpPosition);
 	getScrollerUp()->setSize(scrollerSize);
 	getScrollerUp()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerUp()->setColorAddition({ 1, 0, 0.5, 1 });
@@ -55,6 +57,7 @@ bool ScrollerVerticalDecorator::initialize() {
 	getScrollerUp()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerDown()->initialize();
+	getScrollerDown()->setPosition(scrollerDownPosition);
 	getScrollerDown()->setSize(scrollerSize);
 	getScrollerDown()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerDown()->setColorAddition({ 0, 1, 1, 1 });
@@ -97,11 +100,8 @@ bool ScrollerVerticalDecorator::initialize() {
 			keepPosition->registerAction(keepPositionDown);
 			auto keepPositionScroller = std::make_shared<AssignAction>();
 			keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionX");
-			keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");
 			keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
-			keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
-			keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "sizeY");
-			keepPositionScroller->initializeAction("${0} SET ${2} AND ${1} SET ${3} + ${4}");
+			keepPositionScroller->initializeAction("${0} SET ${1}");
 			keepPosition->registerAction(keepPositionScroller);
 			getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
 
@@ -133,13 +133,12 @@ bool ScrollerVerticalDecorator::initialize() {
 			backspacePressed->addArgument(parentEntity, "KeyboardComponent", "code");
 			backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
 			backspacePressed->addArgument(parentEntity, "TextComponent", "text");
-			backspacePressed->addArgument(nullptr, "", std::to_string('\n'));
+			backspacePressed->addArgument(nullptr, "", "\n");
 			backspacePressed->addArgument(parentEntity, "TextComponent", "cursorPosition");
 			backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} AT ( ${6} - 1 ) = ${5}");
 			auto decreaseTotalPages = std::make_shared<AssignAction>();
 			decreaseTotalPages->addArgument(parentEntity, "CustomFloatComponent", "textTotalPages");
-			decreaseTotalPages->addArgument(parentEntity, "CustomFloatComponent", "textStartPage");
-			decreaseTotalPages->initializeAction("${0} SET ${0} - 1 AND ${1} SET ${1} - 1");
+			decreaseTotalPages->initializeAction("${0} SET ${0} - 1");
 			backspacePressed->registerAction(decreaseTotalPages);
 			parentEntity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_START);
 		}

@@ -24,6 +24,8 @@ std::string rawFileContent(const char* relativePath) {
 }
 
 bool isNumber(std::string s) {
+	if (s == "\n")
+		return false;
 	std::size_t char_pos(0);
 	std::locale loc;
 	if (s[char_pos] == '+' || s[char_pos] == '-') ++char_pos; // skip the sign if exist

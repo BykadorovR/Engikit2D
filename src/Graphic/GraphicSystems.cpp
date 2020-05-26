@@ -91,7 +91,7 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			if (startPage > 0 && startPage == currentPage)
 				yAllign = 0;
 
-			if (yPos + GlyphsLoader::instance().getGlyphHeight() >= std::get<1>(positionEnd)) {
+			if ((currentPage - startPage) * GlyphsLoader::instance().getGlyphHeight() > objectHeight) {
 				break;
 			}
 		}
@@ -102,7 +102,7 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 
 		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 		xPos = startX + xAllign;
-		if (xPos >= std::get<0>(positionEnd))
+		if (xPos + (chInfo._advance >> 6) - std::get<0>(chInfo._bearing) >= std::get<0>(positionEnd))
 			continue;
 		//allign by the tallest char (bearing is the upper part of symbol)
 		yPos = startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing)) + yAllign;

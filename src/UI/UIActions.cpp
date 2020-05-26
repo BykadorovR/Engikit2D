@@ -151,7 +151,12 @@ bool PrintItemsAction::doAction() {
 		changeFieldAction->setViewIndex(i);
 		changeFieldAction->setList(_list);
 		changeField->registerAction(changeFieldAction);
-		listViews[i]->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeField, InteractionType::KEYBOARD_END);
+		auto removeFocus = std::make_shared<AssignAction>();
+		removeFocus->addArgument(listViews[i]->getEntity(), "TextComponent", "focus");
+		removeFocus->addArgument(listViews[i]->getEntity(), "TextComponent", "cursorPosition");
+		removeFocus->initializeAction("${0} SET 0 AND ${1} SET 0");
+		changeField->registerAction(removeFocus);
+		listViews[i]->getEntity()->createComponent<InteractionComponent>()->attachOperation(changeField, InteractionType::KEYBOARD_START);
 	}
 	return false;
 }
@@ -177,7 +182,7 @@ ApplyItemAction::ApplyItemAction() {
 }
 
 bool ApplyItemAction::doAction() {
-	int currentPage = *std::get<0>(_list->getViews()[0]->getEntity()->getComponent<CustomFloatComponent>()->getMemberFloat("page"));
+	int currentPage = *std::get<0>(_list->getViews()[0]->getEntity()->getComponent<CustomFloatComponent>()->getMemberFloat("listStartPage"));
 	int componentNameIndex = currentPage + _viewIndex;
 	auto componentNames = _component->getItemsNames();
 	//TODO: add support for string values (for text)

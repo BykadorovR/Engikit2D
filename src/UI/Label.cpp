@@ -105,6 +105,8 @@ bool Label::initialize() {
 		changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
 		changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
 		backspacePressed->registerAction(changeScrollerLeft);
+		//We should delete at the end
+		//TODO: add some priorities, it's really important that remove will be the last
 		_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_END);
 	}
 
@@ -118,7 +120,7 @@ bool Label::initialize() {
 		enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
 		auto addBreakLine = std::make_shared<AssignAction>();
 		addBreakLine->addArgument(_entity, "TextComponent", "text");
-		addBreakLine->addArgument(nullptr, "", std::to_string('\n'));
+		addBreakLine->addArgument(nullptr, "", "\n");
 		addBreakLine->addArgument(_entity, "TextComponent", "cursorPosition");
 		addBreakLine->initializeAction("${0} INSERT ${1} ${2}");
 		enterPressed->registerAction(addBreakLine);
@@ -126,8 +128,6 @@ bool Label::initialize() {
 		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
 		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
 		enterPressed->registerAction(changeScrollerRight);
-		//We should delete at the end
-		//TODO: add some priorities, it's really important that remove will be the last
 		_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
 	}
 
