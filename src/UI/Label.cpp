@@ -64,7 +64,8 @@ bool Label::initialize() {
 		leftKeyPressed->addArgument(_entity, "TextComponent", "editable");
 		leftKeyPressed->addArgument(_entity, "KeyboardComponent", "code");
 		leftKeyPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_LEFT));
-		leftKeyPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		leftKeyPressed->addArgument(_entity, "TextComponent", "cursorPosition");
+		leftKeyPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} > 0");
 		auto changeScrollerLeft = std::make_shared<AssignAction>();
 		changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
 		changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
@@ -79,7 +80,9 @@ bool Label::initialize() {
 		rightKeyPressed->addArgument(_entity, "TextComponent", "editable");
 		rightKeyPressed->addArgument(_entity, "KeyboardComponent", "code");
 		rightKeyPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_RIGHT));
-		rightKeyPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		rightKeyPressed->addArgument(_entity, "TextComponent", "text");
+		rightKeyPressed->addArgument(_entity, "TextComponent", "cursorPosition");
+		rightKeyPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${5} < SIZE ${4}");
 		auto changeScrollerRight = std::make_shared<AssignAction>();
 		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
 		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
@@ -89,13 +92,13 @@ bool Label::initialize() {
 
 	//--- 4
 	{
-		//TODO: DISABLE REMOVE SYMBOLS OUT OF BOUNDS
 		auto backspacePressed = std::make_shared<ExpressionOperation>();
 		backspacePressed->addArgument(_entity, "TextComponent", "focus");
 		backspacePressed->addArgument(_entity, "TextComponent", "editable");
 		backspacePressed->addArgument(_entity, "KeyboardComponent", "code");
 		backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
-		backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+		backspacePressed->addArgument(_entity, "TextComponent", "cursorPosition");
+		backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} > 0");
 		auto removeLastSymbol = std::make_shared<AssignAction>();
 		removeLastSymbol->addArgument(_entity, "TextComponent", "text");
 		removeLastSymbol->addArgument(_entity, "TextComponent", "cursorPosition");

@@ -80,6 +80,14 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 	float currentCursor = 0;
 	float currentPage = 0;
 	float startPage = *std::get<0>(entity->getComponent<CustomFloatComponent>()->getMemberFloat("textStartPage"));
+
+	if (*std::get<0>(textObject->getMemberFloat("editable")) &&
+		*std::get<0>(textObject->getMemberFloat("focus")) &&
+		*cursorPosition == 0) {
+		CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
+		renderChar('|', { xPos, startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
+			vertexObject, textObject);
+	}
 	//TODO: amount of enters in initial label without scroller is different with and without text (so press enter without text, see cursor disappeared, return back write some symbol and press enter)
 	//TODO: don't render symbol if it can't be displayed within the borders
 	for (auto c = text.begin(); c != text.end(); c++) {
@@ -97,6 +105,7 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 		}
 
 		currentCursor++;
+
 		if (currentPage < startPage)
 			continue;
 
@@ -115,12 +124,13 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 		}
 
 		//TODO: add check that text doesn't go to out of bounds and we don't handle it here
-		if (*std::get<0>(textObject->getMemberFloat("editable")) && 
-			*std::get<0>(textObject->getMemberFloat("focus")) &&
-			currentCursor == *cursorPosition) {
-			CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
-			renderChar('|', { xPos + (chInfo._advance >> 6), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
-			   		   vertexObject, textObject);
+		if (*std::get<0>(textObject->getMemberFloat("editable")) &&
+			*std::get<0>(textObject->getMemberFloat("focus"))) {
+			if (currentCursor == *cursorPosition) {
+				CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
+				renderChar('|', { xPos + (chInfo._advance >> 6), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
+					vertexObject, textObject);
+			}
 		}
 	}
 }
