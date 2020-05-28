@@ -4,6 +4,23 @@
 #include "GraphicComponents.h"
 #include "Common.h"
 
+bool ExpressionNode::setValue(std::string value) {
+	_value = value;
+	return false;
+}
+
+bool ExpressionNode::setLeftNode(std::string value) {
+	_leftNode = std::make_shared<ExpressionNode>();
+	_leftNode->setValue(value);
+	return false;
+}
+
+bool ExpressionNode::setRightNode(std::string value) {
+	_rightNode = std::make_shared<ExpressionNode>();
+	_rightNode->setValue(value);
+	return false;
+}
+
 Expression::Expression() {
 	_supportedOperations =
 	{
@@ -433,6 +450,7 @@ bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 		splitedInput[wordIndex] += *c;
 	}
 
+	std::vector<ExpressionNode> expressionTree;
 	//let's form postfix notation
 	for (auto word = splitedInput.begin(); word < splitedInput.end(); word++) {
 		//word (token) is operator

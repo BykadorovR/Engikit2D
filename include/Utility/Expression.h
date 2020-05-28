@@ -3,6 +3,17 @@
 #include "Entity.h"
 #include "View.h"
 
+class ExpressionNode {
+private:
+	std::string _value;
+	std::shared_ptr<ExpressionNode> _leftNode;
+	std::shared_ptr<ExpressionNode> _rightNode;
+public:
+	bool setValue(std::string value);
+	bool setLeftNode(std::string value);
+	bool setRightNode(std::string value);
+};
+
 class Expression {
 	std::string _condition;
 	//name priority associativity
