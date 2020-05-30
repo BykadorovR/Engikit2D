@@ -3,22 +3,23 @@
 #include "UserInputComponents.h"
 #include "GraphicComponents.h"
 #include "Common.h"
+#include <regex>
 
-bool ExpressionNode::setValue(std::string value) {
+ExpressionNode::ExpressionNode(std::string value) {
 	_value = value;
+}
+
+bool ExpressionNode::setNode(std::shared_ptr<ExpressionNode> node) {
+	_nodes.push_back(node);
 	return false;
 }
 
-bool ExpressionNode::setLeftNode(std::string value) {
-	_leftNode = std::make_shared<ExpressionNode>();
-	_leftNode->setValue(value);
-	return false;
+std::string ExpressionNode::getValue() {
+	return _value;
 }
 
-bool ExpressionNode::setRightNode(std::string value) {
-	_rightNode = std::make_shared<ExpressionNode>();
-	_rightNode->setValue(value);
-	return false;
+std::vector<std::shared_ptr<ExpressionNode> > ExpressionNode::getNodes() {
+	return _nodes;
 }
 
 Expression::Expression() {
@@ -26,28 +27,27 @@ Expression::Expression() {
 	{
 		//TODO: if AND is found need to understand somehow that further processing is unneccessary!!
 
-		{ "AND",		  { 0, "left" } }, //last argument - the order sequence of the same operations should be executed in.
-		{ "OR",			  { 0, "left" } }, //for example: 1 + 2 + 3 - can be processed from left to right BUT
-		{ ">",			  { 1, "left" } }, // 2 ^ 2 ^ 3 - have to be processed from right to left
-		{ "<",			  { 1, "left" } },
-		{ "=",			  { 1, "left" } },
-		{ "!",			  { 1, "left" } },
-		{ "INSERT",       { 1, "left" } },
-		{ "EMPTY",		  { 2, "left" } },
-		{ "CLICK",		  { 2, "left" } },
-		{ "REMOVE",       { 2, "left" } },
-		{ "DOUBLE_CLICK", { 2, "left" } },
-		{ "+",			  { 2, "left" } },
-		{ "-",			  { 2, "left" } },
-		{ "/",			  { 3, "left" } },
-		{ "*",			  { 3, "left" } },
-		{ "^",			  { 4, "right"} },
-		{ "SIZE",		  { 5, "left" } },
-		{ "AT",			  { 5, "left" } }
+		{ "AND",		  { 0, "left", 2 } }, //last argument - the order sequence of the same operations should be executed in.
+		{ "OR",			  { 0, "left", 2 } }, //for example: 1 + 2 + 3 - can be processed from left to right BUT
+		{ ">",			  { 1, "left", 2 } }, // 2 ^ 2 ^ 3 - have to be processed from right to left
+		{ "<",			  { 1, "left", 2 } },
+		{ "=",			  { 1, "left", 2 } },
+		{ "!",			  { 1, "left", 1 } },
+		{ "INSERT",       { 1, "left", 3 } },
+		{ "CLICK",		  { 2, "left", 1 } },
+		{ "REMOVE",       { 2, "left", 2 } },
+		{ "DOUBLE_CLICK", { 2, "left", 1 } },
+		{ "+",			  { 2, "left", 2 } },
+		{ "-",			  { 2, "left", 2 } },
+		{ "/",			  { 3, "left", 2 } },
+		{ "*",			  { 3, "left", 2 } },
+		{ "^",			  { 4, "right",2 } },
+		{ "SIZE",		  { 5, "left", 1 } },
+		{ "AT",			  { 5, "left", 2 } }
 	};
 }
 
-bool Expression::addSupportedOperation(std::string name, std::tuple<int, std::string> operation) {
+bool Expression::addSupportedOperation(std::string name, std::tuple<int, std::string, int> operation) {
 	if (_supportedOperations.find(name) == _supportedOperations.end()) {
 		_supportedOperations.insert({ name, operation });
 		return false;
@@ -55,7 +55,7 @@ bool Expression::addSupportedOperation(std::string name, std::tuple<int, std::st
 	return true;
 }
 
-std::map<std::string, std::tuple<int, std::string> > Expression::getSupportedOperations() {
+std::map<std::string, std::tuple<int, std::string, int> > Expression::getSupportedOperations() {
 	return _supportedOperations;
 }
 
@@ -120,15 +120,18 @@ std::tuple<std::string, int> Expression::arithmeticOperationString(std::string o
 	return result;
 }
 
-std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<Entity> entity, std::string operation) {
+std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item, 
+															  std::string operation) {
 	std::tuple<std::string, int> result;
-	if (operation == "CLICK" || 
+	if (operation == "CLICK" ||
 		operation == "DOUBLE_CLICK") {
+		auto entity = std::get<0>(item);
 		auto mouseComponent = entity->getComponent<MouseComponent>();
 		auto objectComponent = entity->getComponent<ObjectComponent>();
 		if (!std::get<0>(entity->getComponent<ObjectComponent>()->getMemberFloat("visible"))) {
 			result = { std::to_string(false), 1 };
-		} else if (mouseComponent && objectComponent) {
+		}
+		else if (mouseComponent && objectComponent) {
 			float x = std::get<0>(objectComponent->getPosition());
 			float y = std::get<1>(objectComponent->getPosition());
 			float width = std::get<0>(objectComponent->getSize());
@@ -152,47 +155,19 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::shared_ptr<En
 			//set false as result
 			result = { std::to_string(false), 1 };
 		}
-	}
-	else
-		result = { std::to_string(false), 0 };
-
-	return result;
-}
-
-std::tuple<std::string, int> Expression::oneArgumentOperation(std::vector<std::shared_ptr<Entity> > batch, std::string operation) {
-	std::tuple<std::string, int> result;
-	if (operation == "CLICK") {
-		bool anyClick = false;
-		for (auto entity : batch) {
-			if (std::get<1>(oneArgumentOperation(entity, operation)) && atoi(std::get<0>(oneArgumentOperation(entity, operation)).c_str())) {
-				anyClick = true;
-				break;
-			}
-		}
-		if (anyClick)
-			result = { std::to_string(true), 1 };
-		else
-			result = { std::to_string(false), 1 };
-	} else
-		result = { std::to_string(false), 0 };
-
-	return result;
-}
-
-std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item, std::string operation) {
-	std::tuple<std::string, int> result;
-	if (operation == "SIZE") {
-		auto vectorType = std::get<0>(item)->getVariableType(std::get<1>(item));
+	} else if (operation == "SIZE") {
+		std::shared_ptr<OperationComponent> component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item)->getComponent(std::get<1>(item)));
+		auto vectorType = component->getVariableType(std::get<2>(item));
 		if (vectorType == VariableType::varFloatVector) {
-			int vectorSize = std::get<0>(std::get<0>(item)->getMemberVectorFloat(std::get<1>(item)))->size();
+			int vectorSize = std::get<0>(component->getMemberVectorFloat(std::get<2>(item)))->size();
 			result = { std::to_string(vectorSize), 1 };
 		}
 		else if (vectorType == VariableType::varStringVector) {
-			int vectorSize = std::get<0>(std::get<0>(item)->getMemberVectorString(std::get<1>(item)))->size();
+			int vectorSize = std::get<0>(component->getMemberVectorString(std::get<2>(item)))->size();
 			result = { std::to_string(vectorSize), 1 };
 		}
 		else if (vectorType == VariableType::varString) {
-			int stringSize = std::get<0>(std::get<0>(item)->getMemberString(std::get<1>(item)))->size();
+			int stringSize = std::get<0>(component->getMemberString(std::get<2>(item)))->size();
 			result = { std::to_string(stringSize), 1 };
 		}
 		else if (vectorType == VariableType::varUnknown) {
@@ -200,9 +175,9 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 		}
 	}
 	else if (operation == "!") {
-		if (std::get<0>(item) == nullptr) {
-			if (isNumber(std::get<1>(item)))
-				result = { std::to_string(!stof(std::get<1>(item))), 1 };
+		if (std::get<1>(item).empty()) {
+			if (isNumber(std::get<2>(item)))
+				result = { std::to_string(!stof(std::get<2>(item))), 1 };
 		}
 		else {
 			result = { std::to_string(false), 0 };
@@ -214,10 +189,15 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 	return result;
 }
 
-std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item1, std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item2, std::string operation) {
+std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item1, 
+																										 std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item2, 
+																										 std::string operation) {
 	std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> result;
+	//TODO: do correct order
 	//item1 - second argument, item2 - first argument
-	std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2] = {item1, item2};
+	//std::tuple<std::shared_ptr<OperationComponent>, std::string, int> operandTuple[2];
+	//operandTuple[0] = {std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item1)->getComponent(std::get<1>(item1))), std::get<2>(item1), std::get<3>(item1)};
+	//operandTuple[1] = { std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item2)->getComponent(std::get<1>(item2))), std::get<2>(item2), std::get<3>(item2) };
 	VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
 	bool operandConst[2] = { false, false };
 
@@ -384,9 +364,9 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 	return result;
 }
 
-std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expression::threeArgumentOperation(std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item1,
-																										  std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item2,
-																										  std::tuple<std::shared_ptr<OperationComponent>, std::string, int> item3,
+std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expression::threeArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item1,
+																										  std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item2,
+																										  std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item3,
 																										  std::string operation) {
 	std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> result;
 	//item3 - container we wanna insert to
@@ -394,32 +374,35 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 	//item1 - position
 	//TODO: use approach from two arguments to determine type/const/etc
 	if (operation == "INSERT") {
+		auto item1Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item1)->getComponent(std::get<1>(item1)));
 		int index;
 		//index can be const
-		if (std::get<0>(item1) == nullptr)
+		if (item1Component == nullptr)
 			//Suppose index is float
-			index = atoi(std::get<1>(item1).c_str());
+			index = atoi(std::get<2>(item1).c_str());
 		else {
-			auto type = std::get<0>(item1)->getVariableType(std::get<1>(item1));
+			auto type = item1Component->getVariableType(std::get<2>(item1));
 			if (type == VariableType::varFloat)
-				index = *std::get<0>(std::get<0>(item1)->getMemberFloat(std::get<1>(item1)));
+				index = *std::get<0>(item1Component->getMemberFloat(std::get<2>(item1)));
 			else if (type == VariableType::varFloatVector)
-				index = std::get<0>(std::get<0>(item1)->getMemberVectorFloat(std::get<1>(item1)))->at(std::get<2>(item1));
+				index = std::get<0>(item1Component->getMemberVectorFloat(std::get<2>(item1)))->at(std::get<3>(item1));
 			else
 				assert("Not implemented");
 		}
-		auto containerType = std::get<0>(item3)->getVariableType(std::get<1>(item3));
+		auto item3Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item3)->getComponent(std::get<1>(item3)));
+		auto containerType = item3Component->getVariableType(std::get<2>(item3));
 		if (containerType == VariableType::varString) {
+			auto item2Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item2)->getComponent(std::get<1>(item2)));
 			std::string value;
-			if (std::get<0>(item2) == nullptr)
-				value = std::get<1>(item2);
+			if (item2Component == nullptr)
+				value = std::get<2>(item2);
 			else {
-				value = *std::get<0>(std::get<0>(item2)->getMemberString(std::get<1>(item2)));
+				value = *std::get<0>(item2Component->getMemberString(std::get<2>(item2)));
 			}
 			if (value == "\n") {
 				value = std::string(1, '\n');
 			}
-			auto targetString = std::get<0>(std::get<0>(item3)->getMemberString(std::get<1>(item3)));
+			auto targetString = std::get<0>(item3Component->getMemberString(std::get<2>(item3)));
 			targetString->insert(targetString->begin() + index, *value.c_str());
 		}
 		else
@@ -433,7 +416,28 @@ std::tuple<std::shared_ptr<OperationComponent>, std::string, int, int> Expressio
 	return result;
 }
 
-bool Expression::prepareExpression(std::vector<std::string>& postfix) {
+std::tuple<std::string, int> Expression::multipleArgumentOperation(std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > batch, std::string operation) {
+	std::tuple<std::string, int> result;
+	if (operation == "CLICK") {
+		bool anyClick = false;
+		for (auto entity : batch) {
+			if (std::get<1>(oneArgumentOperation(entity, operation)) && atoi(std::get<0>(oneArgumentOperation(entity, operation)).c_str())) {
+				anyClick = true;
+				break;
+			}
+		}
+		if (anyClick)
+			result = { std::to_string(true), 1 };
+		else
+			result = { std::to_string(false), 1 };
+	}
+	else
+		result = { std::to_string(false), 0 };
+
+	return result;
+}
+
+bool Expression::prepareExpression(std::shared_ptr<ExpressionNode>& postfix) {
 	//first we need to convert condition to postfix form
 	//Shunting-yard algorithm
 	std::vector<std::string> operatorStack;
@@ -450,7 +454,7 @@ bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 		splitedInput[wordIndex] += *c;
 	}
 
-	std::vector<ExpressionNode> expressionTree;
+	std::vector<std::shared_ptr<ExpressionNode> > expressionTree;
 	//let's form postfix notation
 	for (auto word = splitedInput.begin(); word < splitedInput.end(); word++) {
 		//word (token) is operator
@@ -463,8 +467,18 @@ bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 				(std::get<0>(_supportedOperations[operatorStack.back()]) == std::get<0>(_supportedOperations[*word]) && std::get<1>(_supportedOperations[*word]) == "left")))
 			{
 				//pop operators from the operator stack onto the output queue.
-				postfix.push_back(operatorStack.back());
+				std::string operation = operatorStack.back();
 				operatorStack.pop_back();
+
+				std::shared_ptr<ExpressionNode> expressionOperation = std::make_shared<ExpressionNode>(operation);
+				int numberParameters = std::get<2>(_supportedOperations[operation]);
+
+				for (int i = 0; i < numberParameters; i++) {
+					expressionOperation->setNode(expressionTree.back());
+					expressionTree.pop_back();
+				}
+				expressionTree.push_back(expressionOperation);
+				
 			}
 			operatorStack.push_back(*word);
 		}
@@ -473,8 +487,17 @@ bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 		}
 		else if (*word == ")") {
 			while (operatorStack.back() != "(") {
-				postfix.push_back(operatorStack.back());
+				std::string operation = operatorStack.back();
 				operatorStack.pop_back();
+
+				std::shared_ptr<ExpressionNode> expressionOperation = std::make_shared<ExpressionNode>(operation);
+				int numberParameters = std::get<2>(_supportedOperations[operation]);
+
+				for (int i = 0; i < numberParameters; i++) {
+					expressionOperation->setNode(expressionTree.back());
+					expressionTree.pop_back();
+				}
+				expressionTree.push_back(expressionOperation);
 			}
 			//if the stack runs out without finding a left paren, then there are mismatched parentheses
 			if (operatorStack.size() == 0)
@@ -486,13 +509,25 @@ bool Expression::prepareExpression(std::vector<std::string>& postfix) {
 		}
 		//word (token) is number or variable
 		else {
-			postfix.push_back(*word);
+			expressionTree.push_back(std::make_shared<ExpressionNode>(*word));
 		}
 	}
 
 	//pop remainings operators from the operator stack onto the output queue.
 	while (operatorStack.size() > 0) {
-		postfix.push_back(operatorStack.back());
+		std::string operation = operatorStack.back();
 		operatorStack.pop_back();
+
+		std::shared_ptr<ExpressionNode> expressionOperation = std::make_shared<ExpressionNode>(operation);
+		int numberParameters = std::get<2>(_supportedOperations[operation]);
+
+		for (int i = 0; i < numberParameters; i++) {
+			expressionOperation->setNode(expressionTree.back());
+			expressionTree.pop_back();
+		}
+		expressionTree.push_back(expressionOperation);
 	}
+
+	postfix = expressionTree.back();
+	return false;
 }

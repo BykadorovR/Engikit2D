@@ -6,7 +6,7 @@
 AssignAction::AssignAction(std::string actionName) {
 	_actionName = actionName;
 	_expression = std::make_shared<Expression>();
-	_expression->addSupportedOperation("SET",  { 1, "left" });
+	_expression->addSupportedOperation("SET",  { 1, "left", 2 });
 }
 
 //TODO: separate common parts from operations and actions
@@ -22,6 +22,7 @@ bool AssignAction::initializeAction(std::string condition) {
 }
 
 bool AssignAction::doAction() {
+	/*
 	auto supportedOperations = _expression->getSupportedOperations();
 	std::vector<std::tuple<std::shared_ptr<OperationComponent>, std::string, int> > intermediate;
 	for (auto word = _postfix.begin(); word < _postfix.end(); word++) {
@@ -91,6 +92,6 @@ bool AssignAction::doAction() {
 			}
 		}
 	}
-
+	*/
 	return false;
 }

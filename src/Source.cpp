@@ -90,11 +90,7 @@ void surfaceCreated() {
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
-	Expression e;
-	e.setCondition("( ${0} + ${1} ) / 2 AND CLICK ${4} OR ${5} AND ${1} > 4 ");
-	e.prepareExpression();
-
-	/*
+	
 	{
 		std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
@@ -139,7 +135,6 @@ void surfaceCreated() {
 
 		attachShowOperations(button->getBack()->getEntity(), listOperations, scrollerDecoratorListOperations);
 	}
-	*/
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());
 	interactionSystem = std::make_shared<InteractionSystem>();

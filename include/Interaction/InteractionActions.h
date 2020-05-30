@@ -8,7 +8,7 @@
 class AssignAction : public Action {
 private:
 	std::shared_ptr<Expression> _expression;
-	std::vector<std::string> _postfix;
+	std::shared_ptr<ExpressionNode> _postfix;
 	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string> > _arguments;
 public:
 	AssignAction(std::string actionName = "AssignAction");
