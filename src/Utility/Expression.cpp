@@ -196,7 +196,7 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 			auto twoArgumentResult = twoArgumentOperation(postfix[postfix.size() - 1],
 													      postfix[postfix.size() - 2],
 														  value);
-			if (std::get<3>(twoArgumentResult)) {
+			if (std::get<4>(twoArgumentResult)) {
 				postfix.pop_back();
 				postfix.pop_back();
 				postfix.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult), std::get<3>(twoArgumentResult) });
@@ -207,8 +207,8 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 			auto threeArgumentResult = threeArgumentOperation(postfix[postfix.size() - 1],
 															  postfix[postfix.size() - 2],
 															  postfix[postfix.size() - 3],
-				value);
-			if (std::get<3>(threeArgumentResult)) {
+															  value);
+			if (std::get<4>(threeArgumentResult)) {
 				postfix.pop_back();
 				postfix.pop_back();
 				postfix.pop_back();
@@ -344,7 +344,7 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 		}
 		else {
 			std::shared_ptr<OperationComponent> component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[i])->getComponent(std::get<1>(operandTuple[i])));
-			operandType[i] = component->getVariableType(std::get<1>(operandTuple[i]));
+			operandType[i] = component->getVariableType(std::get<2>(operandTuple[i]));
 		}
 	}
 
@@ -514,7 +514,9 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 	//item1 - position
 	//TODO: use approach from two arguments to determine type/const/etc
 	if (operation == "INSERT") {
-		auto item1Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item1)->getComponent(std::get<1>(item1)));
+		std::shared_ptr<OperationComponent> item1Component = nullptr;
+		if (std::get<0>(item1))
+			item1Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item1)->getComponent(std::get<1>(item1)));
 		int index;
 		//index can be const
 		if (item1Component == nullptr)
@@ -532,7 +534,9 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 		auto item3Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item3)->getComponent(std::get<1>(item3)));
 		auto containerType = item3Component->getVariableType(std::get<2>(item3));
 		if (containerType == VariableType::varString) {
-			auto item2Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item2)->getComponent(std::get<1>(item2)));
+			std::shared_ptr<OperationComponent> item2Component = nullptr;
+			if (std::get<0>(item2))
+				item2Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item2)->getComponent(std::get<1>(item2)));
 			std::string value;
 			if (item2Component == nullptr)
 				value = std::get<2>(item2);
