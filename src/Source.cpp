@@ -90,7 +90,11 @@ void surfaceCreated() {
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
-	
+
+	//std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
+	//std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
+	//button->initialize();
+
 	{
 		std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);

@@ -4,7 +4,7 @@
 class Action {
 protected:
 	bool _editorMode;
-	std::string _actionName;
+	std::string _name;
 public:
 	Action();
 	virtual bool doAction();

@@ -9,7 +9,7 @@
 #include <GLFW/glfw3.h>
 
 PrintOperationsAction::PrintOperationsAction() {
-	_actionName = "PrintOperationsAction";
+	_name = "PrintOperationsAction";
 }
 bool PrintOperationsAction::doAction() {
 	_list->clear();
@@ -33,7 +33,7 @@ bool PrintOperationsAction::setEntity(std::shared_ptr<Entity> entity) {
 
 
 PrintComponentsAction::PrintComponentsAction() {
-	_actionName = "PrintComponentsAction";
+	_name = "PrintComponentsAction";
 }
 
 bool PrintComponentsAction::doAction() {
@@ -88,7 +88,7 @@ bool PrintComponentsAction::setEntity(std::shared_ptr<Entity> entity) {
 }
 
 ClearComponentsAction::ClearComponentsAction() {
-	_actionName = "ClearComponentsAction";
+	_name = "ClearComponentsAction";
 }
 bool ClearComponentsAction::doAction() {
 	//clear should work only for entity which triggered add so no any other entity can clear
@@ -107,7 +107,7 @@ bool ClearComponentsAction::setEntity(std::shared_ptr<Entity> entity) {
 }
 
 PrintItemsAction::PrintItemsAction() {
-	_actionName = "PrintItemsAction";
+	_name = "PrintItemsAction";
 }
 
 bool PrintItemsAction::doAction() {
@@ -178,7 +178,7 @@ bool PrintItemsAction::setEntity(std::shared_ptr<Entity> entity) {
 
 
 ApplyItemAction::ApplyItemAction() {
-	_actionName = "ApplyItemAction";
+	_name = "ApplyItemAction";
 }
 
 bool ApplyItemAction::doAction() {

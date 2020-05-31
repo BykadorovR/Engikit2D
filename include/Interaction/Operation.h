@@ -14,8 +14,8 @@ public:
 		return false;
 	};
 	std::vector<std::shared_ptr<Action> > getActions();
-	void registerAction(std::shared_ptr<Action> listener);
-	void unregisterAction(std::shared_ptr<Action> listener);
+	void registerAction(std::shared_ptr<Action> action);
+	void unregisterAction(std::shared_ptr<Action> action);
 	std::string getName();
 	virtual ~Operation() = 0;
 };

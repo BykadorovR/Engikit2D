@@ -9,10 +9,6 @@
 class ExpressionOperation : public Operation {
 private:
 	std::shared_ptr<Expression> _expression;
-
-	std::shared_ptr<ExpressionNode> _postfix;
-	std::map<int, std::tuple<std::shared_ptr<Entity>, std::string, std::string> > _arguments;
-	std::map<int, std::shared_ptr<View> > _views;
 public:
 	ExpressionOperation(std::string name = "ExpressionOperation");
 	std::string addArgument(std::shared_ptr<Entity> entity, std::string component, std::string name);
@@ -20,5 +16,4 @@ public:
 
 	bool initializeOperation(std::string condition);
 	bool checkOperation();
-	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > evaluateExpression(std::shared_ptr<ExpressionNode> node);
 };
