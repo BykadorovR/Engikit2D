@@ -54,7 +54,6 @@ bool PrintComponentsAction::doAction() {
 			return true;
 		}
 	}
-	
 	_list->clear();
 
 	for (auto component : _entity->getComponents()) {

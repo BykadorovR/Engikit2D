@@ -29,5 +29,6 @@ bool ExpressionOperation::initializeOperation(std::string condition) {
 }
 
 bool ExpressionOperation::checkOperation() {
-	return stof(std::get<2>(_expression->evaluateExpression(_expression->getPostfix()).back()));
+	auto result = _expression->evaluateExpression(_expression->getPostfix()).back();
+	return stof(std::get<2>(result));
 }

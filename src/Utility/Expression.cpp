@@ -173,53 +173,74 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > postfix;
 	if (_supportedOperations.find(value) != _supportedOperations.end()) {
 		auto childs = node->getNodes();
-
 		//if this is operation we have to dive deeper to tree
 		for (int i = childs.size() - 1; i >= 0; i--) {
 			//from left to right
 			auto result = evaluateExpression(childs[i]);
+			//short circuit evaluation
+			if (value == "AND" && childs[i]->getValue() != "SET") {
+				if (stof(std::get<2>(result.back())) == 0) {
+					//we shouldn't check right argument
+					postfix.clear();
+					postfix.push_back({ nullptr, std::string(), std::to_string(false), -1 });
+					return postfix;
+				}
+			}
+			else if (value == "OR" && childs[i]->getValue() != "SET") {
+				if (stof(std::get<2>(result.back())) == 1) {
+					//we shouldn't check right argument
+					postfix.clear();
+					postfix.push_back({ nullptr, std::string(), std::to_string(true), -1 });
+					return postfix;
+				}
+			}
 			for (auto item : result) {
 				postfix.push_back(item);
 			}
 		}
-
-		switch (childs.size()) {
-		case 1: {
-			auto oneArgumentResult = oneArgumentOperation(postfix.back(), value);
-			if (std::get<1>(oneArgumentResult)) {
-				postfix.pop_back();
-				postfix.push_back({ nullptr, std::string(), std::get<0>(oneArgumentResult), -1 });
+		//this can happen only if we have ${1,2,3,4} argument so it's parsed as 1 argument but in reality it's 4 arguments
+		if (postfix.size() != childs.size()) {
+			auto multipleArgumentResult = multipleArgumentOperation(postfix, value);
+			if (std::get<1>(multipleArgumentResult)) {
+				postfix.clear();
+				postfix.push_back({ nullptr, std::string(), std::get<0>(multipleArgumentResult), -1 });
 			}
-			break;
 		}
-		case 2: {
-			auto twoArgumentResult = twoArgumentOperation(postfix[postfix.size() - 1],
-													      postfix[postfix.size() - 2],
-														  value);
-			if (std::get<4>(twoArgumentResult)) {
-				postfix.pop_back();
-				postfix.pop_back();
-				postfix.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult), std::get<3>(twoArgumentResult) });
+		else {
+			switch (postfix.size()) {
+				case 1: {
+					auto oneArgumentResult = oneArgumentOperation(postfix.back(), value);	
+					if (std::get<1>(oneArgumentResult)) {
+						postfix.pop_back();
+						postfix.push_back({ nullptr, std::string(), std::get<0>(oneArgumentResult), -1 });
+					}
+					break;
+				}
+				case 2: {
+					auto twoArgumentResult = twoArgumentOperation(postfix[postfix.size() - 1],
+																  postfix[postfix.size() - 2],
+																  value);
+					if (std::get<4>(twoArgumentResult)) {
+						postfix.pop_back();
+						postfix.pop_back();
+						postfix.push_back({ std::get<0>(twoArgumentResult), std::get<1>(twoArgumentResult), std::get<2>(twoArgumentResult), std::get<3>(twoArgumentResult) });
+					}
+					break;
+				}
+				case 3: {
+					auto threeArgumentResult = threeArgumentOperation(postfix[postfix.size() - 1],
+																	  postfix[postfix.size() - 2],
+																	  postfix[postfix.size() - 3],
+																	  value);
+					if (std::get<4>(threeArgumentResult)) {
+						postfix.pop_back();
+						postfix.pop_back();
+						postfix.pop_back();
+						postfix.push_back({ std::get<0>(threeArgumentResult), std::get<1>(threeArgumentResult), std::get<2>(threeArgumentResult), std::get<3>(threeArgumentResult) });
+					}
+					break;
+				}
 			}
-			break;
-		}
-		case 3: {
-			auto threeArgumentResult = threeArgumentOperation(postfix[postfix.size() - 1],
-															  postfix[postfix.size() - 2],
-															  postfix[postfix.size() - 3],
-															  value);
-			if (std::get<4>(threeArgumentResult)) {
-				postfix.pop_back();
-				postfix.pop_back();
-				postfix.pop_back();
-				postfix.push_back({ std::get<0>(threeArgumentResult), std::get<1>(threeArgumentResult), std::get<2>(threeArgumentResult), std::get<3>(threeArgumentResult) });
-			}
-			break;
-		}
-		default: {
-			//case with click to several entities
-			break;
-		}
 		}
 	}
 	else {
