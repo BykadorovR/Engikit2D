@@ -31,7 +31,6 @@ bool Label::initialize() {
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
 	_entity->createComponent<CustomFloatComponent>()->addCustomValue("textStartVertical", 0);
-	_entity->createComponent<CustomFloatComponent>()->addCustomValue("textCursorHorizontal", 0);
 
 	//--- 0
 	{

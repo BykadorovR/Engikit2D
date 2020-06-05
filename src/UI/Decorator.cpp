@@ -152,7 +152,10 @@ bool ScrollerVerticalDecorator::initialize() {
 			textIsInBounds->addArgument(parentEntity, "CustomFloatComponent", "textStartVertical");
 			textIsInBounds->addArgument(parentEntity, "ObjectComponent", "sizeY");
 			textIsInBounds->addArgument(nullptr, "", std::to_string(GlyphsLoader::instance().getGlyphHeight()));
-			textIsInBounds->initializeOperation("${0} = 1 AND ${1} = 1 AND ( ${2} - ${3} ) * ${5} > ${4}");
+			textIsInBounds->addArgument(parentEntity, "KeyboardComponent", "code");
+			textIsInBounds->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+			//+1 because textTotalPages doesn't take in account first line
+			textIsInBounds->initializeOperation("${0} = 1 AND ${1} = 1 AND ${6} = ${7} AND ( ${2} + 1 - ${3} ) * ${5} > ${4}");
 			auto increaseStartPage = std::make_shared<AssignAction>();
 			increaseStartPage->addArgument(parentEntity, "CustomFloatComponent", "textStartVertical");
 			increaseStartPage->initializeAction("${0} SET ${0} + 1");

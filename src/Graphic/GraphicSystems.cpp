@@ -139,7 +139,8 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			if (startVertical > 0 && startVertical == currentVertical)
 				yAllign = 0;
 
-			if ((currentVertical - startVertical) * GlyphsLoader::instance().getGlyphHeight() > objectHeight) {
+			//+1 because first line
+			if ((currentVertical + 1 - startVertical) * GlyphsLoader::instance().getGlyphHeight() > objectHeight) {
 				break;
 			}
 		}
