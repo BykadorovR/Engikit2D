@@ -66,7 +66,7 @@ void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> 
 	clearComponentsOperation->addArgument(entity, "", "");
 	std::string listIndexes = clearComponentsOperation->addArgument(list->getEntities());
 	std::string decoratorIndexes = clearComponentsOperation->addArgument(decorator->getEntities());
-	clearComponentsOperation->initializeOperation("! ( CLICK ${0} ) AND ! ( CLICK ${"+listIndexes+"} ) AND ! ( CLICK ${"+decoratorIndexes+"} )");
+	clearComponentsOperation->initializeOperation("! ( DOUBLE_CLICK ${0} ) AND ! ( CLICK ${"+listIndexes+"} ) AND ! ( CLICK ${"+decoratorIndexes+"} )");
 	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
 	clearComponentsAction->setList(list);
 	clearComponentsAction->setEntity(entity);
@@ -86,28 +86,38 @@ void surfaceCreated() {
 	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf",
 		std::make_tuple<int, int>(static_cast<int>(*(L"А")),
 			static_cast<int>(*(L"я"))));
-	GlyphsLoader::instance().bufferSymbols(15);
+	GlyphsLoader::instance().bufferSymbols(15, 15);
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
 
 	{
-		std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
+		std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerVerticalDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
+		std::shared_ptr<BackFactory> backFactory = std::make_shared<BackFactory>(activeScene);
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
 		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
 		list->initialize();
 		list->setSize({ 130, 110 });
 		list->setPosition({ 500, 50 });
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", list));
+		list->setEditable(true);
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", list));
 		scrollerDecoratorList->initialize();
 		
 		std::shared_ptr<List> listOperations = std::dynamic_pointer_cast<List>(listFactory->createView());
 		listOperations->initialize();
 		listOperations->setSize({ 130, 110 });
 		listOperations->setPosition({ 500, 170 });
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", listOperations));
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", listOperations));
 		scrollerDecoratorListOperations->initialize();
+
+		std::shared_ptr<Back> back = std::dynamic_pointer_cast<Back>(backFactory->createView());
+		back->initialize();
+		back->setPosition({ 50, 50 });
+		back->setSize({ 100, 100 });
+		back->setColorMask({ 0, 0, 0, 0 });
+		back->setColorAddition({ 0.5, 0, 0.5, 0.5 });
+
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
@@ -115,8 +125,8 @@ void surfaceCreated() {
 		label->setText("Hello");
 		label->setEditable(true);
 		
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerDecoratorFactory->createView("ScrollerDecorator", label));
-		scrollerDecoratorLabel->initialize();
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", label));
+		scrollerDecoratorVerticalLabel->initialize();
 		/*
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());

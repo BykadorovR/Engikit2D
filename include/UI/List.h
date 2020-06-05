@@ -11,6 +11,7 @@ public:
 	bool addItem(std::string item);
 	bool setPosition(std::tuple<float, float> position);
 	bool setSize(std::tuple<float, float> size);
+	bool setEditable(bool editable);
 	bool clear();
 };
 

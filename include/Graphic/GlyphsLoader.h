@@ -25,15 +25,17 @@ class GlyphsLoader {
 public:
 	static GlyphsLoader& instance();
 	void initialize(std::string fontPath, std::tuple<int, int> symbolsCodes);
-	void bufferSymbols(int symbolHeight);
+	void bufferSymbols(int symbolWidth, int symbolHeight);
 	std::map<FT_ULong, CharacterInfo> getCharacters();
 	std::map<FT_ULong, std::tuple<float, float> > getCharactersAtlasPosition();
 	std::shared_ptr<TextureAtlas> getAtlas();
 	float getLineSpace();
 	float getGlyphHeight();
+	float getGlyphWidth();
 private:
 	float _lineSpace;
 	int _symbolHeight;
+	int _symbolWidth;
 	std::string _fontPath;
 	std::tuple<int, int> _symbolsCodes;
 	std::shared_ptr<TextureAtlas> _charactersAtlas;

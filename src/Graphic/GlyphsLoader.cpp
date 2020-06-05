@@ -26,6 +26,10 @@ float GlyphsLoader::getGlyphHeight() {
 	return _symbolHeight;
 }
 
+float GlyphsLoader::getGlyphWidth() {
+	return _symbolWidth;
+}
+
 std::map<FT_ULong, CharacterInfo> GlyphsLoader::getCharacters() {
 	return _characters;
 }
@@ -34,8 +38,9 @@ std::map<FT_ULong, std::tuple<float, float> > GlyphsLoader::getCharactersAtlasPo
 	return _charactersAtlasPosition;
 }
 
-void GlyphsLoader::bufferSymbols(int symbolHeight) {
+void GlyphsLoader::bufferSymbols(int symbolWidth, int symbolHeight) {
 	_symbolHeight = symbolHeight;
+	_symbolWidth = symbolWidth;
 
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft))
@@ -47,7 +52,7 @@ void GlyphsLoader::bufferSymbols(int symbolHeight) {
 	
 	FT_Select_Charmap(face, ft_encoding_unicode);
 
-	FT_Set_Pixel_Sizes(face, 0, symbolHeight);
+	FT_Set_Pixel_Sizes(face, symbolWidth, symbolHeight);
 	// get the line spacing, note that it is measured in 64ths of a pixel
 	_lineSpace = face->size->metrics.height / 64;
 

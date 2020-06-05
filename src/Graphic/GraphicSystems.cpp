@@ -78,9 +78,9 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 	float yPos = startY;
 	float* cursorPosition = std::get<0>(textObject->getMemberFloat("cursorPosition"));
 	float currentCursor = 0;
-	float currentPage = 0;
-	float startPage = *std::get<0>(entity->getComponent<CustomFloatComponent>()->getMemberFloat("textStartPage"));
-
+	float currentVertical = 0;
+	float currentHorizontal = 0;
+	float startVertical = *std::get<0>(entity->getComponent<CustomFloatComponent>()->getMemberFloat("textStartVertical"));
 	if (*std::get<0>(textObject->getMemberFloat("editable")) &&
 		*std::get<0>(textObject->getMemberFloat("focus")) &&
 		*cursorPosition == 0) {
@@ -88,25 +88,69 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 		renderChar('|', { xPos, startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
 			vertexObject, textObject);
 	}
-	//TODO: amount of enters in initial label without scroller is different with and without text (so press enter without text, see cursor disappeared, return back write some symbol and press enter)
+	//TODO: ideal solution for horizontal decorator + cursor is to have horizontal and vertical cursos poisition + array with every line width
+	//for now let's calculate startHorizontal manually in another loop
+	int startHorizontal = 0;
+	int lineWidth = 0;
+	if (*std::get<0>(textObject->getMemberFloat("editable")) &&
+		*std::get<0>(textObject->getMemberFloat("focus"))) {
+		for (auto c = text.begin(); c < text.end(); c++) {
+			if (*c == '\n') {
+				currentVertical++;
+				currentHorizontal = 0;
+				startHorizontal = 0;
+				lineWidth = 0;
+			}
+			//we shouldn't calculate \n as symbol because it doesn't have width so in chRemove it will be 0
+			else {
+				currentHorizontal++;
+			}
+			currentCursor++;
+
+			CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
+			if (*c != '\n') {
+				//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+				lineWidth += ((chInfo._advance >> 6) - std::get<0>(chInfo._bearing)); // Bitshift by 6 to get value in pixels (2^6 = 64)
+			}
+
+			while (lineWidth >= objectWidth) {
+				CharacterInfo chRemove = GlyphsLoader::instance().getCharacters()[text[currentCursor - currentHorizontal + startHorizontal]];
+				lineWidth -= ((chRemove._advance >> 6) - std::get<0>(chRemove._bearing));
+				startHorizontal += 1;
+			}
+
+			if (*cursorPosition == 0 ||
+				currentCursor == *cursorPosition)
+				break;
+		}
+	}
+
+	currentVertical = 0;
+	currentHorizontal = 0;
+	currentCursor = 0;
 	//TODO: don't render symbol if it can't be displayed within the borders
 	for (auto c = text.begin(); c != text.end(); c++) {
 		if (*c == '\n') {
 			xAllign = 0;
 			yAllign += GlyphsLoader::instance().getGlyphHeight();
-			currentPage++;
+			currentVertical++;
+			currentHorizontal = 0;
 			//once we reach the same page as in decorator we should start from 0;0
-			if (startPage > 0 && startPage == currentPage)
+			if (startVertical > 0 && startVertical == currentVertical)
 				yAllign = 0;
 
-			if ((currentPage - startPage) * GlyphsLoader::instance().getGlyphHeight() > objectHeight) {
+			if ((currentVertical - startVertical) * GlyphsLoader::instance().getGlyphHeight() > objectHeight) {
 				break;
 			}
 		}
 
 		currentCursor++;
 
-		if (currentPage < startPage)
+		if (*c != '\n' && currentHorizontal++ < startHorizontal) {
+			continue;
+		}
+
+		if (currentVertical < startVertical)
 			continue;
 
 		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
@@ -120,7 +164,6 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			renderChar(*c, { xPos, yPos }, vertexObject, textObject);
 			//Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 			xAllign += ((chInfo._advance >> 6) - std::get<0>(chInfo._bearing)); // Bitshift by 6 to get value in pixels (2^6 = 64)
-			//move horizontal scroll to 1 symbol
 		}
 
 		//TODO: add check that text doesn't go to out of bounds and we don't handle it here
@@ -128,7 +171,7 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			*std::get<0>(textObject->getMemberFloat("focus"))) {
 			if (currentCursor == *cursorPosition) {
 				CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
-				renderChar('|', { xPos + (chInfo._advance >> 6), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
+				renderChar('|', { xPos + (chInfo._advance >> 6) - std::get<0>(chInfo._bearing), startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) + yAllign },
 					vertexObject, textObject);
 			}
 		}

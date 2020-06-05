@@ -4,9 +4,8 @@
 
 class ScrollerVerticalDecorator : public View {
 public:
-	ScrollerVerticalDecorator(std::string name = "ScrollerDecorator");
+	ScrollerVerticalDecorator(std::string name = "ScrollerVerticalDecorator");
 	bool initialize();
-	bool initializeOld();
 
 	bool setScrollerUp(std::shared_ptr<View> scrollerUp);
 	bool setScrollerDown(std::shared_ptr<View> scrollerDown);
@@ -22,5 +21,5 @@ private:
 	std::shared_ptr<BackFactory> _backFactory;
 public:
 	ScrollerVerticalDecoratorFactory(std::shared_ptr<Scene> activeScene);
-	std::shared_ptr<View> createView(std::string name = "ScrollerDecorator", std::shared_ptr<View> parent = nullptr);
+	std::shared_ptr<View> createView(std::string name = "ScrollerVerticalDecorator", std::shared_ptr<View> parent = nullptr);
 };

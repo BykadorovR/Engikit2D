@@ -5,6 +5,7 @@
 #include "Common.h"
 #include <regex>
 #include <algorithm>
+#include <codecvt>
 
 ExpressionNode::ExpressionNode(std::string value) {
 	_value = value;
@@ -178,7 +179,7 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 			//from left to right
 			auto result = evaluateExpression(childs[i]);
 			//short circuit evaluation
-			if (value == "AND" && childs[i]->getValue() != "SET") {
+			if (value == "AND") {
 				if (stof(std::get<2>(result.back())) == 0) {
 					//we shouldn't check right argument
 					postfix.clear();
@@ -186,7 +187,7 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 					return postfix;
 				}
 			}
-			else if (value == "OR" && childs[i]->getValue() != "SET") {
+			else if (value == "OR") {
 				if (stof(std::get<2>(result.back())) == 1) {
 					//we shouldn't check right argument
 					postfix.clear();
@@ -323,8 +324,9 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 			result = { std::to_string(vectorSize), 1 };
 		}
 		else if (vectorType == VariableType::varString) {
-			int stringSize = std::get<0>(component->getMemberString(std::get<2>(item)))->size();
-			result = { std::to_string(stringSize), 1 };
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			std::wstring text = converter.from_bytes(*std::get<0>(component->getMemberString(std::get<2>(item))));
+			result = { std::to_string(text.size()), 1 };
 		}
 		else if (vectorType == VariableType::varUnknown) {
 			result = { std::to_string(false), 0 };
@@ -567,8 +569,15 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 			if (value == "\n") {
 				value = std::string(1, '\n');
 			}
-			auto targetString = std::get<0>(item3Component->getMemberString(std::get<2>(item3)));
-			targetString->insert(targetString->begin() + index, *value.c_str());
+			auto targetString = *std::get<0>(item3Component->getMemberString(std::get<2>(item3)));
+			//convert string to wstring in case of non-English symbols
+			//it won't affect English/digitals
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			std::wstring text = converter.from_bytes(targetString);
+			text.insert(index, converter.from_bytes(value));
+			//convert it back
+			std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterBack;
+			item3Component->setMember(std::get<2>(item3), converterBack.to_bytes(text));
 		}
 		else
 			assert("Not implemented");
