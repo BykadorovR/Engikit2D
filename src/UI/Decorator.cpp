@@ -425,3 +425,62 @@ std::shared_ptr<View> ScrollerVerticalDecoratorFactory::createView(std::string n
 	
 	return scrollerDecorator;
 }
+
+HeaderDecorator::HeaderDecorator(std::string name) {
+	_viewName = name;
+}
+
+bool HeaderDecorator::initialize() {
+	auto parentPosition = _parent->getEntity()->getComponent<ObjectComponent>()->getPosition();
+	auto parentSize = _parent->getEntity()->getComponent<ObjectComponent>()->getSize();
+	std::tuple<float, float> headerSize = { std::get<0>(parentSize), GlyphsLoader::instance().getGlyphHeight() };
+
+	getBack()->initialize();
+	getBack()->setPosition({std::get<0>(parentPosition), std::get<1>(parentPosition) - std::get<1>(headerSize)});
+	getBack()->setSize(headerSize);
+	getBack()->setColorMask({ 0, 0, 0, 0 });
+	getBack()->setColorAddition({ 0.5, 0.5, 0, 1 });
+
+	getLabel()->initialize();
+	getLabel()->setPosition({ std::get<0>(parentPosition), std::get<1>(parentPosition) - std::get<1>(headerSize) });
+	getLabel()->setSize(headerSize);
+
+
+	return false;
+}
+
+bool HeaderDecorator::setText(std::string text) {
+	getLabel()->setText(text);
+	return false;
+}
+
+std::shared_ptr<Back> HeaderDecorator::getBack() {
+	for (auto view : _views) {
+		if (view->getName() == "Back")
+			return std::dynamic_pointer_cast<Back>(view);
+	}
+	return nullptr;
+}
+
+std::shared_ptr<Label> HeaderDecorator::getLabel() {
+	for (auto view : _views) {
+		if (view->getName() == "Label")
+			return std::dynamic_pointer_cast<Label>(view);
+	}
+	return nullptr;
+}
+
+HeaderDecoratorFactory::HeaderDecoratorFactory(std::shared_ptr<Scene> activeScene) {
+	_activeScene = activeScene;
+	_backFactory = std::make_shared<BackFactory>(activeScene);
+	_labelFactory = std::make_shared<LabelFactory>(activeScene);
+}
+
+std::shared_ptr<View> HeaderDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
+	std::shared_ptr<HeaderDecorator> headerDecorator = std::make_shared<HeaderDecorator>(name);
+	headerDecorator->setParent(parent);
+	headerDecorator->addView(_backFactory->createView("Back", headerDecorator));
+	headerDecorator->addView(_labelFactory->createView("Label", headerDecorator));
+
+	return headerDecorator;
+}

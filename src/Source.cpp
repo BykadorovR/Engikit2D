@@ -93,6 +93,7 @@ void surfaceCreated() {
 
 	{
 		std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerVerticalDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
+		std::shared_ptr<HeaderDecoratorFactory> headerDecoratorFactory = std::make_shared<HeaderDecoratorFactory>(activeScene);
 		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
 		std::shared_ptr<BackFactory> backFactory = std::make_shared<BackFactory>(activeScene);
 		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
@@ -116,7 +117,7 @@ void surfaceCreated() {
 		back->setPosition({ 50, 50 });
 		back->setSize({ 100, 100 });
 		back->setColorMask({ 0, 0, 0, 0 });
-		back->setColorAddition({ 0.5, 0, 0.5, 0.5 });
+		back->setColorAddition({ 1, 0, 1, 1 });
 
 		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
 		label->initialize();
@@ -127,6 +128,9 @@ void surfaceCreated() {
 		
 		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", label));
 		scrollerDecoratorVerticalLabel->initialize();
+		std::shared_ptr<HeaderDecorator> headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createView("HeaderDecorator", label));
+		headerDecorator->initialize();
+		headerDecorator->setText("Header");
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
