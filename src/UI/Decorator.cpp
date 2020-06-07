@@ -12,6 +12,25 @@ ScrollerVerticalDecorator::ScrollerVerticalDecorator(std::string name) {
 	_viewName = name;
 }
 
+/*
+Label:
+0) if "1" then "attach decorator to view"
+1) if "focus && editable && enter" then "text total pages + 1"
+2) if "focus && editable && backspace && text under cursor = '\n'" then "text total pages - 1"
+3) if "focus && editable && enter && height of visible text + new line > object height" then "text start vertical + 1"
+4) if "clicked decorator up && text start vertical > 0" then "text start vertical - 1"
+5) if "clicked decorator down && text start vertical < text total pages" then "text start vertical + 1"
+6) if "text total pages > 0" then "change decorator progress position depending on text start vertical"
+7) if "text start vertical > 0" then "make decorator visible"
+8) if "text start vertical = 0 && text total pages < object height" then "make decorator invisible"
+List:
+0) if "1" then "attach decorator to view"
+1) if "clicked decorator up && list start vertical > 0" then "list start vertical - 1"
+2) if "clicked decorator down && list start vertical < list size - number of list entities" then "list start vertical + 1"
+3) if "list size > number of list entities" then "change decorator progress position depending on list start vertical" (attached to progress entity)
+4) if "list size > number of list entities" then "make decorator visible" (attached to parent entity)
+5) if "list size <= number of list entities" then "make decorator invisible"
+*/
 bool ScrollerVerticalDecorator::initialize() {
 	//TODO: we should add custom component to entity?
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
@@ -73,9 +92,9 @@ bool ScrollerVerticalDecorator::initialize() {
 				totalPages++;
 		}
 		parentEntity->createComponent<CustomFloatComponent>()->addCustomValue("textTotalPages", totalPages);
-
+		
+		//--- 0 
 		{
-			//--- 0 
 			//TODO: need to make some more smart condition, remove COMMON
 			auto keepPosition = std::make_shared<ExpressionOperation>();
 			keepPosition->initializeOperation("1");
@@ -107,11 +126,7 @@ bool ScrollerVerticalDecorator::initialize() {
 
 		}
 
-
-		//if pressed enter = totalPages +1
-		//if pressed backspace and symbol under cursor is \n = totalPages -1
-		//if totalPages - startPage > object can have = startPage +1
-		//--- 0
+		//--- 1
 		{
 			auto enterPressed = std::make_shared<ExpressionOperation>();
 			enterPressed->addArgument(parentEntity, "TextComponent", "focus");
@@ -125,7 +140,8 @@ bool ScrollerVerticalDecorator::initialize() {
 			enterPressed->registerAction(increaseTotalPages);
 			parentEntity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
 		}
-		//--- 1
+
+		//--- 2
 		{
 			auto backspacePressed = std::make_shared<ExpressionOperation>();
 			backspacePressed->addArgument(parentEntity, "TextComponent", "focus");
@@ -143,7 +159,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			parentEntity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_START);
 		}
 
-		//--- 2
+		//--- 3
 		{
 			auto textIsInBounds = std::make_shared<ExpressionOperation>();
 			textIsInBounds->addArgument(parentEntity, "TextComponent", "focus");
@@ -163,7 +179,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			parentEntity->createComponent<InteractionComponent>()->attachOperation(textIsInBounds, InteractionType::KEYBOARD_START);
 		}
 
-		//--- 3
+		//--- 4
 		{
 			auto clickInsideUp = std::make_shared<ExpressionOperation>();
 			clickInsideUp->addArgument(getScrollerUp()->getEntity(), "", "");
@@ -176,7 +192,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
 		}
 
-		//--- 4
+		//--- 5
 		{
 			auto clickInsideDown = std::make_shared<ExpressionOperation>();
 			clickInsideDown->addArgument(getScrollerDown()->getEntity(), "", "");
@@ -190,11 +206,12 @@ bool ScrollerVerticalDecorator::initialize() {
 			getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
 		}
 
-		//--- 5
+		//--- 6
 		{
 			auto positionDecorator = std::make_shared<ExpressionOperation>();
 			positionDecorator->addArgument(parentEntity, "CustomFloatComponent", "textTotalPages");
-			positionDecorator->initializeOperation("${0} > 1");
+			//to avoid division by zero
+			positionDecorator->initializeOperation("${0} > 0");
 			auto changePosition = std::make_shared<AssignAction>();
 			changePosition->addArgument(parentEntity, "CustomFloatComponent", "textStartVertical");				//0
 			changePosition->addArgument(parentEntity, "CustomFloatComponent", "textTotalPages");				//1 
@@ -208,7 +225,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
 		}
 
-		//--- 6
+		//--- 7
 		{
 			auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
 			decoratorAddCheck->addArgument(parentEntity, "CustomFloatComponent", "textStartVertical");
@@ -222,7 +239,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::KEYBOARD_END);
 		}
 
-		//--- 7
+		//--- 8
 		{
 			auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
 			decoratorRemoveCheck->addArgument(parentEntity, "ObjectComponent", "sizeY");
@@ -240,8 +257,8 @@ bool ScrollerVerticalDecorator::initialize() {
 		}
 
 	} else if (_parent->getName() == "List") {
+		//--- 0
 		{
-			//--- 0 
 			//TODO: need to make some more smart condition
 			auto keepPosition = std::make_shared<ExpressionOperation>();
 			keepPosition->initializeOperation("1");
@@ -275,33 +292,33 @@ bool ScrollerVerticalDecorator::initialize() {
 			getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
 		}
 
-		//--- 3
+		//--- 1
 		{
 			auto clickInsideUp = std::make_shared<ExpressionOperation>();
 			clickInsideUp->addArgument(getScrollerUp()->getEntity(), "", "");
-			clickInsideUp->addArgument(parentEntity, "CustomFloatComponent", "listStartPage");
+			clickInsideUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
 			clickInsideUp->initializeOperation("CLICK ${0} AND ${1} > 0");
 			auto changePositionUp = std::make_shared<AssignAction>();
-			changePositionUp->addArgument(parentEntity, "CustomFloatComponent", "listStartPage");
+			changePositionUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
 			changePositionUp->initializeAction("${0} SET ${0} - 1");
 			clickInsideUp->registerAction(changePositionUp);
 			getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
 		}
-		//--- 4
+		//--- 2
 		{
 			auto clickInsideDown = std::make_shared<ExpressionOperation>();
 			clickInsideDown->addArgument(getScrollerDown()->getEntity(), "", "");
-			clickInsideDown->addArgument(parentEntity, "CustomFloatComponent", "listStartPage");
+			clickInsideDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
 			clickInsideDown->addArgument(parentEntity, "CustomStringArrayComponent", "list");
 			clickInsideDown->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
 			clickInsideDown->initializeOperation("CLICK ${0} AND ${1} < SIZE ${2} - ${3}");
 			auto changePositionDown = std::make_shared<AssignAction>();
-			changePositionDown->addArgument(parentEntity, "CustomFloatComponent", "listStartPage");
+			changePositionDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
 			changePositionDown->initializeAction("${0} SET ${0} + 1");
 			clickInsideDown->registerAction(changePositionDown);
 			getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
 		}
-		//--- 5
+		//--- 3
 		{
 			auto positionDecorator = std::make_shared<ExpressionOperation>();
 			positionDecorator->addArgument(parentEntity, "CustomStringArrayComponent", "list");
@@ -309,7 +326,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			//to avoid division by zero
 			positionDecorator->initializeOperation("SIZE ${0} > ${1}");
 			auto changePosition = std::make_shared<AssignAction>();
-			changePosition->addArgument(parentEntity, "CustomFloatComponent", "listStartPage");					//0
+			changePosition->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");				//0
 			changePosition->addArgument(parentEntity, "CustomStringArrayComponent", "list");					//1
 			changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");	//2
 			changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "sizeY");		//3
@@ -322,7 +339,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
 		}
 
-		//--- 6
+		//--- 4
 		{
 			auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
 			decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list");
@@ -336,7 +353,8 @@ bool ScrollerVerticalDecorator::initialize() {
 			}
 			parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
 		}
-		//--- 7
+
+		//--- 5
 		{
 			auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
 			decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list");
@@ -354,17 +372,6 @@ bool ScrollerVerticalDecorator::initialize() {
 	return false;
 }
 
-/*
-List of operation-actions:
-0) keep decorator's position to parent entity
-1) if "text out of bounds down" (typing) then "scroll text down"
-2) if "text out of bounds up" (removing) then "scroll text up"
-3) if "click to scroller up" then "scroll text up"
-4) if "click to scroller down" then "scroll text down"
-5) if "text size > 1" then "change scroller position dynamically depending on current page"
-6) if "current page > 1" then "show decorator"
-7) if "page == 0 and text size < view height" then "hide decorator"
-*/
 bool ScrollerVerticalDecorator::setScrollerUp(std::shared_ptr<View> scrollerUp) {
 	_views.push_back(scrollerUp);
 	return false;

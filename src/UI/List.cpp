@@ -55,7 +55,7 @@ bool List::clear() {
 
 //views and items are different thigs. Views - labels, items - string (text)
 bool List::initialize() {
-	_views[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("listStartPage", 0);
+	_views[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("listStartVertical", 0);
 	_views[0]->getEntity()->createComponent<CustomStringArrayComponent>()->initializeEmpty("list");
 	for (int i = 0; i < _views.size(); i++) {
 		_views[i]->initialize();
@@ -65,13 +65,13 @@ bool List::initialize() {
 		//NOTE: we send list without index only because we use SIZE
 		mapText->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list");
 		mapText->addArgument(nullptr, "", std::to_string(i));
-		mapText->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartPage");
+		mapText->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
 		mapText->addArgument(_views[i]->getEntity(), "TextComponent", "focus");
 		mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
 		auto setLine = std::make_shared<AssignAction>();
 		setLine->addArgument(_views[i]->getEntity(), "TextComponent", "text");
 		setLine->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list");
-		setLine->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartPage");
+		setLine->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
 		setLine->addArgument(nullptr, "", std::to_string(i));
 		setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");
 		mapText->registerAction(setLine);
