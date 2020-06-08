@@ -124,7 +124,6 @@ void surfaceCreated() {
 		label->setSize({ 100, 100 });
 		label->setText("Hello");
 		label->setEditable(true);
-		label->setTextAllignment({ TextAllignment::CENTER, TextAllignment::CENTER });
 		
 		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", label));
 		scrollerDecoratorVerticalLabel->initialize();
