@@ -184,7 +184,7 @@ bool ApplyItemAction::doAction() {
 	int currentPage = *std::get<0>(_list->getViews()[0]->getEntity()->getComponent<CustomFloatComponent>()->getMemberFloat("listStartVertical"));
 	int componentNameIndex = currentPage + _viewIndex;
 	auto componentNames = _component->getItemsNames();
-	//TODO: add support for string values (for text)
+	//TODO: IMPORTANT! add support for string values (for text)
 	_component->setMember(componentNames[componentNameIndex], stof(_list->getViews()[_viewIndex]->getEntity()->getComponent<TextComponent>()->getText()));
 	return false;
 }

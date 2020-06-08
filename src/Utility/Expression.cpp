@@ -27,8 +27,6 @@ std::vector<std::shared_ptr<ExpressionNode> > ExpressionNode::getNodes() {
 Expression::Expression() {
 	_supportedOperations =
 	{
-		//TODO: if AND is found need to understand somehow that further processing is unneccessary!!
-
 		{ "AND",		  { 0, "left", 2 } }, //last argument - the order sequence of the same operations should be executed in.
 		{ "OR",			  { 0, "left", 2 } }, //for example: 1 + 2 + 3 - can be processed from left to right BUT
 		{ ">",			  { 1, "left", 2 } }, // 2 ^ 2 ^ 3 - have to be processed from right to left

@@ -149,9 +149,13 @@ std::shared_ptr<BufferManager> TextComponent::getBufferManager() {
 
 bool TextComponent::setText(std::string text) {
 	_cursorPosition += text.size();
+#ifdef WIN32
 	//All strings are stored as UTF8, so first we should convert it
 	std::string UTF8String = convertMultibyteToUTF8(text);
 	_text = UTF8String;
+#else
+	_text = text;
+#endif
 	return false;
 
 }

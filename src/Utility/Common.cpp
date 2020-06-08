@@ -4,7 +4,6 @@
 #include <iostream>
 #include "assert.h"
 #include <cctype>
-#include "Windows.h"
 #include <locale>
 
 std::string rawFileContent(const char* relativePath) {
@@ -39,6 +38,7 @@ bool isNumber(std::string s) {
 	return char_pos == s.size();  // must reach the ending 0 of the string
 }
 
+#ifdef WIN32
 std::string convertMultibyteToUTF8(std::string input) {
 	int sizeMultibyte = MultiByteToWideChar(CP_ACP, MB_COMPOSITE, input.c_str(),
 		input.length(), nullptr, 0);
@@ -56,3 +56,4 @@ std::string convertMultibyteToUTF8(std::string input) {
 		nullptr, nullptr);
 	return utf8String;
 }
+#endif

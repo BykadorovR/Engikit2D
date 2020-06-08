@@ -4,7 +4,6 @@
 #include <chrono>
 #include <thread>
 
-#include "Windows.h"
 #include "State.h"
 #include "UserInputEvents.h"
 #include "TextureAtlas.h"

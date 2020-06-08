@@ -32,7 +32,6 @@ List:
 5) if "list size <= number of list entities" then "make decorator invisible"
 */
 bool ScrollerVerticalDecorator::initialize() {
-	//TODO: we should add custom component to entity?
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
 	//entity == nullptr means that view is composite
 	if (parentEntity == nullptr) {
