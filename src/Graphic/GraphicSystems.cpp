@@ -147,11 +147,12 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 		CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 		xPos = startX + xAllign;
 		float symbolWidth = (chInfo._advance >> 6) - std::get<0>(chInfo._bearing);
-		float symbolHeight = (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing));
+		//sizeY - bearingY = size of symbol under line (bottom part)
+		float symbolHeightAllign = (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfo._bearing));
 		if (xPos + symbolWidth >= std::get<0>(positionEnd))
 			continue;
 		//allign by the tallest char (bearing is the upper part of symbol)
-		yPos = startY + symbolHeight + yAllign;
+		yPos = startY + symbolHeightAllign + yAllign;
 		
 		if (*c != '\n') {
 			renderChar(*c, { xPos, yPos }, vertexObject, textObject);
@@ -163,8 +164,8 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			*std::get<0>(textObject->getMemberFloat("focus"))) {
 			if (currentCursor == *cursorPosition) {
 				CharacterInfo chInfoCursor = GlyphsLoader::instance().getCharacters()['|'];
-				symbolHeight = (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing));
-				renderChar('|', { xPos + symbolWidth, startY + symbolHeight + yAllign },
+				symbolHeightAllign = (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing));
+				renderChar('|', { xPos + symbolWidth, startY + symbolHeightAllign + yAllign },
 					vertexObject, textObject);
 			}
 		}

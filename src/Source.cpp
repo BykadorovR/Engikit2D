@@ -130,7 +130,7 @@ void surfaceCreated() {
 		scrollerDecoratorVerticalLabel->initialize();
 		std::shared_ptr<HeaderDecorator> headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createView("HeaderDecorator", label));
 		headerDecorator->initialize();
-		headerDecorator->setText("Header");
+		headerDecorator->setText("g|Header");
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
