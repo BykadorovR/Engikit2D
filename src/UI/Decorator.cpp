@@ -432,7 +432,7 @@ HeaderDecorator::HeaderDecorator(std::string name) {
 bool HeaderDecorator::initialize() {
 	auto parentPosition = _parent->getEntity()->getComponent<ObjectComponent>()->getPosition();
 	auto parentSize = _parent->getEntity()->getComponent<ObjectComponent>()->getSize();
-	std::tuple<float, float> headerSize = { std::get<0>(parentSize), GlyphsLoader::instance().getGlyphHeight() };
+	std::tuple<float, float> headerSize = { std::get<0>(parentSize), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
 
 	getBack()->initialize();
 	getBack()->setPosition({std::get<0>(parentPosition), std::get<1>(parentPosition) - std::get<1>(headerSize)});

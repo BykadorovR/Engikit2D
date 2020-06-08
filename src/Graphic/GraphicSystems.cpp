@@ -89,6 +89,7 @@ void DrawSystem::textUpdate(std::shared_ptr<Entity> entity) {
 			renderChar('|', { startX, startY + (GlyphsLoader::instance().getGlyphHeight() - std::get<1>(chInfoCursor._bearing)) },
 					   vertexObject, textObject);
 		} else {
+			//TODO: PERFORMANCE: basically we should find the nearest to cursor '\n' and start calculation from this position, so it allow us to avoid big part of text
 			for (auto c = text.begin(); c < text.end(); c++) {
 				CharacterInfo chInfo = GlyphsLoader::instance().getCharacters()[*c];
 				if (*c == '\n') {

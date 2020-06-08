@@ -103,7 +103,7 @@ void surfaceCreated() {
 		list->setEditable(true);
 		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", list));
 		scrollerDecoratorList->initialize();
-		
+
 		std::shared_ptr<List> listOperations = std::dynamic_pointer_cast<List>(listFactory->createView());
 		listOperations->initialize();
 		listOperations->setSize({ 130, 110 });
@@ -124,6 +124,7 @@ void surfaceCreated() {
 		label->setSize({ 100, 100 });
 		label->setText("Hello");
 		label->setEditable(true);
+		label->setTextAllignment({ TextAllignment::CENTER, TextAllignment::CENTER });
 		
 		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", label));
 		scrollerDecoratorVerticalLabel->initialize();
