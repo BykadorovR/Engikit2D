@@ -110,6 +110,9 @@ void surfaceCreated() {
 		listOperations->setPosition({ 500, 170 });
 		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", listOperations));
 		scrollerDecoratorListOperations->initialize();
+		std::shared_ptr<HeaderDecorator> headerDecoratorList = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createView("HeaderDecorator", list));
+		headerDecoratorList->initialize();
+		headerDecoratorList->setText("g|Header");
 
 		std::shared_ptr<Back> back = std::dynamic_pointer_cast<Back>(backFactory->createView());
 		back->initialize();
