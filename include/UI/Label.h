@@ -24,6 +24,7 @@ public:
 	bool setLineSpacingCoeff(float coeff);
 };
 
+//TODO: remove all factories except only one because they are all equal
 class LabelFactory : public ViewFactory {
 private:
 	std::shared_ptr<Scene> _activeScene;

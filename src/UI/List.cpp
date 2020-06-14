@@ -70,6 +70,7 @@ bool List::initialize() {
 		mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
 		auto setLine = std::make_shared<AssignAction>();
 		setLine->addArgument(_views[i]->getEntity(), "TextComponent", "text");
+		//TODO: need to take every column from list and map to appropriate text in view
 		setLine->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list");
 		setLine->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
 		setLine->addArgument(nullptr, "", std::to_string(i));
