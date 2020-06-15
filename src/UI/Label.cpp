@@ -10,7 +10,7 @@
 #include "GLFW/glfw3.h"
 #include "CustomComponents.h"
 
-Label::Label(std::string name = "Label") {
+Label::Label(std::string name) {
 	_viewName = name;
 }
 

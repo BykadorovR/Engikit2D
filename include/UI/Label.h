@@ -9,7 +9,7 @@
 
 class Label: public View {
 public:
-	Label(std::string name);
+	Label(std::string name = "Label");
 	bool initialize();
 	bool setText(std::string text);
 	bool setColor(std::vector<float> color);

@@ -4,6 +4,7 @@
 #include <chrono>
 #include <thread>
 
+#include "Grid.h"
 #include "State.h"
 #include "UserInputEvents.h"
 #include "TextureAtlas.h"
@@ -150,6 +151,11 @@ void surfaceCreated() {
 		attachShowComponents(button->getLabel()->getEntity(), list, scrollerDecoratorList);
 
 		attachShowOperations(button->getBack()->getEntity(), listOperations, scrollerDecoratorListOperations);
+	}
+	{
+		std::shared_ptr<GridFactory> gridFactory = std::make_shared<GridFactory>(activeScene);
+		auto grid = gridFactory->createGridBack({ 2, 2 });
+		grid->initialize();
 	}
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());

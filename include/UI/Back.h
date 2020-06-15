@@ -9,7 +9,7 @@ struct BackOptions {
 
 class Back : public View {
 public:
-	Back(std::string name);
+	Back(std::string name = "Back");
 	bool initialize();
 	bool setColorMask(std::vector<float> mask);
 	bool setColorAddition(std::vector<float> addition);

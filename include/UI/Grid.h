@@ -1,30 +1,27 @@
 #pragma once
 #include "View.h"
+#include "Scene.h"
+#include "Back.h"
 
 class Grid : public View {
 private:
-	std::tuple<int, int> _dim;
-	std::tuple<int, int> _size;
+	std::tuple<float, float> _dim;
+	std::tuple<float, float> _size;
+	std::tuple<float, float> _position;
 public:
 	Grid(std::string name);
 	bool initialize();
-
-	bool setDim(std::tuple<int, int> dim);
-	bool setSize(std::tuple<int, int> size);
+	bool setPosition(std::tuple<float, float> position);
+	bool setDim(std::tuple<float, float> dim);
+	bool setSize(std::tuple<float, float> size);
 };
 
 class GridFactory {
+private:
+	std::shared_ptr<Scene> _scene;
+	std::shared_ptr<BackFactory> _backFactory;
 public:
-	template <class Type>
-	std::shared_ptr<Grid> createGrid(std::tuple<int, int> dim, std::string name = "Grid", std::shared_ptr<View> parent = nullptr) {
-		std::shared_ptr<Grid> grid = std::make_shared<Grid>(name);
-		grid->setParent(parent);
-		grid->setDim(dim);
-		int rows = std::get<0>(dim), cols = std::get<1>(dim);
-		for (int i = 0; i < rows * cols; i++) {
-			grid->addView(std::make_shared<Type>());
-		}
-
-		return grid;
-	}
+	GridFactory(std::shared_ptr<Scene> activeScene);
+	//TODO: add create to existing factories
+	std::shared_ptr<Grid> createGridBack(std::tuple<int, int> dim, std::string name = "Grid", std::shared_ptr<View> parent = nullptr);
 };

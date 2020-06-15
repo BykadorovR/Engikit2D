@@ -2,7 +2,7 @@
 #include "State.h"
 #include "GraphicComponents.h"
 
-Back::Back(std::string name = "Back") {
+Back::Back(std::string name) {
 	_viewName = name;
 }
 
@@ -10,6 +10,9 @@ bool Back::initialize() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(resolution) / 2, std::get<1>(resolution) / 2 }, { 100, 100 }, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextureComponent>()->initialize(bufferManager);
+	//default "texture" is solid fill
+	setColorMask({ 0, 0, 0, 0 });
+	setColorAddition({ 0.5f, 0, 0.5f, 1 });
 	return false;
 }
 

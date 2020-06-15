@@ -33,7 +33,11 @@ bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<f
 
 bool ObjectComponent::setMember(std::string name, float value, int index) {
 	OperationComponent::setMember(name, value, index);
-	getBufferManager()->changeBuffer(BufferType::Position, getPosition(), getSize(), resolution);
+	//if ObjectComponent wasn't initialized yet we don't need to change buffer
+	if (_bufferManager)
+		_bufferManager->changeBuffer(BufferType::Position, getPosition(), getSize(), resolution);
+	else
+		return true;
 	return false;
 }
 
