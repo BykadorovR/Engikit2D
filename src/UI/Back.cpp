@@ -11,6 +11,7 @@ bool Back::initialize() {
 	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(resolution) / 2, std::get<1>(resolution) / 2 }, { 100, 100 }, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextureComponent>()->initialize(bufferManager);
 	//default "texture" is solid fill
+	//TODO: make some default store for all default parameters
 	setColorMask({ 0, 0, 0, 0 });
 	setColorAddition({ 0.5f, 0, 0.5f, 1 });
 	return false;

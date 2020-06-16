@@ -154,8 +154,9 @@ void surfaceCreated() {
 	}
 	{
 		std::shared_ptr<GridFactory> gridFactory = std::make_shared<GridFactory>(activeScene);
-		auto grid = gridFactory->createGridBack({ 2, 2 });
+		auto grid = gridFactory->createGridBack({ 3, 2 });
 		grid->initialize();
+		grid->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
 	}
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());
