@@ -151,12 +151,21 @@ void surfaceCreated() {
 		attachShowComponents(button->getLabel()->getEntity(), list, scrollerDecoratorList);
 
 		attachShowOperations(button->getBack()->getEntity(), listOperations, scrollerDecoratorListOperations);
-	}
-	{
-		std::shared_ptr<GridFactory> gridFactory = std::make_shared<GridFactory>(activeScene);
-		auto grid = gridFactory->createGridBack({ 3, 2 });
-		grid->initialize();
-		grid->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
+
+		auto gridBack = backFactory->createGrid({ 3, 2 });
+		gridBack->initialize();
+		gridBack->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
+		gridBack->setPosition({ 400, 200 });
+
+		//TODO: grid should allow to change back/label content/parameters
+		auto gridLabel = labelFactory->createGrid({ 3, 2 });
+		gridLabel->initialize();
+		gridLabel->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
+		gridLabel->setPosition({ 400, 200 });
+		auto gridViews = gridLabel->getViews();
+		for (auto &view : gridViews) {
+			std::dynamic_pointer_cast<Label>(view)->setText("Test");
+		}
 	}
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());

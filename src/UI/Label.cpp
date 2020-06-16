@@ -221,3 +221,14 @@ std::shared_ptr<View> LabelFactory::createView(std::string name, std::shared_ptr
 	return label;
 }
 
+std::shared_ptr<Grid> LabelFactory::createGrid(std::tuple<int, int> dim, std::string name, std::shared_ptr<View> parent) {
+	std::shared_ptr<Grid> grid = std::make_shared<Grid>(name);
+	grid->setParent(parent);
+	grid->setDim(dim);
+	int cols = std::get<0>(dim), rows = std::get<1>(dim);
+	for (int i = 0; i < rows * cols; i++) {
+		grid->addView(createView());
+	}
+
+	return grid;
+}

@@ -65,20 +65,3 @@ bool Grid::setSize(std::vector<std::tuple<float, float> > size) {
 	setPosition(_position);
 	return false;
 }
-
-GridFactory::GridFactory(std::shared_ptr<Scene> activeScene) {
-	_scene = activeScene;
-	_backFactory = std::make_shared<BackFactory>(activeScene);
-}
-
-std::shared_ptr<Grid> GridFactory::createGridBack(std::tuple<int, int> dim, std::string name, std::shared_ptr<View> parent) {
-	std::shared_ptr<Grid> grid = std::make_shared<Grid>(name);
-	grid->setParent(parent);
-	grid->setDim(dim);
-	int cols = std::get<0>(dim), rows = std::get<1>(dim);
-	for (int i = 0; i < rows * cols; i++) {
-		grid->addView(_backFactory->createView());
-	}
-
-	return grid;
-}
