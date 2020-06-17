@@ -65,7 +65,7 @@ std::shared_ptr<View> BackFactory::createView(std::string name, std::shared_ptr<
 	return back;
 }
 
-std::shared_ptr<Grid> BackFactory::createGrid(std::tuple<int, int> dim, std::string name, std::shared_ptr<View> parent) {
+std::shared_ptr<View> BackFactory::createGrid(std::tuple<int, int> dim, std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<Grid> grid = std::make_shared<Grid>(name);
 	grid->setParent(parent);
 	grid->setDim(dim);

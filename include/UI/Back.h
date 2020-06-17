@@ -24,5 +24,5 @@ private:
 public:
 	BackFactory(std::shared_ptr<Scene> activeScene);
 	std::shared_ptr<View> createView(std::string name = "Back", std::shared_ptr<View> parent = nullptr);
-	std::shared_ptr<Grid> createGrid(std::tuple<int, int> dim, std::string name = "Grid", std::shared_ptr<View> parent = nullptr);
+	std::shared_ptr<View> createGrid(std::tuple<int, int> dim, std::string name = "Grid", std::shared_ptr<View> parent = nullptr);
 };

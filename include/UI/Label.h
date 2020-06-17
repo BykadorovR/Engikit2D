@@ -32,5 +32,5 @@ private:
 public:
 	LabelFactory(std::shared_ptr<Scene> activeScene);
 	std::shared_ptr<View> createView(std::string name = "Label", std::shared_ptr<View> parent = nullptr);
-	std::shared_ptr<Grid> createGrid(std::tuple<int, int> dim, std::string name = "Grid", std::shared_ptr<View> parent = nullptr);
+	std::shared_ptr<View> createGrid(std::tuple<int, int> dim, std::string name = "Grid", std::shared_ptr<View> parent = nullptr);
 };
