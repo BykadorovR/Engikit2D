@@ -8,7 +8,8 @@ class List : public View {
 public:
 	List(std::string name);
 	bool initialize();
-	bool addItem(std::string item);
+	bool addItem(std::string text);
+	bool addItem(std::vector<std::string> text);
 	bool setPosition(std::tuple<float, float> position);
 	bool setSize(std::tuple<float, float> size);
 	bool setEditable(bool editable);

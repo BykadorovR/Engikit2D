@@ -54,12 +54,21 @@ bool List::setSize(std::tuple<float, float> size) {
 }
 
 bool List::addItem(std::string text) {
-	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text, "list");
+	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text, "list1");
+	return false;
+}
+
+bool List::addItem(std::vector<std::string> text) {
+	//take views from first grid as childs
+	auto childs = _views[0]->getViews();
+	for (int i = 0; i < childs.size(); i++) {
+		childs[i]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text[i], "list" + std::to_string(i));
+	}
 	return false;
 }
 
 bool List::clear() {
-	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->clear("list");
+	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->clear("list1");
 	for (int i = 0; i < _views.size(); i++)
 		_views[i]->getEntity()->getComponent<TextComponent>()->setText("");
 	return false;
@@ -69,22 +78,47 @@ bool List::clear() {
 bool List::initialize() {
 	//first of all need to understand whether views are labels or grids
 	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
+		auto childs = _views[0]->getViews();
+		//first child of first row contain scroller vertical start
+		childs[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("listStartVertical", 0);
+		for (int i = 0; i < childs.size(); i++)
+			childs[i]->getEntity()->createComponent<CustomStringArrayComponent>()->initializeEmpty("list" + std::to_string(i));
+
 		for (int i = 0; i < _views.size(); i++) {
 			_views[i]->initialize();
-			for (auto inside : _views[i]->getViews())
-				inside->getEntity()->getComponent<TextComponent>()->setMember("text", "Test");
+			auto childs = _views[i]->getViews();
+			for (int j = 0; j < childs.size(); j++) {
+				//every view is a grid so contain more views
+				auto mapText = std::make_shared<ExpressionOperation>();
+				//NOTE: we send list without index only because we use SIZE
+				mapText->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(i));
+				mapText->addArgument(nullptr, "", std::to_string(i));
+				mapText->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
+				mapText->addArgument(_views[i]->getEntity(), "TextComponent", "focus");
+				mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
+				auto setLine = std::make_shared<AssignAction>();
+				setLine->addArgument(_views[i]->getEntity(), "TextComponent", "text");
+				//TODO: need to take every column from list and map to appropriate text in view
+				setLine->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list1");
+				setLine->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
+				setLine->addArgument(nullptr, "", std::to_string(i));
+				setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");
+				mapText->registerAction(setLine);
+				//TODO: add common ONCE + mouse/keyboard
+				_views[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
+			}
 		}
 	}
 	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
 		_views[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("listStartVertical", 0);
-		_views[0]->getEntity()->createComponent<CustomStringArrayComponent>()->initializeEmpty("list");
+		_views[0]->getEntity()->createComponent<CustomStringArrayComponent>()->initializeEmpty("list1");
 		for (int i = 0; i < _views.size(); i++) {
 			_views[i]->initialize();
 			//TODO: Refactor the whole TextComponent. Allignment works incorrectly!
 			//_views[i]->getEntity()->getComponent<TextComponent>()->setAllignment({TextAllignment::CENTER, TextAllignment::CENTER});
 			auto mapText = std::make_shared<ExpressionOperation>();
 			//NOTE: we send list without index only because we use SIZE
-			mapText->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list");
+			mapText->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list1");
 			mapText->addArgument(nullptr, "", std::to_string(i));
 			mapText->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
 			mapText->addArgument(_views[i]->getEntity(), "TextComponent", "focus");
@@ -92,7 +126,7 @@ bool List::initialize() {
 			auto setLine = std::make_shared<AssignAction>();
 			setLine->addArgument(_views[i]->getEntity(), "TextComponent", "text");
 			//TODO: need to take every column from list and map to appropriate text in view
-			setLine->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list");
+			setLine->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list1");
 			setLine->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
 			setLine->addArgument(nullptr, "", std::to_string(i));
 			setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");

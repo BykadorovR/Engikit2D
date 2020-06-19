@@ -119,7 +119,7 @@ bool PrintItemsAction::doAction() {
 		_list->addItem(item);
 	}
 	//create custom component with all names?
-	//_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text, "list");
+	//_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text, "list1");
 
 	auto listViews = _list->getViews();
 	for (int i = 0; i < listViews.size(); i++) {

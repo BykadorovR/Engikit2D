@@ -307,7 +307,7 @@ bool ScrollerVerticalDecorator::initialize() {
 			auto clickInsideDown = std::make_shared<ExpressionOperation>();
 			clickInsideDown->addArgument(getScrollerDown()->getEntity(), "", "");
 			clickInsideDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
-			clickInsideDown->addArgument(parentEntity, "CustomStringArrayComponent", "list");
+			clickInsideDown->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
 			clickInsideDown->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
 			clickInsideDown->initializeOperation("CLICK ${0} AND ${1} < SIZE ${2} - ${3}");
 			auto changePositionDown = std::make_shared<AssignAction>();
@@ -319,13 +319,13 @@ bool ScrollerVerticalDecorator::initialize() {
 		//--- 3
 		{
 			auto positionDecorator = std::make_shared<ExpressionOperation>();
-			positionDecorator->addArgument(parentEntity, "CustomStringArrayComponent", "list");
+			positionDecorator->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
 			positionDecorator->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
 			//to avoid division by zero
 			positionDecorator->initializeOperation("SIZE ${0} > ${1}");
 			auto changePosition = std::make_shared<AssignAction>();
 			changePosition->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");				//0
-			changePosition->addArgument(parentEntity, "CustomStringArrayComponent", "list");					//1
+			changePosition->addArgument(parentEntity, "CustomStringArrayComponent", "list1");					//1
 			changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");	//2
 			changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "sizeY");		//3
 			changePosition->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");			//4
@@ -341,7 +341,7 @@ bool ScrollerVerticalDecorator::initialize() {
 		//--- 4
 		{
 			auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
-			decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list");
+			decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
 			decoratorAddCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
 			decoratorAddCheck->initializeOperation("SIZE ${0} > ${1}");
 			for (auto view : getViews()) {
@@ -356,7 +356,7 @@ bool ScrollerVerticalDecorator::initialize() {
 		//--- 5
 		{
 			auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
-			decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list");
+			decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
 			decoratorRemoveCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
 			decoratorRemoveCheck->initializeOperation("SIZE ${0} < ${1} OR SIZE ${0} = ${1}");
 			for (auto view : getViews()) {
@@ -498,7 +498,7 @@ bool HeaderDecorator::initialize() {
 		//--- 2
 		{
 			auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
-			decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list");
+			decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
 			decoratorAddCheck->initializeOperation("SIZE ${0} > 0");
 			for (auto view : getViews()) {
 				auto registerDecoratorAction = std::make_shared<AssignAction>();
@@ -512,7 +512,7 @@ bool HeaderDecorator::initialize() {
 		//--- 1
 		{
 			auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
-			decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list");
+			decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
 			decoratorRemoveCheck->initializeOperation("SIZE ${0} = 0");
 			for (auto view : getViews()) {
 				auto unregisterDecoratorAction = std::make_shared<AssignAction>();
