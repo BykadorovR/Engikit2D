@@ -91,25 +91,24 @@ bool List::initialize() {
 				//every view is a grid so contain more views
 				auto mapText = std::make_shared<ExpressionOperation>();
 				//NOTE: we send list without index only because we use SIZE
-				mapText->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(i));
+				mapText->addArgument(_views[0]->getViews()[j]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(j));
 				mapText->addArgument(nullptr, "", std::to_string(i));
-				mapText->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
-				mapText->addArgument(_views[i]->getEntity(), "TextComponent", "focus");
+				mapText->addArgument(_views[0]->getViews()[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
+				mapText->addArgument(childs[j]->getEntity(), "TextComponent", "focus");
 				mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
 				auto setLine = std::make_shared<AssignAction>();
-				setLine->addArgument(_views[i]->getEntity(), "TextComponent", "text");
+				setLine->addArgument(childs[j]->getEntity(), "TextComponent", "text");
 				//TODO: need to take every column from list and map to appropriate text in view
-				setLine->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list1");
-				setLine->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
+				setLine->addArgument(_views[0]->getViews()[j]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(j));
+				setLine->addArgument(_views[0]->getViews()[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
 				setLine->addArgument(nullptr, "", std::to_string(i));
 				setLine->initializeAction("${0} SET ${1} AT ( ${2} + ${3} )");
 				mapText->registerAction(setLine);
 				//TODO: add common ONCE + mouse/keyboard
-				_views[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
+				_views[0]->getViews()[j]->getEntity()->createComponent<InteractionComponent>()->attachOperation(mapText, InteractionType::COMMON_END);
 			}
 		}
-	}
-	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
+	} else if (std::dynamic_pointer_cast<Label>(_views[0])) {
 		_views[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("listStartVertical", 0);
 		_views[0]->getEntity()->createComponent<CustomStringArrayComponent>()->initializeEmpty("list1");
 		for (int i = 0; i < _views.size(); i++) {
