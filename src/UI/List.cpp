@@ -5,6 +5,7 @@
 #include "InteractionActions.h"
 #include "InteractionComponents.h"
 #include "UserInputComponents.h"
+#include "Common.h"
 
 //TODO: add header to list for specifiying entity name/ID, component's name/ID
 List::List(std::string name) {

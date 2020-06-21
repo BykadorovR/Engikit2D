@@ -1,4 +1,5 @@
 #include "CustomComponents.h"
+#include "Common.h"
 
 CustomFloatArrayComponent::CustomFloatArrayComponent() {
 	_componentName = "CustomFloatArrayComponent";
@@ -54,8 +55,15 @@ bool CustomStringArrayComponent::initializeEmpty(std::string name) {
 }
 
 bool CustomStringArrayComponent::addCustomValue(std::string value, std::string name) {
-	if (!initializeEmpty(name))
-		_strings[name].push_back(value);
+	if (!initializeEmpty(name)) {
+		std::string text = value;
+#ifdef WIN32
+		//All strings are stored as UTF8, so first we should convert it
+		std::string UTF8String = convertMultibyteToUTF8(text);
+		text = UTF8String;
+#endif
+		_strings[name].push_back(text);
+	}
 
 	return false;
 }

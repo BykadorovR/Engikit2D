@@ -1,5 +1,6 @@
 #include "Decorator.h"
 #include "Back.h"
+#include "List.h"
 #include "Shader.h"
 #include "InteractionOperations.h"
 #include "UserInputComponents.h"
@@ -31,35 +32,13 @@ List:
 4) if "list size > number of list entities" then "make decorator visible" (attached to parent entity)
 5) if "list size <= number of list entities" then "make decorator invisible"
 */
-bool ScrollerVerticalDecorator::initialize() {
-	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
-	//entity == nullptr means that view is composite
-	if (parentEntity == nullptr) {
-		for (auto view : _parent->getViews()) {
-			//attach all components to parent entity or first child view
-			if (view->getEntity()->getComponent<ObjectComponent>()) {
-				parentEntity = view->getEntity();
-				break;
-			}
-		}
-	}
 
-	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
+//TODO: make child class for grid/label/list decorators
+bool ScrollerVerticalDecorator::initialize() {
 	std::tuple<float, float> scrollerSize = { 20, 20 };
-	std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
-	std::tuple<float, float> scrollerDownPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) + std::get<1>(size) - std::get<0>(scrollerSize) };
-	//if view is composite attach scroller down to last view
-	if (_parent->getEntity() == nullptr) {
-		auto lastPosition = _parent->getViews().back()->getEntity()->getComponent<ObjectComponent>()->getPosition();
-		auto lastSize = _parent->getViews().back()->getEntity()->getComponent<ObjectComponent>()->getSize();
-		scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(lastSize), std::get<1>(lastPosition) + std::get<1>(lastSize) - std::get<0>(scrollerSize) };
-	}
 	std::tuple<float, float> scrollerProgressSize = { 20, 10 };
-	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
 
 	getScrollerProgress()->initialize();
-	getScrollerProgress()->setPosition(scrollerProgressPosition);
 	getScrollerProgress()->setSize(scrollerProgressSize);
 	getScrollerProgress()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerProgress()->setColorAddition({ 0.5, 0.5, 0, 1 });
@@ -67,7 +46,6 @@ bool ScrollerVerticalDecorator::initialize() {
 	getScrollerProgress()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerUp()->initialize();
-	getScrollerUp()->setPosition(scrollerUpPosition);
 	getScrollerUp()->setSize(scrollerSize);
 	getScrollerUp()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerUp()->setColorAddition({ 1, 0, 0.5, 1 });
@@ -75,14 +53,25 @@ bool ScrollerVerticalDecorator::initialize() {
 	getScrollerUp()->getEntity()->createComponent<KeyboardComponent>();
 
 	getScrollerDown()->initialize();
-	getScrollerDown()->setPosition(scrollerDownPosition);
 	getScrollerDown()->setSize(scrollerSize);
 	getScrollerDown()->setColorMask({ 0, 0, 0, 0 });
 	getScrollerDown()->setColorAddition({ 0, 1, 1, 1 });
 	getScrollerDown()->getEntity()->createComponent<MouseComponent>();
 	getScrollerDown()->getEntity()->createComponent<KeyboardComponent>();
 
-	if (_parent->getName() == "Label") {
+	if (std::dynamic_pointer_cast<Label>(_parent)) {
+		std::shared_ptr<Entity> parentEntity = _parent->getEntity();
+		//set intial position
+		auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+		auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
+		std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
+		std::tuple<float, float> scrollerDownPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) + std::get<1>(size) - std::get<0>(scrollerSize) };
+		//if view is composite attach scroller down to last view
+		std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
+		getScrollerProgress()->setPosition(scrollerProgressPosition);
+		getScrollerUp()->setPosition(scrollerUpPosition);
+		getScrollerDown()->setPosition(scrollerDownPosition);
+
 		//in init we should parse text and find all \n to do initial initialization
 		auto text = parentEntity->getComponent<TextComponent>()->getText();
 		int totalPages = 0;
@@ -254,119 +243,261 @@ bool ScrollerVerticalDecorator::initialize() {
 			}
 		}
 
-	} else if (_parent->getName() == "List") {
-		//--- 0
-		{
-			//TODO: need to make some more smart condition
-			auto keepPosition = std::make_shared<ExpressionOperation>();
-			keepPosition->initializeOperation("1");
-			auto keepPositionUp = std::make_shared<AssignAction>();
-			keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
-			keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
-			keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionX");
-			keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionY");
-			keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeX");
-			keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeY");
-			keepPositionUp->initializeAction("${0} SET ${2} + ${4} AND ${1} SET ${3}");
-			keepPosition->registerAction(keepPositionUp);
-			auto keepPositionDown = std::make_shared<AssignAction>();
-			keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionX");
-			keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");
-			keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "sizeY");
-			keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionX");
-			keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionY");
-			keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
-			keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeY");
-			keepPositionDown->initializeAction("${0} SET ${3} + ${5} AND ${1} SET ${4} + ${6} - ${2}");
-			keepPosition->registerAction(keepPositionDown);
-			auto keepPositionScroller = std::make_shared<AssignAction>();
-			keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionX");
-			keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");
-			keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
-			keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
-			keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "sizeY");
-			keepPositionScroller->initializeAction("${0} SET ${2} AND ${1} SET ${3} + ${4}");
-			keepPosition->registerAction(keepPositionScroller);
-			getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
-		}
-
-		//--- 1
-		{
-			auto clickInsideUp = std::make_shared<ExpressionOperation>();
-			clickInsideUp->addArgument(getScrollerUp()->getEntity(), "", "");
-			clickInsideUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
-			clickInsideUp->initializeOperation("CLICK ${0} AND ${1} > 0");
-			auto changePositionUp = std::make_shared<AssignAction>();
-			changePositionUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
-			changePositionUp->initializeAction("${0} SET ${0} - 1");
-			clickInsideUp->registerAction(changePositionUp);
-			getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
-		}
-		//--- 2
-		{
-			auto clickInsideDown = std::make_shared<ExpressionOperation>();
-			clickInsideDown->addArgument(getScrollerDown()->getEntity(), "", "");
-			clickInsideDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
-			clickInsideDown->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
-			clickInsideDown->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
-			clickInsideDown->initializeOperation("CLICK ${0} AND ${1} < SIZE ${2} - ${3}");
-			auto changePositionDown = std::make_shared<AssignAction>();
-			changePositionDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
-			changePositionDown->initializeAction("${0} SET ${0} + 1");
-			clickInsideDown->registerAction(changePositionDown);
-			getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
-		}
-		//--- 3
-		{
-			auto positionDecorator = std::make_shared<ExpressionOperation>();
-			positionDecorator->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
-			positionDecorator->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
-			//to avoid division by zero
-			positionDecorator->initializeOperation("SIZE ${0} > ${1}");
-			auto changePosition = std::make_shared<AssignAction>();
-			changePosition->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");				//0
-			changePosition->addArgument(parentEntity, "CustomStringArrayComponent", "list1");					//1
-			changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");	//2
-			changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "sizeY");		//3
-			changePosition->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");			//4
-			changePosition->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "sizeY");				//5
-			changePosition->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");		//6
-			changePosition->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));				//7
-			changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( SIZE ${1} - ${7} ) * ${0}");
-			positionDecorator->registerAction(changePosition);
-			getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
-		}
-
-		//TODO: Transfer visibility check to parent and just copy visibility flag of parent
-		//--- 4
-		{
-			auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
-			decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
-			decoratorAddCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
-			decoratorAddCheck->initializeOperation("SIZE ${0} > ${1}");
-			for (auto view : getViews()) {
-				auto registerDecoratorAction = std::make_shared<AssignAction>();
-				registerDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
-				registerDecoratorAction->initializeAction("${0} SET 1");
-				decoratorAddCheck->registerAction(registerDecoratorAction);
+	} else if (std::dynamic_pointer_cast<List>(_parent)) {
+		if (std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])) {
+			std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getViews()[0]->getEntity();
+			auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+			auto size = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();
+			std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
+			auto lastPosition = _parent->getViews().back()->getViews()[0]->getEntity()->getComponent<ObjectComponent>()->getPosition();
+			std::tuple<float, float> scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(size), std::get<1>(lastPosition) + std::get<1>(size) - std::get<0>(scrollerSize) };
+			std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
+			getScrollerProgress()->setPosition(scrollerProgressPosition);
+			getScrollerUp()->setPosition(scrollerUpPosition);
+			getScrollerDown()->setPosition(scrollerDownPosition);
+			//--- 0
+			/*
+			{
+				//TODO: need to make some more smart condition
+				auto keepPosition = std::make_shared<ExpressionOperation>();
+				keepPosition->initializeOperation("1");
+				auto keepPositionUp = std::make_shared<AssignAction>();
+				keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionX");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionY");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeX");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeY");
+				keepPositionUp->initializeAction("${0} SET ${2} + ${4} AND ${1} SET ${3}");
+				keepPosition->registerAction(keepPositionUp);
+				auto keepPositionDown = std::make_shared<AssignAction>();
+				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "sizeY");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeY");
+				keepPositionDown->initializeAction("${0} SET ${3} + ${5} AND ${1} SET ${4} + ${6} - ${2}");
+				keepPosition->registerAction(keepPositionDown);
+				auto keepPositionScroller = std::make_shared<AssignAction>();
+				keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "sizeY");
+				keepPositionScroller->initializeAction("${0} SET ${2} AND ${1} SET ${3} + ${4}");
+				keepPosition->registerAction(keepPositionScroller);
+				getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
 			}
-			parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
-		}
+			*/
+			//we should take text from every column
+			for (int i = 0; i < _parent->getViews()[0]->getViews().size(); i++) {
+				//--- 1
+				{
+					auto clickInsideUp = std::make_shared<ExpressionOperation>();
+					clickInsideUp->addArgument(getScrollerUp()->getEntity(), "", "");
+					clickInsideUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+					clickInsideUp->initializeOperation("CLICK ${0} AND ${1} > 0");
+					auto changePositionUp = std::make_shared<AssignAction>();
+					changePositionUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+					changePositionUp->initializeAction("${0} SET ${0} - 1");
+					clickInsideUp->registerAction(changePositionUp);
+					getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
+				}
+				//--- 2
+				{
+					auto clickInsideDown = std::make_shared<ExpressionOperation>();
+					clickInsideDown->addArgument(getScrollerDown()->getEntity(), "", "");
+					clickInsideDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+					clickInsideDown->addArgument(_parent->getViews()[0]->getViews()[i]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(i));
+					clickInsideDown->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+					clickInsideDown->initializeOperation("CLICK ${0} AND ${1} < SIZE ${2} - ${3}");
+					auto changePositionDown = std::make_shared<AssignAction>();
+					changePositionDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+					changePositionDown->initializeAction("${0} SET ${0} + 1");
+					clickInsideDown->registerAction(changePositionDown);
+					getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
+				}
+				//--- 3
+				{
+					auto positionDecorator = std::make_shared<ExpressionOperation>();
+					positionDecorator->addArgument(_parent->getViews()[0]->getViews()[i]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(i));
+					positionDecorator->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+					//to avoid division by zero
+					positionDecorator->initializeOperation("SIZE ${0} > ${1}");
+					auto changePosition = std::make_shared<AssignAction>();
+					changePosition->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");				//0
+					changePosition->addArgument(_parent->getViews()[0]->getViews()[i]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(i));					//1
+					changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");	//2
+					changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "sizeY");		//3
+					changePosition->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");			//4
+					changePosition->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "sizeY");				//5
+					changePosition->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");		//6
+					changePosition->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));				//7
+					changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( SIZE ${1} - ${7} ) * ${0}");
+					positionDecorator->registerAction(changePosition);
+					getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
+				}
 
-		//--- 5
-		{
-			auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
-			decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
-			decoratorRemoveCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
-			decoratorRemoveCheck->initializeOperation("SIZE ${0} < ${1} OR SIZE ${0} = ${1}");
-			for (auto view : getViews()) {
-				auto unregisterDecoratorAction = std::make_shared<AssignAction>();
-				unregisterDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
-				unregisterDecoratorAction->initializeAction("${0} SET 0");
-				decoratorRemoveCheck->registerAction(unregisterDecoratorAction);
-				view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
+				//TODO: Transfer visibility check to parent and just copy visibility flag of parent
+				//--- 4
+				{
+					auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
+					decoratorAddCheck->addArgument(_parent->getViews()[0]->getViews()[i]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(i));
+					decoratorAddCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+					decoratorAddCheck->initializeOperation("SIZE ${0} > ${1}");
+					for (auto view : getViews()) {
+						auto registerDecoratorAction = std::make_shared<AssignAction>();
+						registerDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
+						registerDecoratorAction->initializeAction("${0} SET 1");
+						decoratorAddCheck->registerAction(registerDecoratorAction);
+					}
+					parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
+				}
+
+				//--- 5
+				{
+					auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
+					decoratorRemoveCheck->addArgument(_parent->getViews()[0]->getViews()[i]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(i));
+					decoratorRemoveCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+					decoratorRemoveCheck->initializeOperation("SIZE ${0} < ${1} OR SIZE ${0} = ${1}");
+					for (auto view : getViews()) {
+						auto unregisterDecoratorAction = std::make_shared<AssignAction>();
+						unregisterDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
+						unregisterDecoratorAction->initializeAction("${0} SET 0");
+						decoratorRemoveCheck->registerAction(unregisterDecoratorAction);
+						view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
+					}
+				}
 			}
 		}
+		else if (std::dynamic_pointer_cast<Label>(_parent->getViews()[0])) {
+			std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getEntity();
+			auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+			auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
+			std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
+			auto lastPosition = parentEntity->getComponent<ObjectComponent>()->getPosition();
+			auto lastSize = parentEntity->getComponent<ObjectComponent>()->getSize();
+			std::tuple<float, float> scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(lastSize), std::get<1>(lastPosition) + std::get<1>(lastSize) - std::get<0>(scrollerSize) };
+			std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(scrollerSize) };
+			getScrollerProgress()->setPosition(scrollerProgressPosition);
+			getScrollerUp()->setPosition(scrollerUpPosition);
+			getScrollerDown()->setPosition(scrollerDownPosition);
+			//--- 0
+			{
+				//TODO: need to make some more smart condition
+				auto keepPosition = std::make_shared<ExpressionOperation>();
+				keepPosition->initializeOperation("1");
+				auto keepPositionUp = std::make_shared<AssignAction>();
+				keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionX");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionY");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeX");
+				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeY");
+				keepPositionUp->initializeAction("${0} SET ${2} + ${4} AND ${1} SET ${3}");
+				keepPosition->registerAction(keepPositionUp);
+				auto keepPositionDown = std::make_shared<AssignAction>();
+				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "sizeY");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
+				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeY");
+				keepPositionDown->initializeAction("${0} SET ${3} + ${5} AND ${1} SET ${4} + ${6} - ${2}");
+				keepPosition->registerAction(keepPositionDown);
+				auto keepPositionScroller = std::make_shared<AssignAction>();
+				keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionScroller->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
+				keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
+				keepPositionScroller->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "sizeY");
+				keepPositionScroller->initializeAction("${0} SET ${2} AND ${1} SET ${3} + ${4}");
+				keepPosition->registerAction(keepPositionScroller);
+				getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
+			}
+
+			//--- 1
+			{
+				auto clickInsideUp = std::make_shared<ExpressionOperation>();
+				clickInsideUp->addArgument(getScrollerUp()->getEntity(), "", "");
+				clickInsideUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+				clickInsideUp->initializeOperation("CLICK ${0} AND ${1} > 0");
+				auto changePositionUp = std::make_shared<AssignAction>();
+				changePositionUp->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+				changePositionUp->initializeAction("${0} SET ${0} - 1");
+				clickInsideUp->registerAction(changePositionUp);
+				getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideUp, InteractionType::MOUSE_START);
+			}
+			//--- 2
+			{
+				auto clickInsideDown = std::make_shared<ExpressionOperation>();
+				clickInsideDown->addArgument(getScrollerDown()->getEntity(), "", "");
+				clickInsideDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+				clickInsideDown->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
+				clickInsideDown->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+				clickInsideDown->initializeOperation("CLICK ${0} AND ${1} < SIZE ${2} - ${3}");
+				auto changePositionDown = std::make_shared<AssignAction>();
+				changePositionDown->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");
+				changePositionDown->initializeAction("${0} SET ${0} + 1");
+				clickInsideDown->registerAction(changePositionDown);
+				getScrollerDown()->getEntity()->createComponent<InteractionComponent>()->attachOperation(clickInsideDown, InteractionType::MOUSE_START);
+			}
+			//--- 3
+			{
+				auto positionDecorator = std::make_shared<ExpressionOperation>();
+				positionDecorator->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
+				positionDecorator->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+				//to avoid division by zero
+				positionDecorator->initializeOperation("SIZE ${0} > ${1}");
+				auto changePosition = std::make_shared<AssignAction>();
+				changePosition->addArgument(parentEntity, "CustomFloatComponent", "listStartVertical");				//0
+				changePosition->addArgument(parentEntity, "CustomStringArrayComponent", "list1");					//1
+				changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "positionY");	//2
+				changePosition->addArgument(getScrollerProgress()->getEntity(), "ObjectComponent", "sizeY");		//3
+				changePosition->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");			//4
+				changePosition->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "sizeY");				//5
+				changePosition->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");		//6
+				changePosition->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));				//7
+				changePosition->initializeAction("${2} SET ${4} + ${5} + ( ${6} - ${3} - ( ${4} + ${5} ) ) / ( SIZE ${1} - ${7} ) * ${0}");
+				positionDecorator->registerAction(changePosition);
+				getScrollerProgress()->getEntity()->createComponent<InteractionComponent>()->attachOperation(positionDecorator, InteractionType::COMMON_START);
+			}
+
+			//TODO: Transfer visibility check to parent and just copy visibility flag of parent
+			//--- 4
+			{
+				auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
+				decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
+				decoratorAddCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+				decoratorAddCheck->initializeOperation("SIZE ${0} > ${1}");
+				for (auto view : getViews()) {
+					auto registerDecoratorAction = std::make_shared<AssignAction>();
+					registerDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
+					registerDecoratorAction->initializeAction("${0} SET 1");
+					decoratorAddCheck->registerAction(registerDecoratorAction);
+				}
+				parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
+			}
+
+			//--- 5
+			{
+				auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
+				decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
+				decoratorRemoveCheck->addArgument(nullptr, "", std::to_string(_parent->getViews().size()));
+				decoratorRemoveCheck->initializeOperation("SIZE ${0} < ${1} OR SIZE ${0} = ${1}");
+				for (auto view : getViews()) {
+					auto unregisterDecoratorAction = std::make_shared<AssignAction>();
+					unregisterDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
+					unregisterDecoratorAction->initializeAction("${0} SET 0");
+					decoratorRemoveCheck->registerAction(unregisterDecoratorAction);
+					view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
+				}
+			}
+		}
+		
 	}
 	return false;
 }

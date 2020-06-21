@@ -13,4 +13,5 @@ public:
 	bool setDim(std::tuple<float, float> dim);
 	bool setSize(std::vector<std::tuple<float, float> > size);
 	std::tuple<float, float> getSize();
+
 };

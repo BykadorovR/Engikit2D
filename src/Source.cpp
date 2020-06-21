@@ -171,11 +171,14 @@ void surfaceCreated() {
 		std::shared_ptr<List> gridList = std::dynamic_pointer_cast<List>(gridListFactory->createGrid({3, 1}));
 		gridList->initialize();
 		gridList->setPosition({ 400, 300 });
-		gridList->addItem({ "1", "Hello", "OK" });
+		gridList->addItem({ "1", "Привет", "OK" });
 		gridList->addItem({ "2", "Salut", "Cancel" });
 		gridList->addItem({ "3", "Hey", "Cancel" });
-		gridList->addItem({ "4", "Bye", "Cancel" });
+		gridList->addItem({ "4", "Пока", "Cancel" });
 		gridList->addItem({ "5", "Here we are", "OK" });
+
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerGridList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", gridList));
+		scrollerGridList->initialize();
 	}
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());
