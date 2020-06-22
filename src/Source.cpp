@@ -167,6 +167,7 @@ void surfaceCreated() {
 			std::dynamic_pointer_cast<Label>(view)->setText("Test");
 		}
 
+		//TODO: Need to link Entity with View or parent Entity so if clicked to grid cell we can find parent and adjust preferences of parent not cell
 		std::shared_ptr<ListFactory> gridListFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
 		std::shared_ptr<List> gridList = std::dynamic_pointer_cast<List>(gridListFactory->createGrid({3, 1}));
 		gridList->initialize();

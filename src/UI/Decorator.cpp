@@ -246,8 +246,9 @@ bool ScrollerVerticalDecorator::initialize() {
 	} else if (std::dynamic_pointer_cast<List>(_parent)) {
 		if (std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])) {
 			std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getViews()[0]->getEntity();
-			auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
 			auto size = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();
+			auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+			//horizontal size
 			std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
 			auto lastPosition = _parent->getViews().back()->getViews()[0]->getEntity()->getComponent<ObjectComponent>()->getPosition();
 			std::tuple<float, float> scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(size), std::get<1>(lastPosition) + std::get<1>(size) - std::get<0>(scrollerSize) };
@@ -256,7 +257,6 @@ bool ScrollerVerticalDecorator::initialize() {
 			getScrollerUp()->setPosition(scrollerUpPosition);
 			getScrollerDown()->setPosition(scrollerDownPosition);
 			//--- 0
-			/*
 			{
 				//TODO: need to make some more smart condition
 				auto keepPosition = std::make_shared<ExpressionOperation>();
@@ -266,18 +266,18 @@ bool ScrollerVerticalDecorator::initialize() {
 				keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
 				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionX");
 				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionY");
-				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeX");
-				keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeY");
+				//TODO: change the way we get size from static to dynamic
+				keepPositionUp->addArgument(nullptr, "", std::to_string(std::get<0>(size)));
 				keepPositionUp->initializeAction("${0} SET ${2} + ${4} AND ${1} SET ${3}");
 				keepPosition->registerAction(keepPositionUp);
 				auto keepPositionDown = std::make_shared<AssignAction>();
 				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionX");
 				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");
 				keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "sizeY");
-				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionX");
-				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "positionY");
-				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
-				keepPositionDown->addArgument(_parent->getViews().back()->getEntity(), "ObjectComponent", "sizeY");
+				keepPositionDown->addArgument(_parent->getViews().back()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+				keepPositionDown->addArgument(_parent->getViews().back()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
+				keepPositionDown->addArgument(nullptr, "", std::to_string(std::get<0>(size)));
+				keepPositionDown->addArgument(nullptr, "", std::to_string(std::get<1>(size)));
 				keepPositionDown->initializeAction("${0} SET ${3} + ${5} AND ${1} SET ${4} + ${6} - ${2}");
 				keepPosition->registerAction(keepPositionDown);
 				auto keepPositionScroller = std::make_shared<AssignAction>();
@@ -290,7 +290,7 @@ bool ScrollerVerticalDecorator::initialize() {
 				keepPosition->registerAction(keepPositionScroller);
 				getScrollerUp()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
 			}
-			*/
+
 			//we should take text from every column
 			for (int i = 0; i < _parent->getViews()[0]->getViews().size(); i++) {
 				//--- 1
