@@ -3,6 +3,10 @@
 #include "View.h"
 
 class ScrollerVerticalDecorator : public View {
+private:
+	bool applyToGrid();
+	bool applyToList();
+	bool applyToLabel();
 public:
 	ScrollerVerticalDecorator(std::string name = "ScrollerVerticalDecorator");
 	bool initialize();

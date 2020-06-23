@@ -85,6 +85,7 @@ void GlyphsLoader::bufferSymbols(int symbolWidth, int symbolHeight) {
 		if (atlasX + std::get<0>(charSize) >= std::get<0>(_charactersAtlas->getSize())) {
 			atlasY += maxHeight + 1; //+ 1 = to delimit chars by height
 			atlasX = 0;
+			maxHeight = 0;
 		}
 		std::tuple<float, float> atlasPosition = { atlasX, atlasY };
 
