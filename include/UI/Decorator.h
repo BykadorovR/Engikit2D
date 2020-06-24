@@ -29,12 +29,16 @@ public:
 };
 
 class HeaderDecorator : public View {
+private:
+	bool applyToGrid();
+	bool applyToList();
+	bool applyToLabel();
 public:
 	HeaderDecorator(std::string name = "HeaderDecorator");
 	bool initialize();
-	bool setText(std::string text);
-	std::shared_ptr<Back> getBack();
-	std::shared_ptr<Label> getLabel();
+	bool setText(std::vector<std::string> text);
+	std::shared_ptr<Grid> getBack();
+	std::shared_ptr<Grid> getLabel();
 };
 
 class HeaderDecoratorFactory : public ViewFactory {
@@ -45,4 +49,5 @@ private:
 public:
 	HeaderDecoratorFactory(std::shared_ptr<Scene> activeScene);
 	std::shared_ptr<View> createView(std::string name = "HeaderDecorator", std::shared_ptr<View> parent = nullptr);
+	std::shared_ptr<View> createGrid(std::tuple<int, int> grid, std::string name = "HeaderDecorator", std::shared_ptr<View> parent = nullptr);
 };

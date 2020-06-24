@@ -480,26 +480,6 @@ bool ScrollerVerticalDecorator::applyToLabel() {
 	return false;
 }
 
-/*
-Label:
-0) if "1" then "attach decorator to view"
-1) if "focus && editable && enter" then "text total pages + 1"
-2) if "focus && editable && backspace && text under cursor = '\n'" then "text total pages - 1"
-3) if "focus && editable && enter && height of visible text + new line > object height" then "text start vertical + 1"
-4) if "clicked decorator up && text start vertical > 0" then "text start vertical - 1"
-5) if "clicked decorator down && text start vertical < text total pages" then "text start vertical + 1"
-6) if "text total pages > 0" then "change decorator progress position depending on text start vertical"
-7) if "text start vertical > 0" then "make decorator visible"
-8) if "text start vertical = 0 && text total pages < object height" then "make decorator invisible"
-List:
-0) if "1" then "attach decorator to view"
-1) if "clicked decorator up && list start vertical > 0" then "list start vertical - 1"
-2) if "clicked decorator down && list start vertical < list size - number of list entities" then "list start vertical + 1"
-3) if "list size > number of list entities" then "change decorator progress position depending on list start vertical" (attached to progress entity)
-4) if "list size > number of list entities" then "make decorator visible" (attached to parent entity)
-5) if "list size <= number of list entities" then "make decorator invisible"
-*/
-
 //TODO: make child class for grid/label/list decorators
 bool ScrollerVerticalDecorator::initialize() {
 	std::tuple<float, float> scrollerSize = { 20, 20 };
@@ -594,61 +574,150 @@ std::shared_ptr<View> ScrollerVerticalDecoratorFactory::createView(std::string n
 	return scrollerDecorator;
 }
 
-HeaderDecorator::HeaderDecorator(std::string name) {
-	_viewName = name;
-}
+bool HeaderDecorator::applyToGrid() {
+	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getViews()[0]->getEntity();
+	auto size = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();
+	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+	//TODO: add support for multiline grids in header
+	std::tuple<float, float> headerSize = { std::get<0>(size) / std::get<0>(getLabel()->getDim()), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
 
-bool HeaderDecorator::initialize() {
-	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
-	if (parentEntity == nullptr) {
-		for (auto view : _parent->getViews()) {
-			//attach all components to parent entity or first child view
-			if (view->getEntity()->getComponent<ObjectComponent>()) {
-				parentEntity = view->getEntity();
-				break;
-			}
-		}
-	}
-
-	auto parentPosition = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	auto parentSize = parentEntity->getComponent<ObjectComponent>()->getSize();
-	std::tuple<float, float> headerSize = { std::get<0>(parentSize), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
-
-	getBack()->initialize();
-	getBack()->setPosition({std::get<0>(parentPosition), std::get<1>(parentPosition) - std::get<1>(headerSize)});
 	getBack()->setSize(headerSize);
-	getBack()->setColorMask({ 0, 0, 0, 0 });
-	getBack()->setColorAddition({ 0.5, 0.5, 0, 1 });
+	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
 
-	getLabel()->initialize();
-	getLabel()->setPosition({ std::get<0>(parentPosition), std::get<1>(parentPosition) - std::get<1>(headerSize) });
 	getLabel()->setSize(headerSize);
-	
+	getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
+
 	//--- 0
 	{
 		//TODO: need to make some more smart condition, remove COMMON
 		auto keepPosition = std::make_shared<ExpressionOperation>();
 		keepPosition->initializeOperation("1");
 		auto keepPositionBack = std::make_shared<AssignAction>();
-		keepPositionBack->addArgument(getBack()->getEntity(), "ObjectComponent", "positionX");
-		keepPositionBack->addArgument(getBack()->getEntity(), "ObjectComponent", "positionY");
-		keepPositionBack->addArgument(getBack()->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeY");
 		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionX");
 		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionY");
 		keepPositionBack->initializeAction("${0} SET ${3} AND ${1} SET ${4} - ${2}");
 		keepPosition->registerAction(keepPositionBack);
 		auto keepPositionLabel = std::make_shared<AssignAction>();
-		keepPositionLabel->addArgument(getLabel()->getEntity(), "ObjectComponent", "positionX");
-		keepPositionLabel->addArgument(getLabel()->getEntity(), "ObjectComponent", "positionY");
-		keepPositionLabel->addArgument(getLabel()->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeY");
 		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionX");
 		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionY");
 		keepPositionLabel->initializeAction("${0} SET ${3} AND ${1} SET ${4} - ${2}");
 		keepPosition->registerAction(keepPositionLabel);
-		getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
+		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
 	}
 
+	return false;
+}
+
+bool HeaderDecorator::applyToList() {
+	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getEntity();
+	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
+	std::tuple<float, float> headerSize = { std::get<0>(size) / std::get<0>(getLabel()->getDim()), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
+
+	getBack()->setSize(headerSize);
+	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
+
+	getLabel()->setSize(headerSize);
+	getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
+
 	//--- 0
+	{
+		//TODO: need to make some more smart condition, remove COMMON
+		auto keepPosition = std::make_shared<ExpressionOperation>();
+		keepPosition->initializeOperation("1");
+		auto keepPositionBack = std::make_shared<AssignAction>();
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionX");
+		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionY");
+		keepPositionBack->initializeAction("${0} SET ${3} AND ${1} SET ${4} - ${2}");
+		keepPosition->registerAction(keepPositionBack);
+		auto keepPositionLabel = std::make_shared<AssignAction>();
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionX");
+		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionY");
+		keepPositionLabel->initializeAction("${0} SET ${3} AND ${1} SET ${4} - ${2}");
+		keepPosition->registerAction(keepPositionLabel);
+		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
+	}
+
+	//--- 1
+	{
+		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
+		decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
+		decoratorAddCheck->initializeOperation("SIZE ${0} > 0");
+		for (auto view : getViews()) {
+			auto registerDecoratorAction = std::make_shared<AssignAction>();
+			registerDecoratorAction->addArgument(view->getViews()[0]->getEntity(), "ObjectComponent", "visible");
+			registerDecoratorAction->initializeAction("${0} SET 1");
+			decoratorAddCheck->registerAction(registerDecoratorAction);
+		}
+		parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
+	}
+
+	//--- 2
+	{
+		auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
+		decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
+		decoratorRemoveCheck->initializeOperation("SIZE ${0} = 0");
+		for (auto view : getViews()) {
+			auto unregisterDecoratorAction = std::make_shared<AssignAction>();
+			unregisterDecoratorAction->addArgument(view->getViews()[0]->getEntity(), "ObjectComponent", "visible");
+			unregisterDecoratorAction->initializeAction("${0} SET 0");
+			decoratorRemoveCheck->registerAction(unregisterDecoratorAction);
+			view->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
+		}
+	}
+
+	return false;
+}
+
+bool HeaderDecorator::applyToLabel() {
+	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
+	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
+	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
+	std::tuple<float, float> headerSize = { std::get<0>(size) / std::get<0>(getLabel()->getDim()), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
+
+	getBack()->setSize(headerSize);
+	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
+
+	getLabel()->setSize(headerSize);
+	getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
+
+	//--- 0
+	{
+		//TODO: need to make some more smart condition, remove COMMON
+		auto keepPosition = std::make_shared<ExpressionOperation>();
+		keepPosition->initializeOperation("1");
+		auto keepPositionBack = std::make_shared<AssignAction>();
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
+		keepPositionBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionX");
+		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionY");
+		keepPositionBack->initializeAction("${0} SET ${3} AND ${1} SET ${4} - ${2}");
+		keepPosition->registerAction(keepPositionBack);
+		auto keepPositionLabel = std::make_shared<AssignAction>();
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
+		keepPositionLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionX");
+		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionY");
+		keepPositionLabel->initializeAction("${0} SET ${3} AND ${1} SET ${4} - ${2}");
+		keepPosition->registerAction(keepPositionLabel);
+		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
+	}
+
+	//--- 1
 	{
 		//TODO: PERFORMANCE: make up some approach to "link" variables between different entities, so one changed and trigger changes in others
 		auto decoratorVisible = std::make_shared<ExpressionOperation>();
@@ -656,63 +725,64 @@ bool HeaderDecorator::initialize() {
 		for (auto view : getViews()) {
 			auto decoratorVisibleAction = std::make_shared<AssignAction>();
 			decoratorVisibleAction->addArgument(parentEntity, "ObjectComponent", "visible");
-			decoratorVisibleAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
+			decoratorVisibleAction->addArgument(view->getViews()[0]->getEntity(), "ObjectComponent", "visible");
 			decoratorVisibleAction->initializeAction("${1} SET ${0}");
 			decoratorVisible->registerAction(decoratorVisibleAction);
 		}
 		parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorVisible, InteractionType::KEYBOARD_END);
 	}
 
-	if (_parent->getName() == "List") {
-		//--- 2
-		{
-			auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
-			decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
-			decoratorAddCheck->initializeOperation("SIZE ${0} > 0");
-			for (auto view : getViews()) {
-				auto registerDecoratorAction = std::make_shared<AssignAction>();
-				registerDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
-				registerDecoratorAction->initializeAction("${0} SET 1");
-				decoratorAddCheck->registerAction(registerDecoratorAction);
-			}
-			parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
-		}
+	return false;
+}
 
-		//--- 1
-		{
-			auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
-			decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
-			decoratorRemoveCheck->initializeOperation("SIZE ${0} = 0");
-			for (auto view : getViews()) {
-				auto unregisterDecoratorAction = std::make_shared<AssignAction>();
-				unregisterDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");
-				unregisterDecoratorAction->initializeAction("${0} SET 0");
-				decoratorRemoveCheck->registerAction(unregisterDecoratorAction);
-				view->getEntity()->createComponent<InteractionComponent>()->attachOperation(decoratorRemoveCheck, InteractionType::COMMON_START);
-			}
+HeaderDecorator::HeaderDecorator(std::string name) {
+	_viewName = name;
+}
+
+bool HeaderDecorator::initialize() {
+	getBack()->initialize();
+	for (auto& view : getBack()->getViews()) {
+		std::dynamic_pointer_cast<Back>(view)->setColorMask({ 0, 0, 0, 0 });
+		std::dynamic_pointer_cast<Back>(view)->setColorAddition({ 0.5, 0.5, 0, 1 });
+	}
+
+	getLabel()->initialize();
+
+	if (std::dynamic_pointer_cast<Label>(_parent)) {
+		applyToLabel();
+	}
+	else if (std::dynamic_pointer_cast<List>(_parent)) {
+		if (std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])) {
+			applyToGrid();
+		}
+		else if (std::dynamic_pointer_cast<Label>(_parent->getViews()[0])) {
+			applyToList();
 		}
 	}
 
 	return false;
 }
 
-bool HeaderDecorator::setText(std::string text) {
-	getLabel()->setText(text);
+bool HeaderDecorator::setText(std::vector<std::string> text) {
+	auto gridViews = getLabel()->getViews();
+	for (int i = 0; i < gridViews.size(); i++) {
+		std::dynamic_pointer_cast<Label>(gridViews[i])->setText(text[i]);
+	}
 	return false;
 }
 
-std::shared_ptr<Back> HeaderDecorator::getBack() {
+std::shared_ptr<Grid> HeaderDecorator::getBack() {
 	for (auto view : _views) {
 		if (view->getName() == "Back")
-			return std::dynamic_pointer_cast<Back>(view);
+			return std::dynamic_pointer_cast<Grid>(view);
 	}
 	return nullptr;
 }
 
-std::shared_ptr<Label> HeaderDecorator::getLabel() {
+std::shared_ptr<Grid> HeaderDecorator::getLabel() {
 	for (auto view : _views) {
 		if (view->getName() == "Label")
-			return std::dynamic_pointer_cast<Label>(view);
+			return std::dynamic_pointer_cast<Grid>(view);
 	}
 	return nullptr;
 }
@@ -723,11 +793,15 @@ HeaderDecoratorFactory::HeaderDecoratorFactory(std::shared_ptr<Scene> activeScen
 	_labelFactory = std::make_shared<LabelFactory>(activeScene);
 }
 
-std::shared_ptr<View> HeaderDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
+std::shared_ptr<View> HeaderDecoratorFactory::createGrid(std::tuple<int, int> dim, std::string name, std::shared_ptr<View> parent) {
 	std::shared_ptr<HeaderDecorator> headerDecorator = std::make_shared<HeaderDecorator>(name);
 	headerDecorator->setParent(parent);
-	headerDecorator->addView(_backFactory->createView("Back", headerDecorator));
-	headerDecorator->addView(_labelFactory->createView("Label", headerDecorator));
+	headerDecorator->addView(_backFactory->createGrid(dim, "Back", headerDecorator));
+	headerDecorator->addView(_labelFactory->createGrid(dim, "Label", headerDecorator));
 
 	return headerDecorator;
+}
+
+std::shared_ptr<View> HeaderDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
+	return createGrid({ 1, 1 }, name, parent);
 }

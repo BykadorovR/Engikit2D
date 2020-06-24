@@ -113,8 +113,7 @@ void surfaceCreated() {
 		scrollerDecoratorListOperations->initialize();
 		std::shared_ptr<HeaderDecorator> headerDecoratorList = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createView("HeaderDecorator", list));
 		headerDecoratorList->initialize();
-		headerDecoratorList->setText("g|Header");
-
+		headerDecoratorList->setText({ "g|Header" });
 		std::shared_ptr<Back> back = std::dynamic_pointer_cast<Back>(backFactory->createView());
 		back->initialize();
 		back->setPosition({ 50, 50 });
@@ -133,7 +132,7 @@ void surfaceCreated() {
 		scrollerDecoratorVerticalLabel->initialize();
 		std::shared_ptr<HeaderDecorator> headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createView("HeaderDecorator", label));
 		headerDecorator->initialize();
-		headerDecorator->setText("g|Header");
+		headerDecorator->setText({ "g|Header" });
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
 		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
 		//TODO: rewrite to Back options and LabelOptions
@@ -180,6 +179,9 @@ void surfaceCreated() {
 
 		std::shared_ptr<ScrollerVerticalDecorator> scrollerGridList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", gridList));
 		scrollerGridList->initialize();
+		std::shared_ptr<HeaderDecorator> headerDecoratorGrid = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createGrid({ 3, 1 }, "HeaderDecorator", gridList));
+		headerDecoratorGrid->initialize();
+		headerDecoratorGrid->setText({ "g|Header", "qwe", "123" });
 	}
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());

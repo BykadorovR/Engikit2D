@@ -18,11 +18,11 @@ bool Grid::setPosition(std::tuple<float, float> position) {
 			auto objectComponent = view->getEntity()->getComponent<ObjectComponent>();
 			objectComponent->setMember("positionX", startX);
 			objectComponent->setMember("positionY", startY);
-			startX += *std::get<0>(objectComponent->getMemberFloat("sizeX")) + 1;
+			startX += *std::get<0>(objectComponent->getMemberFloat("sizeX"));
 		}
 		startX = std::get<0>(position);
 		auto startRowView = _views[row * std::get<0>(_dim)];
-		startY += *std::get<0>(startRowView->getEntity()->getComponent<ObjectComponent>()->getMemberFloat("sizeY")) + 1;
+		startY += *std::get<0>(startRowView->getEntity()->getComponent<ObjectComponent>()->getMemberFloat("sizeY"));
 	}
 
 	return false;
@@ -47,6 +47,22 @@ bool Grid::initialize() {
 
 bool Grid::setDim(std::tuple<float, float> dim) {
 	_dim = dim;
+	return false;
+}
+
+std::tuple<float, float> Grid::getDim() {
+	return _dim;
+}
+
+bool Grid::setSize(std::tuple<float, float> size) {
+	for (auto &view : _views) {
+		auto objectComponent = view->getEntity()->getComponent<ObjectComponent>();
+		objectComponent->setMember("sizeX", std::get<0>(size));
+		objectComponent->setMember("sizeY", std::get<1>(size));
+	}
+
+	//redraw with new size
+	setPosition(_position);
 	return false;
 }
 

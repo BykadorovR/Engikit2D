@@ -11,6 +11,8 @@ public:
 	bool initialize();
 	bool setPosition(std::tuple<float, float> position);
 	bool setDim(std::tuple<float, float> dim);
+	std::tuple<float, float> getDim();
+	bool setSize(std::tuple<float, float> size);
 	bool setSize(std::vector<std::tuple<float, float> > size);
 	std::tuple<float, float> getSize();
 };
