@@ -5,6 +5,7 @@
 #include "Common.h"
 #include <regex>
 #include <algorithm>
+#include <locale>
 #include <codecvt>
 
 ExpressionNode::ExpressionNode(std::string value) {
