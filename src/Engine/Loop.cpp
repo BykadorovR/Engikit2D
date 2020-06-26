@@ -83,9 +83,8 @@ void surfaceCreated() {
 	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
 	atlas->initialize();
 
-	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf",
-		std::make_tuple<int, int>(static_cast<int>(*(L"А")),
-			static_cast<int>(*(L"я"))));
+	//1040 - 1103 for cyrillic: static_cast<int>(*(L"")))
+	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf", { 1040, 1103 });
 	GlyphsLoader::instance().bufferSymbols(15, 15);
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");

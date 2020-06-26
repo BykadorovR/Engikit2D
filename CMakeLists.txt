@@ -64,9 +64,8 @@ include_directories("include/Sound")
 include_directories("include/UI")
 include_directories("include/UserInput")
 include_directories("include/Utility")
+include_directories("include/Engine")
 
-file(GLOB_RECURSE app_source_main "src/*.c*")
-source_group("Main\\src" FILES ${app_source_main})
 file(GLOB_RECURSE app_source_ecs "src/ECS/*.c*")
 source_group("ECS\\src" FILES ${app_source_ecs})
 file(GLOB_RECURSE app_source_graphic "src/Graphic/*.c*")
@@ -83,6 +82,8 @@ file(GLOB_RECURSE app_source_user "src/UserInput/*.c*")
 source_group("UserInput\\src" FILES ${app_source_user})
 file(GLOB_RECURSE app_source_utility "src/Utility/*.c*")
 source_group("Utility\\src" FILES ${app_source_utility})
+file(GLOB_RECURSE app_source_engine "src/Engine/*.c*")
+source_group("Engine\\src" FILES ${app_source_engine})
 
 file(GLOB_RECURSE app_header_ecs "include/ECS/*.h*")
 source_group("ECS\\include" FILES ${app_header_ecs})
@@ -100,7 +101,8 @@ file(GLOB_RECURSE app_header_user "include/UserInput/*.h*")
 source_group("UserInput\\include" FILES ${app_header_user})
 file(GLOB_RECURSE app_header_utility "include/Utility/*.h*")
 source_group("Utility\\include" FILES ${app_header_utility})
-
+file(GLOB_RECURSE app_header_engine "include/Engine/*.h*")
+source_group("Engine\\include" FILES ${app_header_engine})
 
 #include headers to project (so they will be shown in include folder)
 add_executable(game ${app_header_ecs} ${app_source_ecs}
@@ -111,7 +113,7 @@ add_executable(game ${app_header_ecs} ${app_source_ecs}
 					${app_header_ui} ${app_source_ui}
 					${app_header_user} ${app_source_user}
 					${app_header_utility} ${app_source_utility}
-					${app_source_main})
+					${app_header_engine} ${app_source_engine})
 
 add_dependencies(game glew glfw libpng freetype )
 
