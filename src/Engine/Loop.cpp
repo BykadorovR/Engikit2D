@@ -4,6 +4,7 @@
 #include <chrono>
 #include <thread>
 
+#include "Interface.h"
 #include "Grid.h"
 #include "State.h"
 #include "UserInputEvents.h"
@@ -89,47 +90,44 @@ void surfaceCreated() {
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
-
+	std::shared_ptr<ViewDecorators> viewDecorators = std::make_shared<ViewDecorators>();
+	viewDecorators->initialize(activeScene);
 	{
-		std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerVerticalDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
-		std::shared_ptr<HeaderDecoratorFactory> headerDecoratorFactory = std::make_shared<HeaderDecoratorFactory>(activeScene);
-		std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
-		std::shared_ptr<BackFactory> backFactory = std::make_shared<BackFactory>(activeScene);
-		std::shared_ptr<ListFactory> listFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
-		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(listFactory->createView());
+		
+		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createView());
 		list->initialize();
 		list->setSize({ 130, 110 });
 		list->setPosition({ 500, 50 });
 		list->setEditable(true);
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", list));
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", list));
 		scrollerDecoratorList->initialize();
 
-		std::shared_ptr<List> listOperations = std::dynamic_pointer_cast<List>(listFactory->createView());
+		std::shared_ptr<List> listOperations = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createView());
 		listOperations->initialize();
 		listOperations->setSize({ 130, 110 });
 		listOperations->setPosition({ 500, 170 });
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", listOperations));
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", listOperations));
 		scrollerDecoratorListOperations->initialize();
-		std::shared_ptr<HeaderDecorator> headerDecoratorList = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createView("HeaderDecorator", list));
+		std::shared_ptr<HeaderDecorator> headerDecoratorList = std::dynamic_pointer_cast<HeaderDecorator>(viewDecorators->getFactory<HeaderDecoratorFactory>()->createView("HeaderDecorator", list));
 		headerDecoratorList->initialize();
 		headerDecoratorList->setText({ "g|Header" });
-		std::shared_ptr<Back> back = std::dynamic_pointer_cast<Back>(backFactory->createView());
+		std::shared_ptr<Back> back = std::dynamic_pointer_cast<Back>(viewDecorators->getFactory<BackFactory>()->createView());
 		back->initialize();
 		back->setPosition({ 50, 50 });
 		back->setSize({ 100, 100 });
 		back->setColorMask({ 0, 0, 0, 0 });
 		back->setColorAddition({ 1, 0, 1, 1 });
 
-		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
+		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(viewDecorators->getFactory<LabelFactory>()->createView());
 		label->initialize();
 		label->setPosition({ 50, 50 });
 		label->setSize({ 100, 100 });
 		label->setText("Hello");
 		label->setEditable(true);
 		
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", label));
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", label));
 		scrollerDecoratorVerticalLabel->initialize();
-		std::shared_ptr<HeaderDecorator> headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createView("HeaderDecorator", label));
+		std::shared_ptr<HeaderDecorator> headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(viewDecorators->getFactory<HeaderDecoratorFactory>()->createView("HeaderDecorator", label));
 		headerDecorator->initialize();
 		headerDecorator->setText({ "g|Header" });
 		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
@@ -150,13 +148,13 @@ void surfaceCreated() {
 
 		attachShowOperations(button->getBack()->getEntity(), listOperations, scrollerDecoratorListOperations);
 
-		std::shared_ptr<Grid> gridBack = std::dynamic_pointer_cast<Grid>(backFactory->createGrid({ 3, 1 }));
+		std::shared_ptr<Grid> gridBack = std::dynamic_pointer_cast<Grid>(viewDecorators->getFactory<BackFactory>()->createGrid({ 3, 1 }));
 		gridBack->initialize();
 		gridBack->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
 		gridBack->setPosition({ 400, 200 });
 
 		//TODO: grid should allow to change back/label content/parameters
-		std::shared_ptr<Grid> gridLabel = std::dynamic_pointer_cast<Grid>(labelFactory->createGrid({ 3, 1 }));
+		std::shared_ptr<Grid> gridLabel = std::dynamic_pointer_cast<Grid>(viewDecorators->getFactory<LabelFactory>()->createGrid({ 3, 1 }));
 		gridLabel->initialize();
 		gridLabel->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
 		gridLabel->setPosition({ 400, 200 });
@@ -166,8 +164,7 @@ void surfaceCreated() {
 		}
 
 		//TODO: Need to link Entity with View or parent Entity so if clicked to grid cell we can find parent and adjust preferences of parent not cell
-		std::shared_ptr<ListFactory> gridListFactory = std::make_shared<ListFactory>(activeScene, labelFactory);
-		std::shared_ptr<List> gridList = std::dynamic_pointer_cast<List>(gridListFactory->createGrid({3, 1}));
+		std::shared_ptr<List> gridList = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createGrid({3, 1}));
 		gridList->initialize();
 		gridList->setPosition({ 400, 300 });
 		gridList->addItem({ "1", "Привет", "OK" });
@@ -176,9 +173,9 @@ void surfaceCreated() {
 		gridList->addItem({ "4", "Пока", "Cancel" });
 		gridList->addItem({ "5", "Here we are", "OK" });
 
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerGridList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", gridList));
+		std::shared_ptr<ScrollerVerticalDecorator> scrollerGridList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", gridList));
 		scrollerGridList->initialize();
-		std::shared_ptr<HeaderDecorator> headerDecoratorGrid = std::dynamic_pointer_cast<HeaderDecorator>(headerDecoratorFactory->createGrid({ 3, 1 }, "HeaderDecorator", gridList));
+		std::shared_ptr<HeaderDecorator> headerDecoratorGrid = std::dynamic_pointer_cast<HeaderDecorator>(viewDecorators->getFactory<HeaderDecoratorFactory>()->createGrid({ 3, 1 }, "HeaderDecorator", gridList));
 		headerDecoratorGrid->initialize();
 		headerDecoratorGrid->setText({ "g|Header", "qwe", "123" });
 	}
