@@ -31,7 +31,7 @@ bool renderChar(wchar_t c, std::tuple<float, float> charPosition, std::shared_pt
 	GLfloat w = std::get<0>(chInfo._size) * textObject->getScale();
 	GLfloat h = std::get<1>(chInfo._size) * textObject->getScale();
 	//First of all we should change vertex buffer by changing size and position
-	vertexObject->getBufferManager()->changeBuffer(BufferType::Position, charPosition, { w, h }, resolution);
+	vertexObject->getBufferManager()->changeBuffer(BufferType::Position, charPosition, { w, h }, currentResolution);
 
 	std::tuple<float, float> characterAtlasPosition = GlyphsLoader::instance().getCharactersAtlasPosition()[c];
 	//Now we should change texture buffer by passing position of current glyph in atlas to OpenGL API

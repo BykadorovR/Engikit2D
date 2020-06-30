@@ -26,7 +26,7 @@ bool ObjectComponent::initialize(std::tuple<float, float> position, std::tuple<f
 	_visible = true;
 	_scale = 1;
 
-	_bufferManager->addBuffer(BufferType::Position, _position, _size, resolution);
+	_bufferManager->addBuffer(BufferType::Position, _position, _size, currentResolution);
 	_shader = shader;
 	return false;
 }
@@ -35,7 +35,7 @@ bool ObjectComponent::setMember(std::string name, float value, int index) {
 	OperationComponent::setMember(name, value, index);
 	//if ObjectComponent wasn't initialized yet we don't need to change buffer
 	if (_bufferManager)
-		_bufferManager->changeBuffer(BufferType::Position, getPosition(), getSize(), resolution);
+		_bufferManager->changeBuffer(BufferType::Position, getPosition(), getSize(), currentResolution);
 	else
 		return true;
 	return false;

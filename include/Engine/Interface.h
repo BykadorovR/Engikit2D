@@ -15,11 +15,12 @@ public:
 			}
 		}
 	}
-
 };
 
 class MainInterface {
+private:
+	std::shared_ptr<ViewDecorators> _viewDecorators;
 public:
 	MainInterface();
-	bool initialize();
+	bool initialize(std::shared_ptr<Scene> scene);
 };

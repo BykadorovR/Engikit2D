@@ -8,7 +8,7 @@ Back::Back(std::string name) {
 
 bool Back::initialize() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
-	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(resolution) / 2, std::get<1>(resolution) / 2 }, { 100, 100 }, bufferManager, ShaderStore::instance()->getShader("texture"));
+	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(currentResolution) / 2, std::get<1>(currentResolution) / 2 }, { 100, 100 }, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextureComponent>()->initialize(bufferManager);
 	//default "texture" is solid fill
 	//TODO: make some default store for all default parameters

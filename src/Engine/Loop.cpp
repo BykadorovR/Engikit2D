@@ -90,95 +90,9 @@ void surfaceCreated() {
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
-	std::shared_ptr<ViewDecorators> viewDecorators = std::make_shared<ViewDecorators>();
-	viewDecorators->initialize(activeScene);
-	{
-		
-		std::shared_ptr<List> list = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createView());
-		list->initialize();
-		list->setSize({ 130, 110 });
-		list->setPosition({ 500, 50 });
-		list->setEditable(true);
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", list));
-		scrollerDecoratorList->initialize();
-
-		std::shared_ptr<List> listOperations = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createView());
-		listOperations->initialize();
-		listOperations->setSize({ 130, 110 });
-		listOperations->setPosition({ 500, 170 });
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorListOperations = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", listOperations));
-		scrollerDecoratorListOperations->initialize();
-		std::shared_ptr<HeaderDecorator> headerDecoratorList = std::dynamic_pointer_cast<HeaderDecorator>(viewDecorators->getFactory<HeaderDecoratorFactory>()->createView("HeaderDecorator", list));
-		headerDecoratorList->initialize();
-		headerDecoratorList->setText({ "g|Header" });
-		std::shared_ptr<Back> back = std::dynamic_pointer_cast<Back>(viewDecorators->getFactory<BackFactory>()->createView());
-		back->initialize();
-		back->setPosition({ 50, 50 });
-		back->setSize({ 100, 100 });
-		back->setColorMask({ 0, 0, 0, 0 });
-		back->setColorAddition({ 1, 0, 1, 1 });
-
-		std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(viewDecorators->getFactory<LabelFactory>()->createView());
-		label->initialize();
-		label->setPosition({ 50, 50 });
-		label->setSize({ 100, 100 });
-		label->setText("Hello");
-		label->setEditable(true);
-		
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", label));
-		scrollerDecoratorVerticalLabel->initialize();
-		std::shared_ptr<HeaderDecorator> headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(viewDecorators->getFactory<HeaderDecoratorFactory>()->createView("HeaderDecorator", label));
-		headerDecorator->initialize();
-		headerDecorator->setText({ "g|Header" });
-		std::shared_ptr<ButtonFactory> buttonFactory = std::make_shared<ButtonFactory>(activeScene);
-		std::shared_ptr<Button> button = std::dynamic_pointer_cast<Button>(buttonFactory->createView());
-		//TODO: rewrite to Back options and LabelOptions
-		//TODO: coordinates of label should depends on coordinates of back
-		button->initialize();
-		button->getBack()->setPosition({ 100, 200 });
-		button->getBack()->setSize({ 100, 100 });
-		button->getLabel()->setPosition({ 100, 200 });
-		button->getLabel()->setSize({ 100, 100 });
-		button->setTexture(textureRaw->getTextureID());
-		button->getLabel()->setLineSpacingCoeff(0.8);
-		button->getLabel()->setTextAllignment({ TextAllignment::CENTER, TextAllignment::LEFT });
-
-		attachShowComponents(button->getBack()->getEntity(), list, scrollerDecoratorList);
-		attachShowComponents(button->getLabel()->getEntity(), list, scrollerDecoratorList);
-
-		attachShowOperations(button->getBack()->getEntity(), listOperations, scrollerDecoratorListOperations);
-
-		std::shared_ptr<Grid> gridBack = std::dynamic_pointer_cast<Grid>(viewDecorators->getFactory<BackFactory>()->createGrid({ 3, 1 }));
-		gridBack->initialize();
-		gridBack->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
-		gridBack->setPosition({ 400, 200 });
-
-		//TODO: grid should allow to change back/label content/parameters
-		std::shared_ptr<Grid> gridLabel = std::dynamic_pointer_cast<Grid>(viewDecorators->getFactory<LabelFactory>()->createGrid({ 3, 1 }));
-		gridLabel->initialize();
-		gridLabel->setSize({ { 50, 20 }, { 100, 20 }, {20, 20} });
-		gridLabel->setPosition({ 400, 200 });
-		auto gridViews = gridLabel->getViews();
-		for (auto &view : gridViews) {
-			std::dynamic_pointer_cast<Label>(view)->setText("Test");
-		}
-
-		//TODO: Need to link Entity with View or parent Entity so if clicked to grid cell we can find parent and adjust preferences of parent not cell
-		std::shared_ptr<List> gridList = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createGrid({3, 1}));
-		gridList->initialize();
-		gridList->setPosition({ 400, 300 });
-		gridList->addItem({ "1", "Привет", "OK" });
-		gridList->addItem({ "2", "Salut", "Cancel" });
-		gridList->addItem({ "3", "Hey", "Cancel" });
-		gridList->addItem({ "4", "Пока", "Cancel" });
-		gridList->addItem({ "5", "Here we are", "OK" });
-
-		std::shared_ptr<ScrollerVerticalDecorator> scrollerGridList = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView("ScrollerDecoratorVertical", gridList));
-		scrollerGridList->initialize();
-		std::shared_ptr<HeaderDecorator> headerDecoratorGrid = std::dynamic_pointer_cast<HeaderDecorator>(viewDecorators->getFactory<HeaderDecoratorFactory>()->createGrid({ 3, 1 }, "HeaderDecorator", gridList));
-		headerDecoratorGrid->initialize();
-		headerDecoratorGrid->setText({ "g|Header", "qwe", "123" });
-	}
+	std::shared_ptr<MainInterface> mainInterface = std::make_shared<MainInterface>();
+	mainInterface->initialize(activeScene);
+	
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());
 	interactionSystem = std::make_shared<InteractionSystem>();
@@ -224,7 +138,8 @@ int main(int argc, char **argv) {
 
 	GLFWwindow* mainWindow;
 	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-	mainWindow = glfwCreateWindow(std::get<0>(resolution), std::get<1>(resolution), "Main window", NULL /*monitor*/, NULL);
+	mainWindow = glfwCreateWindow(std::get<0>(currentResolution), std::get<1>(currentResolution), "Main window", monitor, NULL);
+	//mainWindow = glfwCreateWindow(std::get<0>(currentResolution), std::get<1>(currentResolution), "Main window", NULL, NULL);
 	if (mainWindow == NULL) {
 		glfwTerminate();
 		return -1;

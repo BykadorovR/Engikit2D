@@ -747,7 +747,6 @@ bool HeaderDecorator::initialize() {
 	}
 
 	getLabel()->initialize();
-
 	if (std::dynamic_pointer_cast<Label>(_parent)) {
 		applyToLabel();
 	}
