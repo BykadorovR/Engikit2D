@@ -12,6 +12,10 @@ List::List(std::string name) {
 	_viewName = name;
 }
 
+std::tuple<float, float> List::getPosition() {
+	return _views[0]->getEntity()->getComponent<ObjectComponent>()->getPosition();
+}
+
 bool List::setEditable(bool editable) {
 	for (int i = 1; i < _views.size(); i++) {
 		std::dynamic_pointer_cast<Label>(_views[i])->setEditable(editable);
