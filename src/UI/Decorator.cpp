@@ -586,8 +586,28 @@ bool HeaderDecorator::applyToGrid() {
 
 	getLabel()->setSize(headerSize);
 	getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
-
+	
 	//--- 0
+	{
+		auto keepSize = std::make_shared<ExpressionOperation>();
+		keepSize->initializeOperation("1");
+		auto keepSizeBack = std::make_shared<AssignAction>();
+		keepSizeBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeBack->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepSizeBack->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
+		keepSizeBack->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSize->registerAction(keepSizeBack);
+		auto keepSizeLabel = std::make_shared<AssignAction>();
+		keepSizeLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeLabel->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepSizeLabel->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
+		keepSizeLabel->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSize->registerAction(keepSizeLabel);
+		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepSize, InteractionType::COMMON_START);
+
+	}
+
+	//--- 1
 	{
 		//TODO: need to make some more smart condition, remove COMMON
 		auto keepPosition = std::make_shared<ExpressionOperation>();
@@ -628,6 +648,26 @@ bool HeaderDecorator::applyToList() {
 
 	//--- 0
 	{
+		auto keepSize = std::make_shared<ExpressionOperation>();
+		keepSize->initializeOperation("1");
+		auto keepSizeBack = std::make_shared<AssignAction>();
+		keepSizeBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeBack->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepSizeBack->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
+		keepSizeBack->initializeAction("${0} SET ( ${1} / ${2} )");
+		keepSize->registerAction(keepSizeBack);
+		auto keepSizeLabel = std::make_shared<AssignAction>();
+		keepSizeLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeLabel->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepSizeLabel->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
+		keepSizeLabel->initializeAction("${0} SET ( ${1} / ${2} )");
+		keepSize->registerAction(keepSizeLabel);
+		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepSize, InteractionType::COMMON_START);
+
+	}
+
+	//--- 1
+	{
 		//TODO: need to make some more smart condition, remove COMMON
 		auto keepPosition = std::make_shared<ExpressionOperation>();
 		keepPosition->initializeOperation("1");
@@ -650,7 +690,7 @@ bool HeaderDecorator::applyToList() {
 		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
 	}
 
-	//--- 1
+	//--- 2
 	{
 		auto decoratorAddCheck = std::make_shared<ExpressionOperation>();
 		decoratorAddCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
@@ -664,7 +704,7 @@ bool HeaderDecorator::applyToList() {
 		parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorAddCheck, InteractionType::COMMON_START);
 	}
 
-	//--- 2
+	//--- 3
 	{
 		auto decoratorRemoveCheck = std::make_shared<ExpressionOperation>();
 		decoratorRemoveCheck->addArgument(parentEntity, "CustomStringArrayComponent", "list1");
@@ -685,6 +725,8 @@ bool HeaderDecorator::applyToLabel() {
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
 	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
 	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
+
+
 	std::tuple<float, float> headerSize = { std::get<0>(size) / std::get<0>(getLabel()->getDim()), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
 
 	getBack()->setSize(headerSize);
@@ -694,6 +736,26 @@ bool HeaderDecorator::applyToLabel() {
 	getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
 
 	//--- 0
+	{
+		auto keepSize = std::make_shared<ExpressionOperation>();
+		keepSize->initializeOperation("1");
+		auto keepSizeBack = std::make_shared<AssignAction>();
+		keepSizeBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeBack->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepSizeBack->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
+		keepSizeBack->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSize->registerAction(keepSizeBack);
+		auto keepSizeLabel = std::make_shared<AssignAction>();
+		keepSizeLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeLabel->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepSizeLabel->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
+		keepSizeLabel->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSize->registerAction(keepSizeLabel);
+		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepSize, InteractionType::COMMON_START);
+
+	}
+
+	//--- 1
 	{
 		//TODO: need to make some more smart condition, remove COMMON
 		auto keepPosition = std::make_shared<ExpressionOperation>();
@@ -717,7 +779,7 @@ bool HeaderDecorator::applyToLabel() {
 		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
 	}
 
-	//--- 1
+	//--- 2
 	{
 		//TODO: PERFORMANCE: make up some approach to "link" variables between different entities, so one changed and trigger changes in others
 		auto decoratorVisible = std::make_shared<ExpressionOperation>();
