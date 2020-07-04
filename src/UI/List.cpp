@@ -71,7 +71,7 @@ bool List::setPosition(std::tuple<float, float> position) {
 bool List::setSize(std::tuple<std::vector<float>, float> size) {
 	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
 		for (int j = 0; j < _views.size(); j++) {
-			auto childs = _views[j]->getViews();
+			auto childs = std::dynamic_pointer_cast<Grid>(_views[j])->getViews();
 			for (int i = 0; i < childs.size(); i++) {
 				childs[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeX", std::get<0>(size)[i]);
 				childs[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeY", std::get<1>(size) / _views.size());

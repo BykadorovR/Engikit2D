@@ -36,11 +36,10 @@ bool ComplexList::initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecor
 	_list = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createGrid(dim));
 	_list->initialize();
 	_list->setEditable(true);
-	_list->addItem(std::vector<std::string>{ "Test" });
-	_list->addItem(std::vector<std::string>{ "Test2" });
-	_list->addItem(std::vector<std::string>{ "Test3" });
-	_list->addItem(std::vector<std::string>{ "Test4" });
-	_list->addItem(std::vector<std::string>{ "Test5" });
+	for (int i = 0; i < 6; i++) {
+		std::vector<std::string> text(std::get<0>(dim), "Test" + std::to_string(i));
+		_list->addItem(text);
+	}
 	_verticalScrollerDecorator = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(
 		viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView(
 			"ScrollerVerticalDecorator", _list));
@@ -110,10 +109,10 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_fieldsList->setPosition({ std::get<0>(_componentsList->getPosition()), 
 							   std::get<1>(_componentsList->getPosition()) + std::get<1>(_componentsList->getSize()) + std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
 	_fieldsList->setHeader("Fields list");
-
+	
 	_entitiesList = std::make_shared<ComplexList>();
-	_entitiesList->initialize({ 1, 1 }, _viewDecorators);
-	_entitiesList->setSize(listSize);
+	_entitiesList->initialize({ 3, 1 }, _viewDecorators);
+	_entitiesList->setSize({ {20, 100, 100}, 100 });
 	_entitiesList->setPosition({ 0, std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
 	_entitiesList->setHeader("Entities list");
 

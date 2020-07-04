@@ -22,6 +22,7 @@ bool ScrollerVerticalDecorator::applyToGrid() {
 	auto lastPosition = _parent->getViews().back()->getViews()[0]->getEntity()->getComponent<ObjectComponent>()->getPosition();
 	std::tuple<float, float> scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(size), std::get<1>(lastPosition) + std::get<1>(size) - std::get<1>(getScrollerDown()->getSize()) };
 	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(getScrollerProgress()->getSize()) };
+	//TODO: why is it needed at all?
 	getScrollerProgress()->setPosition(scrollerProgressPosition);
 	getScrollerUp()->setPosition(scrollerUpPosition);
 	getScrollerDown()->setPosition(scrollerDownPosition);
@@ -33,19 +34,19 @@ bool ScrollerVerticalDecorator::applyToGrid() {
 		auto keepPositionUp = std::make_shared<AssignAction>();
 		keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionX");
 		keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
-		keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionX");
-		keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionY");
-		keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepPositionUp->addArgument(_parent->getViews()[0]->getViews().back()->getEntity(), "ObjectComponent", "positionX");
+		keepPositionUp->addArgument(_parent->getViews()[0]->getViews().back()->getEntity(), "ObjectComponent", "positionY");
+		keepPositionUp->addArgument(_parent->getViews()[0]->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
 		keepPositionUp->initializeAction("${0} SET ${2} + ${4} AND ${1} SET ${3}");
 		keepPosition->registerAction(keepPositionUp);
 		auto keepPositionDown = std::make_shared<AssignAction>();
 		keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionX");
 		keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "positionY");
 		keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "sizeY");
-		keepPositionDown->addArgument(_parent->getViews().back()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
-		keepPositionDown->addArgument(_parent->getViews().back()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
-		keepPositionDown->addArgument(parentEntity, "ObjectComponent", "sizeX");
-		keepPositionDown->addArgument(parentEntity, "ObjectComponent", "sizeY");
+		keepPositionDown->addArgument(_parent->getViews().back()->getViews().back()->getEntity(), "ObjectComponent", "positionX");
+		keepPositionDown->addArgument(_parent->getViews().back()->getViews().back()->getEntity(), "ObjectComponent", "positionY");
+		keepPositionDown->addArgument(_parent->getViews().back()->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
+		keepPositionDown->addArgument(_parent->getViews().back()->getViews().back()->getEntity(), "ObjectComponent", "sizeY");
 		keepPositionDown->initializeAction("${0} SET ${3} + ${5} AND ${1} SET ${4} + ${6} - ${2}");
 		keepPosition->registerAction(keepPositionDown);
 		auto keepPositionScroller = std::make_shared<AssignAction>();
@@ -592,15 +593,17 @@ bool HeaderDecorator::applyToGrid() {
 		keepSize->initializeOperation("1");
 		auto keepSizeBack = std::make_shared<AssignAction>();
 		keepSizeBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
-		keepSizeBack->addArgument(parentEntity, "ObjectComponent", "sizeX");
-		keepSizeBack->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
-		keepSizeBack->initializeAction("${0} SET ( ${1} / ${2} )");
+		keepSizeBack->addArgument(_parent->getViews()[0]->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepSizeBack->addArgument(_parent->getViews()[0]->getViews().back()->getEntity(), "ObjectComponent", "positionX");
+		keepSizeBack->addArgument(_parent->getViews()[0]->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeBack->initializeAction("${0} SET ${2} + ${3} - ${1}");
 		keepSize->registerAction(keepSizeBack);
 		auto keepSizeLabel = std::make_shared<AssignAction>();
 		keepSizeLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
-		keepSizeLabel->addArgument(parentEntity, "ObjectComponent", "sizeX");
-		keepSizeLabel->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
-		keepSizeLabel->initializeAction("${0} SET ( ${1} / ${2} )");
+		keepSizeLabel->addArgument(_parent->getViews()[0]->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
+		keepSizeLabel->addArgument(_parent->getViews()[0]->getViews().back()->getEntity(), "ObjectComponent", "positionX");
+		keepSizeLabel->addArgument(_parent->getViews()[0]->getViews().back()->getEntity(), "ObjectComponent", "sizeX");
+		keepSizeLabel->initializeAction("${0} SET ${2} + ${3} - ${1}");
 		keepSize->registerAction(keepSizeLabel);
 		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepSize, InteractionType::COMMON_START);
 
