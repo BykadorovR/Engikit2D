@@ -18,27 +18,29 @@ bool ComplexList::setName(std::string name) {
 	return false;
 }
 
-bool ComplexList::initialize(std::shared_ptr<ViewDecorators> viewDecorators) {
+bool ComplexList::initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecorators> viewDecorators) {
 	_name = "Empty";
 	_viewDecorators = viewDecorators;
 
 	int listItems = 4;
 	for (int i = 0; i < listItems; i++) {
-		std::shared_ptr<Back> item = std::dynamic_pointer_cast<Back>(viewDecorators->getFactory<BackFactory>()->createView());
+		std::shared_ptr<Grid> item = std::dynamic_pointer_cast<Grid>(viewDecorators->getFactory<BackFactory>()->createGrid(dim));
 		item->initialize();
-		item->setColorMask({ 0, 0, 0, 0 });
-		item->setColorAddition({ 1, 0, (float)(i % 2), 1 });
+		for (auto back : item->getViews()) {
+			std::dynamic_pointer_cast<Back>(back)->setColorMask({ 0, 0, 0, 0 });
+			std::dynamic_pointer_cast<Back>(back)->setColorAddition({ 1, 0, (float)(i % 2), 1 });
+		}
 		_back.push_back(item);
 	}
 
-	_list = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createView());
+	_list = std::dynamic_pointer_cast<List>(viewDecorators->getFactory<ListFactory>()->createGrid(dim));
 	_list->initialize();
 	_list->setEditable(true);
-	_list->addItem("Test");
-	_list->addItem("Test2");
-	_list->addItem("Test3");
-	_list->addItem("Test4");
-	_list->addItem("Test5");
+	_list->addItem(std::vector<std::string>{ "Test" });
+	_list->addItem(std::vector<std::string>{ "Test2" });
+	_list->addItem(std::vector<std::string>{ "Test3" });
+	_list->addItem(std::vector<std::string>{ "Test4" });
+	_list->addItem(std::vector<std::string>{ "Test5" });
 	_verticalScrollerDecorator = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(
 		viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView(
 			"ScrollerVerticalDecorator", _list));
@@ -48,12 +50,12 @@ bool ComplexList::initialize(std::shared_ptr<ViewDecorators> viewDecorators) {
 		viewDecorators->getFactory<HeaderDecoratorFactory>()->createView(
 			"HeaderDecorator", _list));
 	_headerDecorator->initialize();
-	_headerDecorator->setText({ "Component's list" });
+	_headerDecorator->setText({ "List" });
 
 	return false;
 }
 
-bool ComplexList::setPosition(std::tuple<int, int> position) {
+bool ComplexList::setPosition(std::tuple<float, float> position) {
 	_list->setPosition(position);
 	for (int i = 0; i < _back.size(); i++) {
 		_back[i]->setPosition({ std::get<0>(_list->getPosition()), std::get<1>(_list->getPosition()) + i * std::get<1>(_back[i]->getSize()) });
@@ -61,24 +63,29 @@ bool ComplexList::setPosition(std::tuple<int, int> position) {
 	return false;
 }
 
-bool ComplexList::setSize(std::tuple<int, int> size) {
+bool ComplexList::setSize(std::tuple<std::vector<float>, float> size) {
 	_list->setSize(size);
 	for (int i = 0; i < _back.size(); i++)
-		_back[i]->setSize({ std::get<0>(size), std::get<1>(size) / 4 });
+		_back[i]->setSize({ std::get<0>(size), std::get<1>(size) / _list->getViews().size() });
 
 	return false;
 }
 
-std::tuple<int, int> ComplexList::getSize() {
+bool ComplexList::setHeader(std::string text) {
+	_headerDecorator->setText({ text });
+	return false;
+}
+
+std::tuple<float, float> ComplexList::getSize() {
 	auto size = _back[0]->getSize();
 	return { std::get<0>(size), std::get<1>(size) * _back.size() };
 }
 
-std::tuple<int, int> ComplexList::getPosition() {
+std::tuple<float, float> ComplexList::getPosition() {
 	return _list->getPosition();
 }
 
-std::vector<std::shared_ptr<Back> > ComplexList::getBack() {
+std::vector<std::shared_ptr<Grid> > ComplexList::getBack() {
 	return _back;
 }
 
@@ -90,16 +97,25 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_viewDecorators = std::make_shared<ViewDecorators>();
 	_viewDecorators->initialize(scene);
 
+	std::tuple<std::vector<float>, float> listSize = { {150}, 100 };
 	_componentsList = std::make_shared<ComplexList>();
-	_componentsList->initialize(_viewDecorators);
-	_componentsList->setSize(_listItemSize);
-	_componentsList->setPosition({ std::get<0>(currentResolution) - std::get<0>(_listItemSize) - 20, std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
-	
+	_componentsList->initialize({ 1, 1 }, _viewDecorators);
+	_componentsList->setSize(listSize);
+	_componentsList->setPosition({ std::get<0>(currentResolution) - std::get<0>(listSize)[0] - 20, std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
+	_componentsList->setHeader("Components list");
+
 	_fieldsList = std::make_shared<ComplexList>();
-	_fieldsList->initialize(_viewDecorators);
-	_fieldsList->setSize(_listItemSize);
+	_fieldsList->initialize({ 1, 1 }, _viewDecorators);
+	_fieldsList->setSize(listSize);
 	_fieldsList->setPosition({ std::get<0>(_componentsList->getPosition()), 
-							   std::get<1>(_componentsList->getPosition()) + std::get<1>(_componentsList->getSize())});
+							   std::get<1>(_componentsList->getPosition()) + std::get<1>(_componentsList->getSize()) + std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
+	_fieldsList->setHeader("Fields list");
+
+	_entitiesList = std::make_shared<ComplexList>();
+	_entitiesList->initialize({ 1, 1 }, _viewDecorators);
+	_entitiesList->setSize(listSize);
+	_entitiesList->setPosition({ 0, std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
+	_entitiesList->setHeader("Entities list");
 
 	return false;
 }

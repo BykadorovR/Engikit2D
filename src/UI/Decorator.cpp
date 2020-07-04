@@ -35,8 +35,7 @@ bool ScrollerVerticalDecorator::applyToGrid() {
 		keepPositionUp->addArgument(getScrollerUp()->getEntity(), "ObjectComponent", "positionY");
 		keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionX");
 		keepPositionUp->addArgument(parentEntity, "ObjectComponent", "positionY");
-		//TODO: change the way we get size from static to dynamic
-		keepPositionUp->addArgument(nullptr, "", std::to_string(std::get<0>(size)));
+		keepPositionUp->addArgument(parentEntity, "ObjectComponent", "sizeX");
 		keepPositionUp->initializeAction("${0} SET ${2} + ${4} AND ${1} SET ${3}");
 		keepPosition->registerAction(keepPositionUp);
 		auto keepPositionDown = std::make_shared<AssignAction>();
@@ -45,8 +44,8 @@ bool ScrollerVerticalDecorator::applyToGrid() {
 		keepPositionDown->addArgument(getScrollerDown()->getEntity(), "ObjectComponent", "sizeY");
 		keepPositionDown->addArgument(_parent->getViews().back()->getViews()[0]->getEntity(), "ObjectComponent", "positionX");
 		keepPositionDown->addArgument(_parent->getViews().back()->getViews()[0]->getEntity(), "ObjectComponent", "positionY");
-		keepPositionDown->addArgument(nullptr, "", std::to_string(std::get<0>(size)));
-		keepPositionDown->addArgument(nullptr, "", std::to_string(std::get<1>(size)));
+		keepPositionDown->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepPositionDown->addArgument(parentEntity, "ObjectComponent", "sizeY");
 		keepPositionDown->initializeAction("${0} SET ${3} + ${5} AND ${1} SET ${4} + ${6} - ${2}");
 		keepPosition->registerAction(keepPositionDown);
 		auto keepPositionScroller = std::make_shared<AssignAction>();
@@ -579,7 +578,7 @@ bool HeaderDecorator::applyToGrid() {
 	auto size = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();
 	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
 	//TODO: add support for multiline grids in header
-	std::tuple<float, float> headerSize = { std::get<0>(size) / std::get<0>(getLabel()->getDim()), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
+	std::tuple<float, float> headerSize = { std::get<0>(size), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
 
 	getBack()->setSize(headerSize);
 	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
@@ -595,13 +594,13 @@ bool HeaderDecorator::applyToGrid() {
 		keepSizeBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
 		keepSizeBack->addArgument(parentEntity, "ObjectComponent", "sizeX");
 		keepSizeBack->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
-		keepSizeBack->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSizeBack->initializeAction("${0} SET ( ${1} / ${2} )");
 		keepSize->registerAction(keepSizeBack);
 		auto keepSizeLabel = std::make_shared<AssignAction>();
 		keepSizeLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
 		keepSizeLabel->addArgument(parentEntity, "ObjectComponent", "sizeX");
 		keepSizeLabel->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
-		keepSizeLabel->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSizeLabel->initializeAction("${0} SET ( ${1} / ${2} )");
 		keepSize->registerAction(keepSizeLabel);
 		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepSize, InteractionType::COMMON_START);
 
@@ -638,7 +637,7 @@ bool HeaderDecorator::applyToList() {
 	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getEntity();
 	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
 	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
-	std::tuple<float, float> headerSize = { std::get<0>(size) / std::get<0>(getLabel()->getDim()), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
+	std::tuple<float, float> headerSize = { std::get<0>(size), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
 
 	getBack()->setSize(headerSize);
 	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
@@ -727,7 +726,7 @@ bool HeaderDecorator::applyToLabel() {
 	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
 
 
-	std::tuple<float, float> headerSize = { std::get<0>(size) / std::get<0>(getLabel()->getDim()), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
+	std::tuple<float, float> headerSize = { std::get<0>(size), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
 
 	getBack()->setSize(headerSize);
 	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });

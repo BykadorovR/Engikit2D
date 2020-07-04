@@ -15,7 +15,7 @@ bool PrintOperationsAction::doAction() {
 	_list->clear();
 
 	for (auto operation : _entity->getComponent<InteractionComponent>()->getOperations()) {
-		_list->addItem(std::get<0>(operation)->getName());
+		_list->addItem({ std::get<0>(operation)->getName() });
 	}
 
 	return false;
@@ -57,7 +57,7 @@ bool PrintComponentsAction::doAction() {
 	_list->clear();
 
 	for (auto component : _entity->getComponents()) {
-		_list->addItem(component->getName());
+		_list->addItem({ component->getName() });
 	}
 	//TODO: FIX BUG with decorator, if we changed page in one list it will be the same in another list, but need to reset it to 0 every time we change list content
 	for (auto view : _list->getViews()) {
@@ -116,7 +116,7 @@ bool PrintItemsAction::doAction() {
 	_list->clear();
 
 	for (auto item : component->getItemsNames()) {
-		_list->addItem(item);
+		_list->addItem({ item });
 	}
 	//create custom component with all names?
 	//_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text, "list1");

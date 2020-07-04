@@ -13,12 +13,31 @@ List::List(std::string name) {
 }
 
 std::tuple<float, float> List::getPosition() {
-	return _views[0]->getEntity()->getComponent<ObjectComponent>()->getPosition();
+	std::tuple<float, float> position;
+	//TODO: remove all getters from view classes ? because we have getters in components
+	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
+		position = std::dynamic_pointer_cast<Grid>(_views[0])->getPosition();
+	}
+	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
+		position = _views[0]->getEntity()->getComponent<ObjectComponent>()->getPosition();
+	}
+
+	return position;
 }
 
 bool List::setEditable(bool editable) {
-	for (int i = 1; i < _views.size(); i++) {
-		std::dynamic_pointer_cast<Label>(_views[i])->setEditable(editable);
+	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
+		for (int i = 1; i < _views.size(); i++) {
+			std::shared_ptr<Grid> grid = std::dynamic_pointer_cast<Grid>(_views[i]);
+			for (auto label : grid->getViews()) {
+				std::dynamic_pointer_cast<Label>(label)->setEditable(editable);
+			}
+		}
+	}
+	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
+		for (int i = 1; i < _views.size(); i++) {
+			std::dynamic_pointer_cast<Label>(_views[i])->setEditable(editable);
+		}
 	}
 	return false;
 }
@@ -49,25 +68,35 @@ bool List::setPosition(std::tuple<float, float> position) {
 	return false;
 }
 
-bool List::setSize(std::tuple<float, float> size) {
-	std::tuple<float, float> listItemSize = { std::get<0>(size), std::get<1>(size) / _views.size() };
-	for (int i = 0; i < _views.size(); i++) {
-		_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeX", std::get<0>(listItemSize));
-		_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeY", std::get<1>(listItemSize));
+bool List::setSize(std::tuple<std::vector<float>, float> size) {
+	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
+		for (int j = 0; j < _views.size(); j++) {
+			auto childs = _views[j]->getViews();
+			for (int i = 0; i < childs.size(); i++) {
+				childs[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeX", std::get<0>(size)[i]);
+				childs[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeY", std::get<1>(size) / _views.size());
+			}
+		}
+	}
+	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
+		for (int i = 0; i < _views.size(); i++) {
+			_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeX", std::get<0>(size)[0]);
+			_views[i]->getEntity()->getComponent<ObjectComponent>()->setMember("sizeY", std::get<1>(size) / _views.size());
+		}
 	}
 	return false;
 }
 
-bool List::addItem(std::string text) {
-	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text, "list1");
-	return false;
-}
-
 bool List::addItem(std::vector<std::string> text) {
-	//take views from first grid as childs
-	auto childs = _views[0]->getViews();
-	for (int i = 0; i < childs.size(); i++) {
-		childs[i]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text[i], "list" + std::to_string(i));
+	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
+		//take views from first grid as childs
+		auto childs = _views[0]->getViews();
+		for (int i = 0; i < childs.size(); i++) {
+			childs[i]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text[i], "list" + std::to_string(i));
+		}
+	}
+	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
+		_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->addCustomValue(text[0], "list1");
 	}
 	return false;
 }
