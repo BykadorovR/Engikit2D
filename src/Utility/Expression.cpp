@@ -346,7 +346,7 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 	return result;
 }
 
-std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item1,
+std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item1,
 	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item2,
 	std::string operation) {
 	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> result;
