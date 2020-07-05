@@ -27,7 +27,7 @@ std::tuple<float, float> List::getPosition() {
 
 bool List::setEditable(bool editable) {
 	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
-		for (int i = 1; i < _views.size(); i++) {
+		for (int i = 0; i < _views.size(); i++) {
 			std::shared_ptr<Grid> grid = std::dynamic_pointer_cast<Grid>(_views[i]);
 			for (auto label : grid->getViews()) {
 				std::dynamic_pointer_cast<Label>(label)->setEditable(editable);
@@ -35,7 +35,7 @@ bool List::setEditable(bool editable) {
 		}
 	}
 	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
-		for (int i = 1; i < _views.size(); i++) {
+		for (int i = 0; i < _views.size(); i++) {
 			std::dynamic_pointer_cast<Label>(_views[i])->setEditable(editable);
 		}
 	}
