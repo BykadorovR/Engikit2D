@@ -34,14 +34,14 @@ public:
 
 	std::tuple<std::string, int> arithmeticOperationFloat(float operand[2], std::string operation);
 	std::tuple<std::string, int> arithmeticOperationString(std::string operand[2], std::string operation);
-	std::tuple<std::string, int> oneArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item, std::string operation);
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item1,
-																								 std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item2,
+	std::tuple<std::string, int> oneArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item, std::string operation);
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item1,
+																								 std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item2,
 																								 std::string operation);
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> threeArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item1,
-																								   std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item2,
-																								   std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item3,
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> threeArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item1,
+																								   std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item2,
+																								   std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item3,
 																								   std::string operation);
-	std::tuple<std::string, int> multipleArgumentOperation(std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > batch, std::string operation);
+	std::tuple<std::string, int> multipleArgumentOperation(std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > > batch, std::string operation);
 };
 
