@@ -13,6 +13,8 @@ ScrollerVerticalDecorator::ScrollerVerticalDecorator(std::string name) {
 	_viewName = name;
 }
 
+//TODO: Decorator disappears if verticalPosition = 0 despite on text size
+
 bool ScrollerVerticalDecorator::applyToGrid() {
 	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getViews()[0]->getEntity();
 	auto size = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();

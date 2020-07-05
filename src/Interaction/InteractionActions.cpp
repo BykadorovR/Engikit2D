@@ -1,5 +1,4 @@
 #include "InteractionActions.h"
-#include <assert.h>
 #include <regex>
 #include "Common.h"
 

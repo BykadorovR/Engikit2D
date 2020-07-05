@@ -2,9 +2,9 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "assert.h"
 #include <cctype>
 #include <locale>
+#include <cassert>
 
 std::string rawFileContent(const char* relativePath) {
 	std::string content;

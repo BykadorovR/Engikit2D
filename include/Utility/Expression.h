@@ -30,7 +30,7 @@ public:
 	std::shared_ptr<ExpressionNode> getPostfix();
 
 	bool prepareExpression(std::string condition);
-	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > evaluateExpression(std::shared_ptr<ExpressionNode> node);
+	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > > evaluateExpression(std::shared_ptr<ExpressionNode> node);
 
 	std::tuple<std::string, int> arithmeticOperationFloat(float operand[2], std::string operation);
 	std::tuple<std::string, int> arithmeticOperationString(std::string operand[2], std::string operation);

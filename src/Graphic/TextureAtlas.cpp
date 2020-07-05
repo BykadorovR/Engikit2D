@@ -1,6 +1,5 @@
-#include <assert.h>
 #include <algorithm>
-
+#include <cassert>
 #include "TextureAtlas.h"
 
 TextureAtlas::TextureAtlas(GLenum fourCC, std::tuple<float, float> size) {

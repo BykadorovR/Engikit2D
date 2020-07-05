@@ -90,80 +90,87 @@ bool Label::initialize() {
 		_entity->createComponent<InteractionComponent>()->attachOperation(rightKeyPressed, InteractionType::KEYBOARD_START);
 	}
 
-	//--- 4
-	{
-		auto backspacePressed = std::make_shared<ExpressionOperation>();
-		backspacePressed->addArgument(_entity, "TextComponent", "focus");
-		backspacePressed->addArgument(_entity, "TextComponent", "editable");
-		backspacePressed->addArgument(_entity, "KeyboardComponent", "code");
-		backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
-		backspacePressed->addArgument(_entity, "TextComponent", "cursorPosition");
-		backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} > 0");
-		auto removeLastSymbol = std::make_shared<AssignAction>();
-		removeLastSymbol->addArgument(_entity, "TextComponent", "text");
-		removeLastSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
-		removeLastSymbol->initializeAction("${0} REMOVE ${1}");
-		backspacePressed->registerAction(removeLastSymbol);
-		auto changeScrollerLeft = std::make_shared<AssignAction>();
-		changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
-		changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
-		backspacePressed->registerAction(changeScrollerLeft);
-		//We should delete at the end
-		//TODO: add some priorities, it's really important that remove will be the last
-		_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_END);
-	}
-
-	//--- 5
-	{
-		auto enterPressed = std::make_shared<ExpressionOperation>();
-		enterPressed->addArgument(_entity, "TextComponent", "focus");
-		enterPressed->addArgument(_entity, "TextComponent", "editable");
-		enterPressed->addArgument(_entity, "KeyboardComponent", "code");
-		enterPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
-		enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
-		auto addBreakLine = std::make_shared<AssignAction>();
-		addBreakLine->addArgument(_entity, "TextComponent", "text");
-		addBreakLine->addArgument(nullptr, "", "\n");
-		addBreakLine->addArgument(_entity, "TextComponent", "cursorPosition");
-		addBreakLine->initializeAction("${0} INSERT ${1} ${2}");
-		enterPressed->registerAction(addBreakLine);
-		auto changeScrollerRight = std::make_shared<AssignAction>();
-		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
-		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
-		enterPressed->registerAction(changeScrollerRight);
-		_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
-	}
-
 	if (std::dynamic_pointer_cast<List>(_parent)) {
-		/*
-		int indexInList = 0;
 		auto list = std::dynamic_pointer_cast<List>(_parent);
-		//we should change also CustomStringArrayComponent
-		for (int i = 0; i < list->getViews().size(); i++) {
-			if (list->getViews()[i]->getEntity() == _entity) {
-				indexInList = i;
-				break;
+		if (list) {
+			int indexInList = -1;
+			for (int i = 0; i < list->getViews().size(); i++) {
+				auto label = std::dynamic_pointer_cast<Label>(list->getViews()[i]);
+				if (label->getEntity() == _entity) {
+					indexInList = i;
+					break;
+				}
+			}
+
+			//--- 4
+			{
+				auto backspacePressed = std::make_shared<ExpressionOperation>();
+				backspacePressed->addArgument(_entity, "TextComponent", "focus");
+				backspacePressed->addArgument(_entity, "TextComponent", "editable");
+				backspacePressed->addArgument(_entity, "KeyboardComponent", "code");
+				backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+				backspacePressed->addArgument(_entity, "TextComponent", "cursorPosition");
+				backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} > 0");
+				auto removeLastSymbol = std::make_shared<AssignAction>();
+				//removeLastSymbol->addArgument(_entity, "TextComponent", "text");
+				removeLastSymbol->addArgument(list->getViews()[0]->getEntity(), "CustomStringArrayComponent", "list0");
+				removeLastSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+				removeLastSymbol->addArgument(nullptr, "", std::to_string(indexInList));
+				removeLastSymbol->initializeAction("( ${0} AT ${2} ) REMOVE ${1}");
+				backspacePressed->registerAction(removeLastSymbol);
+				auto changeScrollerLeft = std::make_shared<AssignAction>();
+				changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
+				changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
+				backspacePressed->registerAction(changeScrollerLeft);
+				//We should delete at the end
+				//TODO: add some priorities, it's really important that remove will be the last
+				_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_END);
+			}
+
+			//--- 5
+			{
+				auto enterPressed = std::make_shared<ExpressionOperation>();
+				enterPressed->addArgument(_entity, "TextComponent", "focus");
+				enterPressed->addArgument(_entity, "TextComponent", "editable");
+				enterPressed->addArgument(_entity, "KeyboardComponent", "code");
+				enterPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+				enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+				auto addBreakLine = std::make_shared<AssignAction>();
+				//addBreakLine->addArgument(_entity, "TextComponent", "text");
+				addBreakLine->addArgument(list->getViews()[0]->getEntity(), "CustomStringArrayComponent", "list0");
+				addBreakLine->addArgument(nullptr, "", "\n");
+				addBreakLine->addArgument(_entity, "TextComponent", "cursorPosition");
+				addBreakLine->addArgument(nullptr, "", std::to_string(indexInList));
+				addBreakLine->initializeAction("( ${0} AT ${3} ) INSERT ${1} ${2}");
+				enterPressed->registerAction(addBreakLine);
+				auto changeScrollerRight = std::make_shared<AssignAction>();
+				changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+				changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+				enterPressed->registerAction(changeScrollerRight);
+				_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
+			}
+
+			//--- 6
+			{
+				auto inputSymbol = std::make_shared<ExpressionOperation>();
+				inputSymbol->addArgument(_entity, "TextComponent", "focus");
+				inputSymbol->addArgument(_entity, "TextComponent", "editable");
+				inputSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+				inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
+				auto addSymbol = std::make_shared<AssignAction>();
+				addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+				addSymbol->addArgument(list->getViews()[0]->getEntity(), "CustomStringArrayComponent", "list0");
+				addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+				addSymbol->addArgument(nullptr, "", std::to_string(indexInList));
+				addSymbol->initializeAction("( ${1} AT ${3} ) AT ${2} SET ${0}");
+				inputSymbol->registerAction(addSymbol);
+				auto changeScrollerRight = std::make_shared<AssignAction>();
+				changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+				changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+				inputSymbol->registerAction(changeScrollerRight);
+				_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
 			}
 		}
-
-		auto inputSymbol = std::make_shared<ExpressionOperation>();
-		inputSymbol->addArgument(_entity, "TextComponent", "focus");
-		inputSymbol->addArgument(_entity, "TextComponent", "editable");
-		inputSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
-		inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
-		auto addSymbol = std::make_shared<AssignAction>();
-		addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
-		addSymbol->addArgument(_parent->getViews()[0]->getEntity(), "CustomStringArrayComponent", "list0");
-		addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
-		addSymbol->addArgument(nullptr, "", std::to_string(indexInList));
-		addSymbol->initializeAction("${1} AT ${3} AT ${2} SET ${0}");
-		inputSymbol->registerAction(addSymbol);
-		auto changeScrollerRight = std::make_shared<AssignAction>();
-		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
-		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
-		inputSymbol->registerAction(changeScrollerRight);
-		_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
-		*/
 	}
 	else if (std::dynamic_pointer_cast<Grid>(_parent)) {
 		auto list = std::dynamic_pointer_cast<List>(std::dynamic_pointer_cast<Grid>(_parent)->getParent());
@@ -184,26 +191,120 @@ bool Label::initialize() {
 					break;
 			}
 
-			auto inputSymbol = std::make_shared<ExpressionOperation>();
-			inputSymbol->addArgument(_entity, "TextComponent", "focus");
-			inputSymbol->addArgument(_entity, "TextComponent", "editable");
-			inputSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
-			inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
-			auto addSymbol = std::make_shared<AssignAction>();
-			addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
-			addSymbol->addArgument(list->getViews()[0]->getViews()[gridIndex]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(gridIndex));
-			addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
-			addSymbol->addArgument(nullptr, "", std::to_string(indexInList));
-			addSymbol->initializeAction("( ${1} AT ${3} ) AT ${2} SET ${0}");
-			inputSymbol->registerAction(addSymbol);
-			auto changeScrollerRight = std::make_shared<AssignAction>();
-			changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
-			changeScrollerRight->initializeAction("${0} SET ${0} + 1");
-			inputSymbol->registerAction(changeScrollerRight);
-			_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
+			//--- 4
+			{
+				auto backspacePressed = std::make_shared<ExpressionOperation>();
+				backspacePressed->addArgument(_entity, "TextComponent", "focus");
+				backspacePressed->addArgument(_entity, "TextComponent", "editable");
+				backspacePressed->addArgument(_entity, "KeyboardComponent", "code");
+				backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+				backspacePressed->addArgument(_entity, "TextComponent", "cursorPosition");
+				backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} > 0");
+				auto removeLastSymbol = std::make_shared<AssignAction>();
+				//removeLastSymbol->addArgument(_entity, "TextComponent", "text");
+				removeLastSymbol->addArgument(list->getViews()[0]->getViews()[gridIndex]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(gridIndex));
+				removeLastSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+				removeLastSymbol->addArgument(nullptr, "", std::to_string(indexInList));
+				removeLastSymbol->initializeAction("( ${0} AT ${2} ) REMOVE ${1}");
+				backspacePressed->registerAction(removeLastSymbol);
+				auto changeScrollerLeft = std::make_shared<AssignAction>();
+				changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
+				changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
+				backspacePressed->registerAction(changeScrollerLeft);
+				//We should delete at the end
+				//TODO: add some priorities, it's really important that remove will be the last
+				_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_END);
+			}
+
+			//--- 5
+			{
+				auto enterPressed = std::make_shared<ExpressionOperation>();
+				enterPressed->addArgument(_entity, "TextComponent", "focus");
+				enterPressed->addArgument(_entity, "TextComponent", "editable");
+				enterPressed->addArgument(_entity, "KeyboardComponent", "code");
+				enterPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+				enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+				auto addBreakLine = std::make_shared<AssignAction>();
+				//addBreakLine->addArgument(_entity, "TextComponent", "text");
+				addBreakLine->addArgument(list->getViews()[0]->getViews()[gridIndex]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(gridIndex));
+				addBreakLine->addArgument(nullptr, "", "\n");
+				addBreakLine->addArgument(_entity, "TextComponent", "cursorPosition");
+				addBreakLine->addArgument(nullptr, "", std::to_string(indexInList));
+				addBreakLine->initializeAction("( ${0} AT ${3} ) INSERT ${1} ${2}");
+				enterPressed->registerAction(addBreakLine);
+				auto changeScrollerRight = std::make_shared<AssignAction>();
+				changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+				changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+				enterPressed->registerAction(changeScrollerRight);
+				_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
+			}
+
+			//--- 6
+			{
+				auto inputSymbol = std::make_shared<ExpressionOperation>();
+				inputSymbol->addArgument(_entity, "TextComponent", "focus");
+				inputSymbol->addArgument(_entity, "TextComponent", "editable");
+				inputSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+				inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
+				auto addSymbol = std::make_shared<AssignAction>();
+				addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+				addSymbol->addArgument(list->getViews()[0]->getViews()[gridIndex]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(gridIndex));
+				addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+				addSymbol->addArgument(nullptr, "", std::to_string(indexInList));
+				addSymbol->initializeAction("( ${1} AT ${3} ) AT ${2} SET ${0}");
+				inputSymbol->registerAction(addSymbol);
+				auto changeScrollerRight = std::make_shared<AssignAction>();
+				changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+				changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+				inputSymbol->registerAction(changeScrollerRight);
+				_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
+			}
 		}
 	}
 	else {
+		//--- 4
+		{
+			auto backspacePressed = std::make_shared<ExpressionOperation>();
+			backspacePressed->addArgument(_entity, "TextComponent", "focus");
+			backspacePressed->addArgument(_entity, "TextComponent", "editable");
+			backspacePressed->addArgument(_entity, "KeyboardComponent", "code");
+			backspacePressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_BACKSPACE));
+			backspacePressed->addArgument(_entity, "TextComponent", "cursorPosition");
+			backspacePressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3} AND ${4} > 0");
+			auto removeLastSymbol = std::make_shared<AssignAction>();
+			removeLastSymbol->addArgument(_entity, "TextComponent", "text");
+			removeLastSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+			removeLastSymbol->initializeAction("${0} REMOVE ${1}");
+			backspacePressed->registerAction(removeLastSymbol);
+			auto changeScrollerLeft = std::make_shared<AssignAction>();
+			changeScrollerLeft->addArgument(_entity, "TextComponent", "cursorPosition");
+			changeScrollerLeft->initializeAction("${0} SET ${0} - 1");
+			backspacePressed->registerAction(changeScrollerLeft);
+			//We should delete at the end
+			//TODO: add some priorities, it's really important that remove will be the last
+			_entity->createComponent<InteractionComponent>()->attachOperation(backspacePressed, InteractionType::KEYBOARD_END);
+		}
+
+		//--- 5
+		{
+			auto enterPressed = std::make_shared<ExpressionOperation>();
+			enterPressed->addArgument(_entity, "TextComponent", "focus");
+			enterPressed->addArgument(_entity, "TextComponent", "editable");
+			enterPressed->addArgument(_entity, "KeyboardComponent", "code");
+			enterPressed->addArgument(nullptr, "", std::to_string(GLFW_KEY_ENTER));
+			enterPressed->initializeOperation("${0} = 1 AND ${1} = 1 AND ${2} = ${3}");
+			auto addBreakLine = std::make_shared<AssignAction>();
+			addBreakLine->addArgument(_entity, "TextComponent", "text");
+			addBreakLine->addArgument(nullptr, "", "\n");
+			addBreakLine->addArgument(_entity, "TextComponent", "cursorPosition");
+			addBreakLine->initializeAction("${0} INSERT ${1} ${2}");
+			enterPressed->registerAction(addBreakLine);
+			auto changeScrollerRight = std::make_shared<AssignAction>();
+			changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+			changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+			enterPressed->registerAction(changeScrollerRight);
+			_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
+		}
 		//--- 6
 		{
 			auto inputSymbol = std::make_shared<ExpressionOperation>();

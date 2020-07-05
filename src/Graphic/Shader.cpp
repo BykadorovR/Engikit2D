@@ -1,10 +1,10 @@
 #include "Shader.h"
-#include <assert.h>
 #include <Windows.h>
 #include <sstream>
 #include <iostream>
 #include <vector>
 #include "Common.h"
+#include <cassert>
 
 GLuint Shader::compileShader(std::string source, GLenum type) {
 	GLuint shader_object_id = glCreateShader(type);

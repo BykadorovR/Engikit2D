@@ -128,8 +128,7 @@ bool List::initialize() {
 				mapText->addArgument(_views[0]->getViews()[j]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(j));
 				mapText->addArgument(nullptr, "", std::to_string(i));
 				mapText->addArgument(_views[0]->getViews()[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
-				mapText->addArgument(childs[j]->getEntity(), "TextComponent", "focus");
-				mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
+				mapText->initializeOperation("${1} + ${2} < SIZE ${0}");
 				auto setLine = std::make_shared<AssignAction>();
 				setLine->addArgument(childs[j]->getEntity(), "TextComponent", "text");
 				//TODO: need to take every column from list and map to appropriate text in view
@@ -154,8 +153,7 @@ bool List::initialize() {
 			mapText->addArgument(_views[0]->getEntity(), "CustomStringArrayComponent", "list0");
 			mapText->addArgument(nullptr, "", std::to_string(i));
 			mapText->addArgument(_views[0]->getEntity(), "CustomFloatComponent", "listStartVertical");
-			mapText->addArgument(_views[i]->getEntity(), "TextComponent", "focus");
-			mapText->initializeOperation("${1} + ${2} < SIZE ${0} AND ${3} = 0");
+			mapText->initializeOperation("${1} + ${2} < SIZE ${0}");
 			auto setLine = std::make_shared<AssignAction>();
 			setLine->addArgument(_views[i]->getEntity(), "TextComponent", "text");
 			//TODO: need to take every column from list and map to appropriate text in view

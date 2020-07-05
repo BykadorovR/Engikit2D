@@ -1,7 +1,6 @@
-#include <assert.h>
-
 #include "ImageLoader.h"
 #include "Common.h"
+#include <cassert>
 
 void PNGCallback(png_structp PNGPtr, png_byte* rawData, png_size_t readLength) {
 	DataHandle* handle = (DataHandle*)png_get_io_ptr(PNGPtr);

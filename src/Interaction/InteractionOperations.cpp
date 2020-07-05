@@ -1,6 +1,5 @@
 #include "InteractionOperations.h"
 #include <regex>
-#include <assert.h>
 #include "Common.h"
 #include <sstream>
 

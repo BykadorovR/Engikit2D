@@ -1,5 +1,4 @@
 #include "Expression.h"
-#include <assert.h>
 #include "UserInputComponents.h"
 #include "GraphicComponents.h"
 #include "Common.h"
@@ -7,6 +6,7 @@
 #include <algorithm>
 #include <locale>
 #include <codecvt>
+#include <cassert>
 
 ExpressionNode::ExpressionNode(std::string value) {
 	_value = value;
@@ -168,9 +168,9 @@ bool Expression::prepareExpression(std::string condition) {
 	return false;
 }
 
-std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > Expression::evaluateExpression(std::shared_ptr<ExpressionNode> node) {
+std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > > Expression::evaluateExpression(std::shared_ptr<ExpressionNode> node) {
 	std::string value = node->getValue();
-	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > postfix;
+	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > > postfix;
 	if (_supportedOperations.find(value) != _supportedOperations.end()) {
 		auto childs = node->getNodes();
 		//if this is operation we have to dive deeper to tree
@@ -182,7 +182,7 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 				if (stof(std::get<2>(result.back())) == 0) {
 					//we shouldn't check right argument
 					postfix.clear();
-					postfix.push_back({ nullptr, std::string(), std::to_string(false), -1 });
+					postfix.push_back({ nullptr, std::string(), std::to_string(false), {-1} });
 					return postfix;
 				}
 			}
@@ -190,7 +190,7 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 				if (stof(std::get<2>(result.back())) == 1) {
 					//we shouldn't check right argument
 					postfix.clear();
-					postfix.push_back({ nullptr, std::string(), std::to_string(true), -1 });
+					postfix.push_back({ nullptr, std::string(), std::to_string(true), {-1} });
 					return postfix;
 				}
 			}
@@ -203,7 +203,7 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 			auto multipleArgumentResult = multipleArgumentOperation(postfix, value);
 			if (std::get<1>(multipleArgumentResult)) {
 				postfix.clear();
-				postfix.push_back({ nullptr, std::string(), std::get<0>(multipleArgumentResult), -1 });
+				postfix.push_back({ nullptr, std::string(), std::get<0>(multipleArgumentResult), {-1} });
 			}
 		}
 		else {
@@ -212,7 +212,7 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 					auto oneArgumentResult = oneArgumentOperation(postfix.back(), value);	
 					if (std::get<1>(oneArgumentResult)) {
 						postfix.pop_back();
-						postfix.push_back({ nullptr, std::string(), std::get<0>(oneArgumentResult), -1 });
+						postfix.push_back({ nullptr, std::string(), std::get<0>(oneArgumentResult), {-1} });
 					}
 					break;
 				}
@@ -263,19 +263,19 @@ std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> >
 					std::shared_ptr<Entity> entity = std::get<0>(_arguments[varIndex]);
 					std::string componentName = std::get<1>(_arguments[varIndex]);
 					std::string varName = std::get<2>(_arguments[varIndex]);
-					postfix.push_back({ entity, componentName, varName, -1 });
+					postfix.push_back({ entity, componentName, varName, {-1} });
 				}
 			}
 		}
 		else {
-			postfix.push_back({ nullptr, "", value, -1 });
+			postfix.push_back({ nullptr, "", value, {-1} });
 		}
 	}
 	//
 	return postfix;
 }
 
-std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item,
+std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item,
 	std::string operation) {
 	std::tuple<std::string, int> result;
 	if (operation == "CLICK" ||
@@ -346,13 +346,13 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 	return result;
 }
 
-std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item1,
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item2,
+std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> >  item1,
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> >  item2,
 	std::string operation) {
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> result;
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> result;
 	//TODO: do correct order
 	//item1 - second argument, item2 - first argument
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> operandTuple[2] = { item1, item2 };
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > operandTuple[2] = { item1, item2 };
 	VariableType operandType[2] = { VariableType::varUnknown, VariableType::varUnknown };
 	bool operandConst[2] = { false, false };
 
@@ -383,32 +383,45 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 			std::shared_ptr<OperationComponent> component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[i])->getComponent(std::get<1>(operandTuple[i])));
 			if (operandType[i] == VariableType::varFloatVector) {
 				auto operandValue = component->getMemberVectorFloat(std::get<2>(operandTuple[i]));
-				if (std::get<1>(operandValue))
-					operandFloat[i] = { std::get<0>(operandValue)->at(std::get<3>(operandTuple[i])), true };
+				if (std::get<1>(operandValue)) {
+					if (std::get<3>(operandTuple[i]).size() == 1)
+						operandFloat[i] = { std::get<0>(operandValue)->at(std::get<3>(operandTuple[i])[0]), true };
+					else {
+						assert("not implemented");
+					}
+				}
 				else
-					result = { nullptr, std::string(), std::string(), -1, 0 };
+					result = { nullptr, std::string(), std::string(), {-1}, 0 };
 			}
 			else if (operandType[i] == VariableType::varStringVector) {
 				auto operandValue = component->getMemberVectorString(std::get<2>(operandTuple[i]));
 				if (std::get<1>(operandValue)) {
-					int index = std::get<3>(operandTuple[i]);
-					if (index >= 0)
-						operandString[i] = { std::get<0>(operandValue)->at(index), true };
+					if (std::get<3>(operandTuple[i]).size() == 1) {
+						int index = std::get<3>(operandTuple[i])[0];
+						if (index >= 0)
+							operandString[i] = { std::get<0>(operandValue)->at(index), true };
+					}
+					else if (std::get<3>(operandTuple[i]).size() == 2) {
+						auto memberVectorString = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[1])->getComponent(std::get<1>(operandTuple[1])))->getMemberVectorString(std::get<2>(operandTuple[1]));
+						operandString[i] = { std::string(1, std::get<0>(memberVectorString)->at(std::get<3>(operandTuple[i])[0])[std::get<3>(operandTuple[i])[1]]), true };
+					}
+					else
+						assert("not implemented");
 				}
 				else
-					result = { nullptr, std::string(), std::string(), -1, 0 };
+					result = { nullptr, std::string(), std::string(), {-1}, 0 };
 			}
 			else if (operandType[i] == VariableType::varFloat) {
 				auto operandValue = component->getMemberFloat(std::get<2>(operandTuple[i]));
 				if (std::get<1>(operandValue))
 					operandFloat[i] = { *std::get<0>(operandValue), true };
 				else
-					result = { nullptr, std::string(), std::string(), -1, 0 };
+					result = { nullptr, std::string(), std::string(), {-1}, 0 };
 			}
 			else if (operandType[i] == VariableType::varString) {
 				auto operandValue = component->getMemberString(std::get<2>(operandTuple[i]));
 				if (std::get<1>(operandValue)) {
-					int index = std::get<3>(operandTuple[i]);
+					int index = std::get<3>(operandTuple[i])[0];
 					if (index >= 0) {
 						operandString[i] = { std::string(1, std::get<0>(operandValue)->at(index)), true };
 					}
@@ -416,7 +429,7 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 						operandString[i] = { *std::get<0>(operandValue), true };
 				}
 				else
-					result = { nullptr, std::string(), std::string(), -1, 0 };
+					result = { nullptr, std::string(), std::string(), {-1}, 0 };
 			}
 		}
 	}
@@ -424,30 +437,18 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 	if (operation == "AT") {
 		if (std::get<1>(operandFloat[0])) {
 			//if we want take AT from AT: at from vector and at from element
-			/*
-			if (operandType[1] == VariableType::varStringVector) {
-				auto memberVectorString = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[1])->getComponent(std::get<1>(operandTuple[1])))->getMemberVectorString(std::get<2>(operandTuple[1]));
-				result = { nullptr, std::string(), std::get<0>(memberVectorString)->at(std::get<0>(operandFloat[0])), -1, 1 };
-			}
-			else if (operandType[1] == VariableType::varFloatVector) {
-				auto memberVectorFloat = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[1])->getComponent(std::get<1>(operandTuple[1])))->getMemberVectorFloat(std::get<2>(operandTuple[1]));
-				result = { nullptr, std::string(), std::to_string(std::get<0>(memberVectorFloat)->at(std::get<0>(operandFloat[0]))), -1, 1 };
-			}
-			else if (operandType[1] == VariableType::varString) {
-				result = { std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<2>(operandTuple[1]), std::get<0>(operandFloat[0]), 1 };
-			}
-			else
-				result = { nullptr, std::string(), std::string(), -1, 0 };
-			*/
 			//for AT second argument should be float
-			if (std::get<1>(operandFloat[0])) {
-				//push vector with correct index, index can only be float
-				//keep component and field name, only change index and set it as second argument
-				result = { std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<2>(operandTuple[1]), std::get<0>(operandFloat[0]), 1 };
+			//push vector with correct index, index can only be float
+			//keep component and field name, only change index and set it as second argument
+			std::vector<int> indexes;
+			if (std::get<3>(operandTuple[1])[0] >= 0) {
+				indexes.push_back(std::get<3>(operandTuple[1])[0]);
 			}
-			else
-				result = { nullptr, std::string(), std::string(), -1, 0 };
+			indexes.push_back(std::get<0>(operandFloat[0]));
+			result = { std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<2>(operandTuple[1]), indexes, 1 };
 		}
+		else
+			result = { nullptr, std::string(), std::string(), {-1}, 0 };
 	}
 	else if (operation == "SET") {
 		//issues with accessing wrong members due to wrong operand's classification can happen
@@ -460,17 +461,32 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 		std::shared_ptr<OperationComponent> component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[1])->getComponent(std::get<1>(operandTuple[1])));
 		if (std::get<1>(operandFloat[0])) {
 			if (std::get<1>(operandString[1]))
-				component->setMember(std::get<2>(operandTuple[1]), std::to_string((int)std::get<0>(operandFloat[0])), std::get<3>(operandTuple[1]));
+				component->setMember(std::get<2>(operandTuple[1]), std::to_string((int)std::get<0>(operandFloat[0])), {(int)std::get<3>(operandTuple[1])[0]});
 			else
-				component->setMember(std::get<2>(operandTuple[1]), std::get<0>(operandFloat[0]), std::get<3>(operandTuple[1]));
+				component->setMember(std::get<2>(operandTuple[1]), std::get<0>(operandFloat[0]), { (int)std::get<3>(operandTuple[1])[0] });
 		}
 		else if (std::get<1>(operandString[0])) {
 			if (std::get<1>(operandFloat[1]))
-				component->setMember(std::get<2>(operandTuple[1]), stof(std::get<0>(operandString[0])), std::get<3>(operandTuple[1]));
-			else
-				component->setMember(std::get<2>(operandTuple[1]), std::get<0>(operandString[0]), std::get<3>(operandTuple[1]));
+				component->setMember(std::get<2>(operandTuple[1]), stof(std::get<0>(operandString[0])), { (int)std::get<3>(operandTuple[1])[0] });
+			else {
+				if (std::get<3>(operandTuple[1]).size() == 1) {
+					component->setMember(std::get<2>(operandTuple[1]), std::get<0>(operandString[0]), { (int)std::get<3>(operandTuple[1])[0] });
+				}
+				else if (std::get<3>(operandTuple[1]).size() == 2) {
+					auto memberVectorString = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[1])->getComponent(std::get<1>(operandTuple[1])))->getMemberVectorString(std::get<2>(operandTuple[1]));
+					std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+					std::string* stringToChange = &std::get<0>(memberVectorString)->at(std::get<3>(operandTuple[1])[0]);
+					std::wstring text = converter.from_bytes(*stringToChange);
+					text.insert(std::get<3>(operandTuple[1])[1], converter.from_bytes(std::get<0>(operandString[0]).c_str()));
+					//convert it back
+					std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterBack;
+					*stringToChange = converterBack.to_bytes(text);
+				}
+				else
+					assert("Not implemented");
+			}
 		}
-		result = { nullptr, std::string(), std::to_string(1), -1, 1 };
+		result = { nullptr, std::string(), std::to_string(1), {-1}, 1 };
 	}
 	else if (operation == "REMOVE") {
 		if (!std::get<1>(operandFloat[0]))
@@ -480,11 +496,25 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 		int index = std::get<0>(operandFloat[0]);
 		if (operandType[1] == VariableType::varString) {
 			auto targetString = std::get<0>(component->getMemberString(std::get<2>(operandTuple[1])));
-			targetString->erase(targetString->begin() + index - 1);
+			std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+			std::wstring text = converter.from_bytes(*targetString);
+			text.erase(index - 1, 1);
+			//convert it back
+			std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterBack;
+			*targetString = converterBack.to_bytes(text);
 		}
 		else if (VariableType::varStringVector) {
 			auto targetStringVector = std::get<0>(component->getMemberVectorString(std::get<2>(operandTuple[1])));
-			targetStringVector->erase(targetStringVector->begin() + index - 1);
+			if (std::get<3>(operandTuple[1]).size() == 1) {
+				std::string* targetString = &targetStringVector->at(std::get<3>(operandTuple[1])[0]);
+				std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+				std::wstring text = converter.from_bytes(*targetString);
+				text.erase(index - 1, 1);
+				//convert it back
+				std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterBack;
+				*targetString = converterBack.to_bytes(text);
+			} else if (std::get<3>(operandTuple[1]).size() > 1)
+				assert("not implemented");
 		}
 		else if (VariableType::varFloatVector) {
 			auto targetFloatVector = std::get<0>(component->getMemberVectorFloat(std::get<1>(operandTuple[1])));
@@ -493,7 +523,7 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 		else {
 			assert("not implemented");
 		}
-		result = { nullptr, std::string(), std::to_string(1), -1, 1 };
+		result = { nullptr, std::string(), std::to_string(1), {-1}, 1 };
 	}
 	else {
 		//TODO: if operands are different
@@ -501,7 +531,7 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 			float operand[2] = { std::get<0>(operandFloat[0]), std::get<0>(operandFloat[1]) };
 			auto arithmeticResult = arithmeticOperationFloat(operand, operation);
 			if (std::get<1>(arithmeticResult))
-				result = { nullptr, std::string(), std::get<0>(arithmeticResult), -1, 1 };
+				result = { nullptr, std::string(), std::get<0>(arithmeticResult), {-1}, 1 };
 			else
 				assert("Not defined arithmetic operation");
 		}
@@ -509,7 +539,7 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 			std::string operand[2] = { std::get<0>(operandString[0]), std::get<0>(operandString[1]) };
 			auto arithmeticResult = arithmeticOperationString(operand, operation);
 			if (std::get<1>(arithmeticResult))
-				result = { nullptr, std::string(), std::get<0>(arithmeticResult), -1, 1 };
+				result = { nullptr, std::string(), std::get<0>(arithmeticResult), {-1}, 1 };
 			else
 				assert("Not defined arithmetic operation");
 		}
@@ -535,7 +565,7 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 
 			auto arithmeticResult = arithmeticOperationString(operand, operation);
 			if (std::get<1>(arithmeticResult))
-				result = { nullptr, std::string(), std::get<0>(arithmeticResult), -1, 1 };
+				result = { nullptr, std::string(), std::get<0>(arithmeticResult), {-1}, 1 };
 			else
 				assert("Not defined arithmetic operation");
 		}
@@ -544,11 +574,12 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 	return result;
 }
 
-std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expression::threeArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item1,
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item2,
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> item3,
+std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> Expression::threeArgumentOperation(
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item1,
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item2,
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > item3,
 	std::string operation) {
-	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> result;
+	std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> result;
 	//item3 - container we wanna insert to
 	//item2 - value
 	//item1 - position
@@ -566,8 +597,12 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 			auto type = item1Component->getVariableType(std::get<2>(item1));
 			if (type == VariableType::varFloat)
 				index = *std::get<0>(item1Component->getMemberFloat(std::get<2>(item1)));
-			else if (type == VariableType::varFloatVector)
-				index = std::get<0>(item1Component->getMemberVectorFloat(std::get<2>(item1)))->at(std::get<3>(item1));
+			else if (type == VariableType::varFloatVector) {
+				if (std::get<3>(item1).size() == 1)
+					index = std::get<0>(item1Component->getMemberVectorFloat(std::get<2>(item1)))->at(std::get<3>(item1)[0]);
+				else
+					assert("not implemented");
+			}
 			else
 				assert("Not implemented");
 		}
@@ -596,18 +631,46 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 			std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterBack;
 			item3Component->setMember(std::get<2>(item3), converterBack.to_bytes(text));
 		}
-		else
+		else if (containerType == VariableType::varStringVector) {
+			std::shared_ptr<OperationComponent> item2Component = nullptr;
+			if (std::get<0>(item2))
+				item2Component = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(item2)->getComponent(std::get<1>(item2)));
+			std::string value;
+			if (item2Component == nullptr)
+				value = std::get<2>(item2);
+			else {
+				value = *std::get<0>(item2Component->getMemberString(std::get<2>(item2)));
+			}
+			if (value == "\n") {
+				value = std::string(1, '\n');
+			}
+			if (std::get<3>(item3).size() == 1) {
+				auto memberVectorString = std::get<0>(item3Component->getMemberVectorString(std::get<2>(item3)));
+				std::string* targetString = &memberVectorString->at(std::get<3>(item3)[0]);
+				//convert string to wstring in case of non-English symbols
+				//it won't affect English/digitals
+				std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+				std::wstring text = converter.from_bytes(*targetString);
+				text.insert(index, converter.from_bytes(value));
+				//convert it back
+				std::wstring_convert< std::codecvt_utf8<wchar_t>, wchar_t> converterBack;
+				*targetString = converterBack.to_bytes(text);
+			}
+			else if (std::get<3>(item3).size() > 1)
+				assert("not implemented");
+		} else
 			assert("Not implemented");
-		result = { nullptr, std::string(), std::to_string(true), -1, 1 };
+		result = { nullptr, std::string(), std::to_string(true), {-1}, 1 };
 	}
 	else {
-		result = { nullptr, std::string(), std::to_string(false), -1, 0 };
+		result = { nullptr, std::string(), std::to_string(false), {-1}, 0 };
 	}
 
 	return result;
 }
 
-std::tuple<std::string, int> Expression::multipleArgumentOperation(std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, int> > batch, std::string operation) {
+std::tuple<std::string, int> Expression::multipleArgumentOperation(
+	std::vector<std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int> > > batch, std::string operation) {
 	std::tuple<std::string, int> result;
 	if (operation == "CLICK") {
 		bool anyClick = false;
