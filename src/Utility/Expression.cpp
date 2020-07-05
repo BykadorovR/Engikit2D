@@ -346,7 +346,7 @@ std::tuple<std::string, int> Expression::oneArgumentOperation(std::tuple<std::sh
 	return result;
 }
 
-std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item1,
+std::tuple<std::shared_ptr<Entity>, std::string, std::string, std::vector<int>, int> Expression::twoArgumentOperation(std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item1,
 	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int>  item2,
 	std::string operation) {
 	std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> result;
@@ -422,14 +422,32 @@ std::tuple<std::shared_ptr<Entity>, std::string, std::string, int, int> Expressi
 	}
 
 	if (operation == "AT") {
-		//for AT second argument should be float
 		if (std::get<1>(operandFloat[0])) {
-			//push vector with correct index, index can only be float
-			//keep component and field name, only change index and set it as second argument
-			result = { std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<2>(operandTuple[1]), std::get<0>(operandFloat[0]), 1 };
+			//if we want take AT from AT: at from vector and at from element
+			/*
+			if (operandType[1] == VariableType::varStringVector) {
+				auto memberVectorString = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[1])->getComponent(std::get<1>(operandTuple[1])))->getMemberVectorString(std::get<2>(operandTuple[1]));
+				result = { nullptr, std::string(), std::get<0>(memberVectorString)->at(std::get<0>(operandFloat[0])), -1, 1 };
+			}
+			else if (operandType[1] == VariableType::varFloatVector) {
+				auto memberVectorFloat = std::dynamic_pointer_cast<OperationComponent>(std::get<0>(operandTuple[1])->getComponent(std::get<1>(operandTuple[1])))->getMemberVectorFloat(std::get<2>(operandTuple[1]));
+				result = { nullptr, std::string(), std::to_string(std::get<0>(memberVectorFloat)->at(std::get<0>(operandFloat[0]))), -1, 1 };
+			}
+			else if (operandType[1] == VariableType::varString) {
+				result = { std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<2>(operandTuple[1]), std::get<0>(operandFloat[0]), 1 };
+			}
+			else
+				result = { nullptr, std::string(), std::string(), -1, 0 };
+			*/
+			//for AT second argument should be float
+			if (std::get<1>(operandFloat[0])) {
+				//push vector with correct index, index can only be float
+				//keep component and field name, only change index and set it as second argument
+				result = { std::get<0>(operandTuple[1]), std::get<1>(operandTuple[1]), std::get<2>(operandTuple[1]), std::get<0>(operandFloat[0]), 1 };
+			}
+			else
+				result = { nullptr, std::string(), std::string(), -1, 0 };
 		}
-		else
-			result = { nullptr, std::string(), std::string(), -1, 0 };
 	}
 	else if (operation == "SET") {
 		//issues with accessing wrong members due to wrong operand's classification can happen

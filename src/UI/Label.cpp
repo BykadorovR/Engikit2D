@@ -134,8 +134,18 @@ bool Label::initialize() {
 		_entity->createComponent<InteractionComponent>()->attachOperation(enterPressed, InteractionType::KEYBOARD_START);
 	}
 
-	//--- 6
-	{
+	if (std::dynamic_pointer_cast<List>(_parent)) {
+		/*
+		int indexInList = 0;
+		auto list = std::dynamic_pointer_cast<List>(_parent);
+		//we should change also CustomStringArrayComponent
+		for (int i = 0; i < list->getViews().size(); i++) {
+			if (list->getViews()[i]->getEntity() == _entity) {
+				indexInList = i;
+				break;
+			}
+		}
+
 		auto inputSymbol = std::make_shared<ExpressionOperation>();
 		inputSymbol->addArgument(_entity, "TextComponent", "focus");
 		inputSymbol->addArgument(_entity, "TextComponent", "editable");
@@ -143,17 +153,77 @@ bool Label::initialize() {
 		inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
 		auto addSymbol = std::make_shared<AssignAction>();
 		addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
-		addSymbol->addArgument(_entity, "TextComponent", "text");
+		addSymbol->addArgument(_parent->getViews()[0]->getEntity(), "CustomStringArrayComponent", "list0");
 		addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
-		addSymbol->initializeAction("${1} INSERT ${0} ${2}");
+		addSymbol->addArgument(nullptr, "", std::to_string(indexInList));
+		addSymbol->initializeAction("${1} AT ${3} AT ${2} SET ${0}");
 		inputSymbol->registerAction(addSymbol);
 		auto changeScrollerRight = std::make_shared<AssignAction>();
 		changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
 		changeScrollerRight->initializeAction("${0} SET ${0} + 1");
 		inputSymbol->registerAction(changeScrollerRight);
 		_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
+		*/
 	}
+	else if (std::dynamic_pointer_cast<Grid>(_parent)) {
+		auto list = std::dynamic_pointer_cast<List>(std::dynamic_pointer_cast<Grid>(_parent)->getParent());
+		if (list) {
+			int indexInList = -1;
+			int gridIndex = -1;
+			for (int i = 0; i < list->getViews().size(); i++) {
+				auto grid = std::dynamic_pointer_cast<Grid>(list->getViews()[i])->getViews();
+				for (int j = 0; j < grid.size(); j++) {
+					if (grid[j]->getEntity() == _entity) {
+						gridIndex = j;
+						indexInList = i;
+						break;
+					}
+				}
 
+				if (indexInList >= 0 && gridIndex >= 0)
+					break;
+			}
+
+			auto inputSymbol = std::make_shared<ExpressionOperation>();
+			inputSymbol->addArgument(_entity, "TextComponent", "focus");
+			inputSymbol->addArgument(_entity, "TextComponent", "editable");
+			inputSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+			inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
+			auto addSymbol = std::make_shared<AssignAction>();
+			addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+			addSymbol->addArgument(list->getViews()[0]->getViews()[gridIndex]->getEntity(), "CustomStringArrayComponent", "list" + std::to_string(gridIndex));
+			addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+			addSymbol->addArgument(nullptr, "", std::to_string(indexInList));
+			addSymbol->initializeAction("( ${1} AT ${3} ) AT ${2} SET ${0}");
+			inputSymbol->registerAction(addSymbol);
+			auto changeScrollerRight = std::make_shared<AssignAction>();
+			changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+			changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+			inputSymbol->registerAction(changeScrollerRight);
+			_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
+		}
+	}
+	else {
+		//--- 6
+		{
+			auto inputSymbol = std::make_shared<ExpressionOperation>();
+			inputSymbol->addArgument(_entity, "TextComponent", "focus");
+			inputSymbol->addArgument(_entity, "TextComponent", "editable");
+			inputSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+			inputSymbol->initializeOperation("${0} = 1 AND ${1} = 1 AND ! ( ${2} =  )");
+			auto addSymbol = std::make_shared<AssignAction>();
+			addSymbol->addArgument(_entity, "KeyboardComponent", "symbol");
+			addSymbol->addArgument(_entity, "TextComponent", "text");
+			addSymbol->addArgument(_entity, "TextComponent", "cursorPosition");
+			addSymbol->initializeAction("${1} INSERT ${0} ${2}");
+			inputSymbol->registerAction(addSymbol);
+			auto changeScrollerRight = std::make_shared<AssignAction>();
+			changeScrollerRight->addArgument(_entity, "TextComponent", "cursorPosition");
+			changeScrollerRight->initializeAction("${0} SET ${0} + 1");
+			inputSymbol->registerAction(changeScrollerRight);
+			_entity->createComponent<InteractionComponent>()->attachOperation(inputSymbol, InteractionType::KEYBOARD_START);
+		}
+	}
 	return false;
 }
 
@@ -227,7 +297,8 @@ std::shared_ptr<View> LabelFactory::createGrid(std::tuple<int, int> dim, std::st
 	grid->setDim(dim);
 	int cols = std::get<0>(dim), rows = std::get<1>(dim);
 	for (int i = 0; i < rows * cols; i++) {
-		grid->addView(createView());
+		//TODO: change name to correct one: Label/Back
+		grid->addView(createView("View", grid));
 	}
 
 	return grid;

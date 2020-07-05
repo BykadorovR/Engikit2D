@@ -58,6 +58,8 @@ enum TextAllignment {
 
 class TextComponent : public OperationComponent {
 public:
+	std::string _text;
+
 	TextComponent();
 	bool initialize(std::shared_ptr<BufferManager> bufferManager);
 	bool setFocus(bool focus);
@@ -78,7 +80,7 @@ private:
 	float _focus;
 	float _editable;
 	float _cursorPosition;
-	std::string _text;
+	
 	float _scale;
 	float _lineSpacingCoeff;
 	std::vector<float> _color;
