@@ -13,8 +13,6 @@ ScrollerVerticalDecorator::ScrollerVerticalDecorator(std::string name) {
 	_viewName = name;
 }
 
-//TODO: Decorator disappears if verticalPosition = 0 despite on text size
-
 bool ScrollerVerticalDecorator::applyToGrid() {
 	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getViews()[0]->getEntity();
 	auto size = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();
@@ -465,8 +463,8 @@ bool ScrollerVerticalDecorator::applyToLabel() {
 		decoratorRemoveCheck->addArgument(parentEntity, "ObjectComponent", "sizeY");
 		decoratorRemoveCheck->addArgument(parentEntity, "CustomFloatComponent", "textStartVertical");
 		decoratorRemoveCheck->addArgument(nullptr, "", std::to_string(GlyphsLoader::instance().getGlyphHeight()));
-		decoratorRemoveCheck->addArgument(parentEntity, "CustomFloatComponent", "textTotalPages");
-		decoratorRemoveCheck->initializeOperation("${1} = 0 AND ${3} * ${2} < ${0}");
+		decoratorRemoveCheck->addArgument(parentEntity, "CustomFloatComponent", "textTotalPages"); //equal to 0 for first row
+		decoratorRemoveCheck->initializeOperation("${1} = 0 AND ( ${3} + 1 ) * ${2} < ${0}");
 		for (auto view : getViews()) {
 			auto unregisterDecoratorAction = std::make_shared<AssignAction>();
 			unregisterDecoratorAction->addArgument(view->getEntity(), "ObjectComponent", "visible");

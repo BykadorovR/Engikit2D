@@ -96,7 +96,6 @@ std::shared_ptr<List> ComplexList::getList() {
 bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_viewDecorators = std::make_shared<ViewDecorators>();
 	_viewDecorators->initialize(scene);
-	/*
 	std::tuple<std::vector<float>, float> listSize = { {150}, 100 };
 	_componentsList = std::make_shared<ComplexList>();
 	_componentsList->initialize({ 1, 1 }, _viewDecorators);
@@ -109,8 +108,6 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_fieldsList->setPosition({ std::get<0>(_componentsList->getPosition()), 
 							   std::get<1>(_componentsList->getPosition()) + std::get<1>(_componentsList->getSize()) + std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
 	_fieldsList->setHeader("Fields list");
-	*/
-	//TODO: scroller decorator increase page to 2 instead of 1
 	_entitiesList = std::make_shared<ComplexList>();
 	_entitiesList->initialize({ 3, 1 }, _viewDecorators);
 	_entitiesList->setSize({ {20, 100, 100}, 100 });
