@@ -38,9 +38,9 @@ public:
 
 	bool setPosition(std::tuple<float, float> position);
 	bool setSize(std::tuple<std::vector<float>, float> size);
-	bool setHeader(std::string text);
+	bool setHeader(std::vector<std::string> text);
 
-	std::tuple<float, float> getSize();
+	std::tuple<std::vector<float>, float> getSize();
 	std::tuple<float, float> getPosition();
 
 	std::string getName();

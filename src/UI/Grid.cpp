@@ -88,14 +88,13 @@ bool Grid::setSize(std::tuple<std::vector<float>, float> size) {
 	return false;
 }
 
-std::tuple<float, float> Grid::getSize() {
-	std::tuple<float, float> size = { 0, 0 };
+std::tuple<std::vector<float>, float> Grid::getSize() {
+	std::tuple<std::vector<float>, float> size;
 	for (int col = 0; col < std::get<0>(_dim); col++) {
 		auto view = _views[col];
 		auto objectComponent = view->getEntity()->getComponent<ObjectComponent>();
-		std::get<0>(size) += *std::get<0>(objectComponent->getMemberFloat("sizeX"));
+		std::get<0>(size).push_back(*std::get<0>(objectComponent->getMemberFloat("sizeX")));
 		std::get<1>(size) = *std::get<0>(objectComponent->getMemberFloat("sizeY"));
 	}
-	std::get<1>(size) *= std::get<1>(_dim);
 	return size;
 }

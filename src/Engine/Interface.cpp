@@ -47,8 +47,8 @@ bool ComplexList::initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecor
 	_verticalScrollerDecorator->initialize();
 
 	_headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(
-		viewDecorators->getFactory<HeaderDecoratorFactory>()->createView(
-			"HeaderDecorator", _list));
+		viewDecorators->getFactory<HeaderDecoratorFactory>()->createGrid(
+			dim, "HeaderDecorator", _list));
 	_headerDecorator->initialize();
 	_headerDecorator->setText({ "List" });
 
@@ -71,12 +71,12 @@ bool ComplexList::setSize(std::tuple<std::vector<float>, float> size) {
 	return false;
 }
 
-bool ComplexList::setHeader(std::string text) {
-	_headerDecorator->setText({ text });
+bool ComplexList::setHeader(std::vector<std::string> text) {
+	_headerDecorator->setText(text);
 	return false;
 }
 
-std::tuple<float, float> ComplexList::getSize() {
+std::tuple<std::vector<float>, float> ComplexList::getSize() {
 	auto size = _back[0]->getSize();
 	return { std::get<0>(size), std::get<1>(size) * _back.size() };
 }
@@ -101,17 +101,17 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_componentsList->initialize({ 1, 1 }, _viewDecorators);
 	_componentsList->setSize(listSize);
 	_componentsList->setPosition({ std::get<0>(currentResolution) - std::get<0>(listSize)[0] - 20, std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
-	_componentsList->setHeader("Components list");
+	_componentsList->setHeader({ "Components list" });
 	_fieldsList = std::make_shared<ComplexList>();
 	_fieldsList->initialize({ 1, 1 }, _viewDecorators);
 	_fieldsList->setSize(listSize);
 	_fieldsList->setPosition({ std::get<0>(_componentsList->getPosition()), 
 							   std::get<1>(_componentsList->getPosition()) + std::get<1>(_componentsList->getSize()) + std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
-	_fieldsList->setHeader("Fields list");
+	_fieldsList->setHeader({ "Fields list" });
 	_entitiesList = std::make_shared<ComplexList>();
 	_entitiesList->initialize({ 3, 1 }, _viewDecorators);
-	_entitiesList->setSize({ {20, 100, 100}, 100 });
+	_entitiesList->setSize({ {20, 20, 100}, 100 });
 	_entitiesList->setPosition({ 0, std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) });
-	_entitiesList->setHeader("Entities list");
+	_entitiesList->setHeader({ "#", "ID", "Entity name" });
 	return false;
 }

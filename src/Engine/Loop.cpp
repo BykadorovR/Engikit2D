@@ -93,25 +93,6 @@ void surfaceCreated() {
 	std::shared_ptr<MainInterface> mainInterface = std::make_shared<MainInterface>();
 	mainInterface->initialize(activeScene);
 	
-	std::shared_ptr<BackFactory> backFactory = std::make_shared<BackFactory>(activeScene);
-	std::shared_ptr<Back> back = std::dynamic_pointer_cast<Back>(backFactory->createView());
-	back->initialize();
-	back->setPosition({ 500, 50 });
-	back->setSize({ 100, 100 });
-	back->setColorMask({ 0, 0, 0, 0 });
-	back->setColorAddition({ 0.5, 0, 0.5, 0.5 });
-
-	std::shared_ptr<LabelFactory> labelFactory = std::make_shared<LabelFactory>(activeScene);
-	std::shared_ptr<Label> label = std::dynamic_pointer_cast<Label>(labelFactory->createView());
-	label->initialize();
-	label->setPosition({ 500, 50 });
-	label->setSize({ 100, 100 });
-	label->setText("Hello");
-	label->setEditable(true);
-	std::shared_ptr<ScrollerVerticalDecoratorFactory> scrollerVerticalDecoratorFactory = std::make_shared<ScrollerVerticalDecoratorFactory>(activeScene);
-	std::shared_ptr<ScrollerVerticalDecorator> scrollerDecoratorVerticalLabel = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(scrollerVerticalDecoratorFactory->createView("ScrollerDecoratorVertical", label));
-	scrollerDecoratorVerticalLabel->initialize();
-
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());
 	interactionSystem = std::make_shared<InteractionSystem>();

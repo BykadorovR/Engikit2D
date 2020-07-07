@@ -48,7 +48,7 @@ bool List::setPosition(std::tuple<float, float> position) {
 		for (int i = 0; i < _views.size(); i++) {
 			std::shared_ptr<Grid> grid = std::dynamic_pointer_cast<Grid>(_views[i]);
 			grid->setPosition(position);
-			std::tuple<float, float> listItemSize = grid->getSize();
+			std::tuple<std::vector<float>, float> listItemSize = grid->getSize();
 			position = { std::get<0>(position), std::get<1>(position) + std::get<1>(listItemSize) };
 		}
 	}
