@@ -733,13 +733,13 @@ bool HeaderDecorator::applyToLabel() {
 		keepSizeBack->addArgument(getBack()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
 		keepSizeBack->addArgument(parentEntity, "ObjectComponent", "sizeX");
 		keepSizeBack->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
-		keepSizeBack->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSizeBack->initializeAction("${0} SET ( ${1} / ${2} )");
 		keepSize->registerAction(keepSizeBack);
 		auto keepSizeLabel = std::make_shared<AssignAction>();
 		keepSizeLabel->addArgument(getLabel()->getViews()[0]->getEntity(), "ObjectComponent", "sizeX");
 		keepSizeLabel->addArgument(parentEntity, "ObjectComponent", "sizeX");
 		keepSizeLabel->addArgument(nullptr, "", std::to_string(std::get<0>(getLabel()->getDim())));
-		keepSizeLabel->initializeAction("${0} SET ( ${2} / ${4} )");
+		keepSizeLabel->initializeAction("${0} SET ( ${1} / ${2} )");
 		keepSize->registerAction(keepSizeLabel);
 		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepSize, InteractionType::COMMON_START);
 
