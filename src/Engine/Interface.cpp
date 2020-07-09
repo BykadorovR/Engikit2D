@@ -60,6 +60,16 @@ bool ComplexList::setPosition(std::tuple<float, float> position) {
 	for (int i = 0; i < _back.size(); i++) {
 		_back[i]->setPosition({ std::get<0>(_list->getPosition()), std::get<1>(_list->getPosition()) + i * std::get<1>(_back[i]->getSize()) });
 	}
+	_headerDecorator->getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getBack()->getSize()) });
+	_headerDecorator->getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getLabel()->getSize()) });
+
+	auto backSize = std::get<0>(_back[0]->getSize());
+	float listSizeX = std::accumulate(backSize.begin(), backSize.end(), 0.0f);
+	_verticalScrollerDecorator->getScrollerUp()->setPosition({ std::get<0>(position) + listSizeX, std::get<1>(position) });
+	_verticalScrollerDecorator->getScrollerProgress()->setPosition({ std::get<0>(position) + listSizeX,
+																	 std::get<1>(_verticalScrollerDecorator->getScrollerUp()->getPosition()) + std::get<1>(_verticalScrollerDecorator->getScrollerUp()->getSize()) });
+	_verticalScrollerDecorator->getScrollerDown()->setPosition({ std::get<0>(position) + listSizeX, 
+																 std::get<1>(position) + std::get<1>(_back[0]->getSize()) * _back.size() - std::get<1>(_verticalScrollerDecorator->getScrollerDown()->getSize()) });
 	return false;
 }
 
@@ -67,6 +77,10 @@ bool ComplexList::setSize(std::tuple<std::vector<float>, float> size) {
 	_list->setSize(size);
 	for (int i = 0; i < _back.size(); i++)
 		_back[i]->setSize({ std::get<0>(size), std::get<1>(size) / _list->getViews().size() });
+
+	std::tuple<float, float> headerSize = { std::accumulate(std::get<0>(size).begin(), std::get<0>(size).end(), 0.0f), std::get<1>(size) / _list->getViews().size() };
+	_headerDecorator->getBack()->setSize(headerSize);
+	_headerDecorator->getLabel()->setSize(headerSize);
 
 	return false;
 }
@@ -81,8 +95,22 @@ std::tuple<std::vector<float>, float> ComplexList::getSize() {
 	return { std::get<0>(size), std::get<1>(size) * _back.size() };
 }
 
+std::tuple<float, float> ComplexList::getComplexSize() {
+	auto size = _back[0]->getSize();
+	auto sumSize = std::accumulate(std::get<0>(size).begin(), std::get<0>(size).end(), 0.0f);
+
+	auto scrollerSize = _verticalScrollerDecorator->getScrollerUp()->getSize();
+	auto headerSize = _headerDecorator->getBack()->getSize();
+	
+	return { sumSize + std::get<0>(scrollerSize), (std::get<1>(size) * _back.size()) + std::get<1>(headerSize) };
+}
+
 std::tuple<float, float> ComplexList::getPosition() {
 	return _list->getPosition();
+}
+
+std::tuple<float, float> ComplexList::getComplexPosition() {
+	return _headerDecorator->getBack()->getPosition();
 }
 
 std::vector<std::shared_ptr<Grid> > ComplexList::getBack() {
@@ -127,8 +155,19 @@ std::tuple<float, float> ComplexLabel::getSize() {
 	return _back->getSize();
 }
 
+std::tuple<float, float> ComplexLabel::getComplexSize() {
+	auto size = _back->getSize();
+	auto headerSize = _headerDecorator->getBack()->getSize();
+
+	return { std::get<0>(size), std::get<1>(size) + std::get<1>(headerSize) };
+}
+
 std::tuple<float, float> ComplexLabel::getPosition() {
 	return _back->getPosition();
+}
+
+std::tuple<float, float> ComplexLabel::getComplexPosition() {
+	return _headerDecorator->getBack()->getPosition();
 }
 
 std::shared_ptr<Back> ComplexLabel::getBack() {
@@ -146,12 +185,18 @@ std::shared_ptr<HeaderDecorator> ComplexLabel::getHeaderDecorator() {
 bool ComplexLabel::setPosition(std::tuple<float, float> position) {
 	_label->setPosition(position);
 	_back->setPosition(position);
+
+	_headerDecorator->getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getBack()->getSize()) });
+	_headerDecorator->getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getLabel()->getSize()) });
 	return false;
 }
 
 bool ComplexLabel::setSize(std::tuple<float, float> size) {
 	_label->setSize(size);
 	_back->setSize(size);
+
+	_headerDecorator->getBack()->setSize(std::tuple<float, float>(std::get<0>(size), std::get<1>(size)));
+	_headerDecorator->getLabel()->setSize(std::tuple<float, float>(std::get<0>(size), std::get<1>(size)));
 	return false;
 }
 
@@ -181,8 +226,8 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_componentsList = std::make_shared<ComplexList>();
 	_componentsList->initialize({ 1, 1 }, _viewDecorators);
 	_componentsList->setSize(listSize);
-	_componentsList->setPosition({ std::get<0>(currentResolution) - std::get<0>(listSize)[0] - std::get<0>(_componentsList->getVerticalScrollerDecorator()->getScrollerUp()->getSize()), 
-								   std::get<1>(_componentsList->getHeaderDecorator()->getBack()->getSize())});
+	_componentsList->setPosition({ std::get<0>(currentResolution) - std::get<0>(listSize)[0] - std::get<0>(_componentsList->getVerticalScrollerDecorator()->getScrollerUp()->getSize()),
+								   std::get<1>(_componentsList->getHeaderDecorator()->getBack()->getSize()) });
 	_componentsList->setHeader({ "Components list" });
 
 	_fieldsList = std::make_shared<ComplexList>();
@@ -203,7 +248,7 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_commandsList->initialize({ 1, 1 }, _viewDecorators);
 	_commandsList->setSize(listSize);
 	_commandsList->setPosition({ std::get<0>(_operationsList->getPosition()),
-				  			    std::get<1>(_operationsList->getPosition()) + std::get<1>(_operationsList->getSize()) + std::get<1>(_commandsList->getHeaderDecorator()->getBack()->getSize()) });
+								std::get<1>(_operationsList->getPosition()) + std::get<1>(_operationsList->getSize()) + std::get<1>(_commandsList->getHeaderDecorator()->getBack()->getSize()) });
 	_commandsList->setHeader({ "Commands list" });
 
 	_argumentsList = std::make_shared<ComplexList>();
@@ -211,25 +256,31 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_argumentsList->setSize({ {30, 270}, std::get<1>(listSize) });
 	_argumentsList->setPosition({ std::get<0>(_commandsList->getPosition()),
 								  std::get<1>(_commandsList->getPosition()) + std::get<1>(_commandsList->getSize()) + std::get<1>(_argumentsList->getHeaderDecorator()->getBack()->getSize()) });
-	_argumentsList->setHeader({ "#",  "Argument"});
+	_argumentsList->setHeader({ "#",  "Argument" });
 
 	_argumentTypeLabel = std::make_shared<ComplexLabel>();
 	_argumentTypeLabel->initialize(_viewDecorators);
-	_argumentTypeLabel->setSize({ 300, 25 });
+	_argumentTypeLabel->setSize({ 300, std::get<1>(listSize) / 4 });
 	_argumentTypeLabel->setPosition({ std::get<0>(_argumentsList->getPosition()),
 									  std::get<1>(_argumentsList->getPosition()) + std::get<1>(_argumentsList->getSize()) + std::get<1>(_argumentTypeLabel->getHeaderDecorator()->getBack()->getSize()) });
 	_argumentTypeLabel->setHeader({ "Argument type" });
 
 	_entitiesList = std::make_shared<ComplexList>();
 	_entitiesList->initialize({ 3, 1 }, _viewDecorators);
-	_entitiesList->setSize({ {30, 30, 240}, 100 });
+	_entitiesList->setSize({ {30, 30, 240}, std::get<1>(listSize) });
 	_entitiesList->setPosition({ 0, std::get<1>(_entitiesList->getHeaderDecorator()->getBack()->getSize()) });
 	_entitiesList->setHeader({ "#", "ID", "Entity name" });
 
 	_resourcesList = std::make_shared<ComplexList>();
 	_resourcesList->initialize({ 3, 1 }, _viewDecorators);
-	_resourcesList->setSize({ {30, 30, 240}, 100 });
+	_resourcesList->setSize({ {30, 30, 240}, std::get<1>(listSize) });
 	_resourcesList->setPosition({ 0, std::get<1>(_entitiesList->getPosition()) + std::get<1>(_entitiesList->getSize()) + std::get<1>(_entitiesList->getHeaderDecorator()->getBack()->getSize()) });
 	_resourcesList->setHeader({ "#", "ID", "Texture path" });
+
+	_scenesList = std::make_shared<ComplexList>();
+	_scenesList->initialize({ 2, 1 }, _viewDecorators);
+	_scenesList->setSize({ { 30, 270 }, std::get<1>(listSize) });
+	_scenesList->setPosition({ 0, std::get<1>(_argumentTypeLabel->getComplexPosition()) });// + (std::get<1>(_argumentTypeLabel->getComplexSize()) - std::get<1>(_scenesList->getComplexSize())) / 2});
+	_scenesList->setHeader({ "#", "Scene name" });
 	return false;
 }

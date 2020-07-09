@@ -42,7 +42,9 @@ public:
 	bool setHeader(std::vector<std::string> text);
 
 	std::tuple<std::vector<float>, float> getSize();
+	std::tuple<float, float> getComplexSize();
 	std::tuple<float, float> getPosition();
+	std::tuple<float, float> getComplexPosition();
 
 	std::string getName();
 	bool setName(std::string name);
@@ -60,7 +62,9 @@ public:
 	bool initialize(std::shared_ptr<ViewDecorators> viewDecorators);
 
 	std::tuple<float, float> getSize();
+	std::tuple<float, float> getComplexSize();
 	std::tuple<float, float> getPosition();
+	std::tuple<float, float> getComplexPosition();
 
 	std::shared_ptr<Back> getBack();
 	std::shared_ptr<Label> getLabel();
@@ -86,6 +90,7 @@ private:
 	std::shared_ptr<ComplexList> _commandsList;
 	std::shared_ptr<ComplexList> _argumentsList;
 	std::shared_ptr<ComplexList> _resourcesList;
+	std::shared_ptr<ComplexList> _scenesList;
 	std::shared_ptr<ComplexLabel> _argumentTypeLabel;
 public:
 	MainInterface() = default;

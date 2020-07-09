@@ -16,18 +16,6 @@ ScrollerVerticalDecorator::ScrollerVerticalDecorator(std::string name) {
 
 bool ScrollerVerticalDecorator::applyToGrid() {
 	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getViews()[0]->getEntity();
-	std::tuple<std::vector<float>, float> sizeGrid = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();
-	std::tuple<float, float> size = { std::accumulate(std::get<0>(sizeGrid).begin(), std::get<0>(sizeGrid).end(), 0.0f), std::get<1>(sizeGrid)};
-	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	//horizontal size
-	std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
-	auto lastPosition = _parent->getViews().back()->getViews()[0]->getEntity()->getComponent<ObjectComponent>()->getPosition();
-	std::tuple<float, float> scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(size), std::get<1>(lastPosition) + std::get<1>(size) - std::get<1>(getScrollerDown()->getSize()) };
-	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(getScrollerProgress()->getSize()) };
-	//TODO: why is it needed at all?
-	getScrollerProgress()->setPosition(scrollerProgressPosition);
-	getScrollerUp()->setPosition(scrollerUpPosition);
-	getScrollerDown()->setPosition(scrollerDownPosition);
 	//--- 0
 	{
 		//TODO: need to make some more smart condition
@@ -154,16 +142,6 @@ List:
 */
 bool ScrollerVerticalDecorator::applyToList() {
 	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getEntity();
-	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
-	std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
-	auto lastPosition = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	auto lastSize = parentEntity->getComponent<ObjectComponent>()->getSize();
-	std::tuple<float, float> scrollerDownPosition = { std::get<0>(lastPosition) + std::get<0>(lastSize), std::get<1>(lastPosition) + std::get<1>(lastSize) - std::get<1>(getScrollerDown()->getSize()) };
-	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(getScrollerProgress()->getSize()) };
-	getScrollerProgress()->setPosition(scrollerProgressPosition);
-	getScrollerUp()->setPosition(scrollerUpPosition);
-	getScrollerDown()->setPosition(scrollerDownPosition);
 	//--- 0
 	{
 		//TODO: need to make some more smart condition
@@ -294,16 +272,6 @@ Label:
 */
 bool ScrollerVerticalDecorator::applyToLabel() {
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
-	//set intial position
-	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
-	std::tuple<float, float> scrollerUpPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) };
-	std::tuple<float, float> scrollerDownPosition = { std::get<0>(position) + std::get<0>(size), std::get<1>(position) + std::get<1>(size) - std::get<1>(getScrollerDown()->getSize()) };
-	//if view is composite attach scroller down to last view
-	std::tuple<float, float> scrollerProgressPosition = { std::get<0>(scrollerUpPosition), std::get<1>(scrollerUpPosition) + std::get<1>(getScrollerDown()->getSize()) };
-	getScrollerProgress()->setPosition(scrollerProgressPosition);
-	getScrollerUp()->setPosition(scrollerUpPosition);
-	getScrollerDown()->setPosition(scrollerDownPosition);
 
 	//in init we should parse text and find all \n to do initial initialization
 	auto text = parentEntity->getComponent<TextComponent>()->getText();
@@ -575,8 +543,6 @@ std::shared_ptr<View> ScrollerVerticalDecoratorFactory::createView(std::string n
 
 bool HeaderDecorator::applyToGrid() {
 	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getViews()[0]->getEntity();
-	auto size = std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])->getSize();
-	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
 	//TODO: add support for multiline grids in header
 	for (int i = 0; i < getBack()->getViews().size(); i++) {
 		//--- 0
@@ -626,15 +592,6 @@ bool HeaderDecorator::applyToGrid() {
 
 bool HeaderDecorator::applyToList() {
 	std::shared_ptr<Entity> parentEntity = _parent->getViews()[0]->getEntity();
-	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
-	std::tuple<float, float> headerSize = { std::get<0>(size), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
-
-	getBack()->setSize(headerSize);
-	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
-
-	getLabel()->setSize(headerSize);
-	getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
 
 	//--- 0
 	{
@@ -713,18 +670,6 @@ bool HeaderDecorator::applyToList() {
 
 bool HeaderDecorator::applyToLabel() {
 	std::shared_ptr<Entity> parentEntity = _parent->getEntity();
-	auto position = parentEntity->getComponent<ObjectComponent>()->getPosition();
-	auto size = parentEntity->getComponent<ObjectComponent>()->getSize();
-
-
-	std::tuple<float, float> headerSize = { std::get<0>(size), std::ceil(GlyphsLoader::instance().getGlyphHeight() * 1.5) };
-
-	getBack()->setSize(headerSize);
-	getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
-
-	getLabel()->setSize(headerSize);
-	getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(headerSize) });
-
 	//--- 0
 	{
 		auto keepSize = std::make_shared<ExpressionOperation>();
