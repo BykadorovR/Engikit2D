@@ -284,3 +284,12 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_scenesList->setHeader({ "#", "Scene name" });
 	return false;
 }
+
+bool MainInterface::fillEntitiesList(std::shared_ptr<Scene> scene) {
+	auto entities = scene->getEntityManager()->getEntities();
+	_entitiesList->getList()->clear();
+	for (int i = 0; i < entities.size(); i++) {
+		_entitiesList->getList()->addItem({ std::to_string(i), std::to_string(std::get<0>(entities[0])->getIndex()), std::get<0>(entities[0])->getName() });
+	}
+	return false;
+}

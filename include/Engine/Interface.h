@@ -95,4 +95,5 @@ private:
 public:
 	MainInterface() = default;
 	bool initialize(std::shared_ptr<Scene> scene);
+	bool fillEntitiesList(std::shared_ptr<Scene> scene);
 };

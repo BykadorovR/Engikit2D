@@ -102,9 +102,24 @@ bool List::addItem(std::vector<std::string> text) {
 }
 
 bool List::clear() {
-	_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->clear("list0");
-	for (int i = 0; i < _views.size(); i++)
-		_views[i]->getEntity()->getComponent<TextComponent>()->setText("");
+	if (std::dynamic_pointer_cast<Grid>(_views[0])) {
+		auto childs = _views[0]->getViews();
+		for (int i = 0; i < childs.size(); i++) {
+			childs[i]->getEntity()->getComponent<CustomStringArrayComponent>()->clear("list" + std::to_string(i));
+		}
+		for (int i = 0; i < _views.size(); i++) {
+			auto labels = _views[i]->getViews();
+			for (auto &label : labels) {
+				label->getEntity()->getComponent<TextComponent>()->setText("");
+			}
+		}
+	}
+	else if (std::dynamic_pointer_cast<Label>(_views[0])) {
+		_views[0]->getEntity()->getComponent<CustomStringArrayComponent>()->clear("list0");
+		for (int i = 0; i < _views.size(); i++)
+			_views[i]->getEntity()->getComponent<TextComponent>()->setText("");
+	}
+
 	return false;
 }
 
