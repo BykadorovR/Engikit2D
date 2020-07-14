@@ -9,6 +9,7 @@
 #include "UIActions.h"
 #include "GLFW/glfw3.h"
 #include "CustomComponents.h"
+#include "UtilityComponents.h"
 
 Label::Label(std::string name) {
 	_viewName = name;
@@ -27,6 +28,7 @@ bool Label::initialize() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(currentResolution) / 2, std::get<1>(currentResolution) / 2}, {100, 100}, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextComponent>()->initialize(bufferManager);
+	_entity->getComponent<GroupComponent>()->initialize("Default");
 
 	_entity->createComponent<MouseComponent>();
 	_entity->createComponent<KeyboardComponent>();
@@ -388,6 +390,7 @@ std::shared_ptr<View> LabelFactory::createView(std::string name, std::shared_ptr
 	label->setEntity(_activeScene->createEntity("Label"));
 	label->getEntity()->createComponent<ObjectComponent>();
 	label->getEntity()->createComponent<TextComponent>();
+	label->getEntity()->createComponent<GroupComponent>();
 	label->setParent(parent);
 	return label;
 }

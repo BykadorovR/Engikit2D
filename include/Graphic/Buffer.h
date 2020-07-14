@@ -2,6 +2,10 @@
 #include <vector>
 
 #include <GL/glew.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <array>
 
 enum BufferType {
 	Position = 0,
@@ -14,6 +18,7 @@ private:
 	std::vector<float> _data;
 	GLuint _vbo;
 	BufferType _type;
+	std::ofstream myfile;
 public:
 	Buffer(BufferType type);
 	bool create(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);

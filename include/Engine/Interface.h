@@ -40,6 +40,7 @@ public:
 	bool setPosition(std::tuple<float, float> position);
 	bool setSize(std::tuple<std::vector<float>, float> size);
 	bool setHeader(std::vector<std::string> text);
+	bool setGroup(std::string name);
 
 	std::tuple<std::vector<float>, float> getSize();
 	std::tuple<float, float> getComplexSize();
@@ -74,6 +75,7 @@ public:
 	bool setSize(std::tuple<float, float> size);
 	bool setHeader(std::vector<std::string> text);
 	bool setText(std::string text);
+	bool setGroup(std::string name);
 
 	std::string getName();
 	bool setName(std::string name);

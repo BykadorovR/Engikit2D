@@ -34,9 +34,8 @@ bool Buffer::create(std::tuple<float, float> position, std::tuple<float, float> 
 			  startX,                startY - objectHeightN,
 			  startX + objectWidthN, startY,
 			  startX + objectWidthN, startY - objectHeightN };
-
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(_data), &_data[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _data.size() * sizeof(float), &_data[0], GL_STATIC_DRAW);
 	if (_type == BufferType::Position) {
 		glEnableVertexAttribArray(/*location = 0*/0);
 		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -78,7 +77,7 @@ bool Buffer::change(std::tuple<float, float> position, std::tuple<float, float> 
 			  startX + objectWidthN, startY - objectHeightN };
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(_data), &_data[0]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, _data.size() * sizeof(float), &_data[0]);
 	if (_type == BufferType::Position) {
 		glEnableVertexAttribArray(/*location = 0*/0);
 		glVertexAttribPointer(/*location = 0*/0, /*position count*/2, GL_FLOAT, GL_FALSE, 0, 0);

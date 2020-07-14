@@ -26,7 +26,6 @@ protected:
 	std::map<std::string, std::string* > _classVariablesString;
 	std::map<std::string, std::vector<float>* > _classVariablesVectorFloat;
 	std::map<std::string, std::vector<std::string>* > _classVariablesVectorString;
-	
 public:
 	OperationComponent();
 	

@@ -1,6 +1,7 @@
 #include "Back.h"
 #include "State.h"
 #include "GraphicComponents.h"
+#include "UtilityComponents.h"
 
 Back::Back(std::string name) {
 	_viewName = name;
@@ -10,6 +11,7 @@ bool Back::initialize() {
 	std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
 	_entity->getComponent<ObjectComponent>()->initialize({ std::get<0>(currentResolution) / 2, std::get<1>(currentResolution) / 2 }, { 100, 100 }, bufferManager, ShaderStore::instance()->getShader("texture"));
 	_entity->getComponent<TextureComponent>()->initialize(bufferManager);
+	_entity->getComponent<GroupComponent>()->initialize("Default");
 	//default "texture" is solid fill
 	//TODO: make some default store for all default parameters
 	setColorMask({ 0, 0, 0, 0 });
@@ -61,6 +63,7 @@ std::shared_ptr<View> BackFactory::createView(std::string name, std::shared_ptr<
 	back->setEntity(_activeScene->createEntity("Back"));
 	back->getEntity()->createComponent<ObjectComponent>();
 	back->getEntity()->createComponent<TextureComponent>();
+	back->getEntity()->createComponent<GroupComponent>();
 	back->setParent(parent);
 	return back;
 }

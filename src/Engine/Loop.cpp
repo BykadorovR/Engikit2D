@@ -93,7 +93,6 @@ void surfaceCreated() {
 	std::shared_ptr<MainInterface> mainInterface = std::make_shared<MainInterface>();
 	mainInterface->initialize(activeScene);
 	mainInterface->fillEntitiesList(activeScene);
-
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());
 	interactionSystem = std::make_shared<InteractionSystem>();
