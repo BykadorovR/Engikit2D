@@ -20,6 +20,14 @@ public:
 	}
 };
 
+enum DecoratorMask {
+	//binary form
+	NONE = 0,
+	HEADER = 1,
+	VERTICAL = 2,
+	CORNER_BUTTON = 4
+};
+
 class ComplexList {
 private:
 	std::string _name;
@@ -28,9 +36,10 @@ private:
 	std::shared_ptr<List> _list;
 	std::shared_ptr<ScrollerVerticalDecorator> _verticalScrollerDecorator;
 	std::shared_ptr<HeaderDecorator> _headerDecorator;
+	std::shared_ptr<CornerButtonDecorator> _cornerButtonDecorator;
 public:
 	ComplexList() = default;
-	bool initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecorators> viewDecorators);
+	bool initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecorators> viewDecorators, int decoratorMask);
 
 	std::vector<std::shared_ptr<Grid> > getBack();
 	std::shared_ptr<List> getList();
@@ -58,9 +67,10 @@ private:
 	std::shared_ptr<Back> _back;
 	std::shared_ptr<Label> _label;
 	std::shared_ptr<HeaderDecorator> _headerDecorator;
+	std::shared_ptr<CornerButtonDecorator> _cornerButtonDecorator;
 public:
 	ComplexLabel() = default;
-	bool initialize(std::shared_ptr<ViewDecorators> viewDecorators);
+	bool initialize(std::shared_ptr<ViewDecorators> viewDecorators, int decoratorMask);
 
 	std::tuple<float, float> getSize();
 	std::tuple<float, float> getComplexSize();
@@ -94,6 +104,8 @@ private:
 	std::shared_ptr<ComplexList> _resourcesList;
 	std::shared_ptr<ComplexList> _scenesList;
 	std::shared_ptr<ComplexLabel> _argumentTypeLabel;
+
+	std::shared_ptr<ComplexLabel> _createEntityLabel;
 public:
 	MainInterface() = default;
 	bool initialize(std::shared_ptr<Scene> scene);

@@ -687,7 +687,6 @@ bool HeaderDecorator::applyToLabel() {
 		keepSizeLabel->initializeAction("${0} SET ( ${1} / ${2} )");
 		keepSize->registerAction(keepSizeLabel);
 		getBack()->getViews()[0]->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepSize, InteractionType::COMMON_START);
-
 	}
 
 	//--- 1
@@ -801,4 +800,112 @@ std::shared_ptr<View> HeaderDecoratorFactory::createGrid(std::tuple<int, int> di
 
 std::shared_ptr<View> HeaderDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
 	return createGrid({ 1, 1 }, name, parent);
+}
+
+CornerButtonDecorator::CornerButtonDecorator(std::string name) {
+	_viewName = name;
+}
+
+bool CornerButtonDecorator::initialize() {
+	getBack()->initialize();
+	getBack()->setColorMask({ 0, 0, 0, 0 });
+	getBack()->setColorAddition({ 0.5, 0, 1, 1 });
+	getBack()->setSize({ 20, 20 });
+
+	getLabel()->initialize();
+	getLabel()->setSize({ 20, 20 });
+	std::shared_ptr<Entity> parentEntity;
+	if (std::dynamic_pointer_cast<Label>(_parent)) {
+		parentEntity = _parent->getEntity();
+	}
+	else if (std::dynamic_pointer_cast<List>(_parent)) {
+		if (std::dynamic_pointer_cast<Grid>(_parent->getViews()[0])) {
+			parentEntity = _parent->getViews()[0]->getViews().back()->getEntity();
+		}
+		else if (std::dynamic_pointer_cast<Label>(_parent->getViews()[0])) {
+			parentEntity = _parent->getViews()[0]->getEntity();
+		}
+	}
+
+	//--- 0
+	{
+		//TODO: need to make some more smart condition, remove COMMON
+		auto keepPosition = std::make_shared<ExpressionOperation>();
+		keepPosition->initializeOperation("1");
+		auto keepPositionBack = std::make_shared<AssignAction>();
+		keepPositionBack->addArgument(getBack()->getEntity(), "ObjectComponent", "positionX");
+		keepPositionBack->addArgument(getBack()->getEntity(), "ObjectComponent", "positionY");
+		keepPositionBack->addArgument(getBack()->getEntity(), "ObjectComponent", "sizeX");
+		keepPositionBack->addArgument(getBack()->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionX");
+		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "positionY");
+		keepPositionBack->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepPositionBack->initializeAction("${0} SET ${4} + ${6} AND ${1} SET ${5} - ${3}");
+		keepPosition->registerAction(keepPositionBack);
+		auto keepPositionLabel = std::make_shared<AssignAction>();
+		keepPositionLabel->addArgument(getLabel()->getEntity(), "ObjectComponent", "positionX");
+		keepPositionLabel->addArgument(getLabel()->getEntity(), "ObjectComponent", "positionY");
+		keepPositionLabel->addArgument(getLabel()->getEntity(), "ObjectComponent", "sizeX");
+		keepPositionLabel->addArgument(getLabel()->getEntity(), "ObjectComponent", "sizeY");
+		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionX");
+		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "positionY");
+		keepPositionLabel->addArgument(parentEntity, "ObjectComponent", "sizeX");
+		keepPositionLabel->initializeAction("${0} SET ${4} + ${6} AND ${1} SET ${5} - ${3}");
+		keepPosition->registerAction(keepPositionLabel);
+		getBack()->getEntity()->createComponent<InteractionComponent>()->attachOperation(keepPosition, InteractionType::COMMON_START);
+	}
+
+	//--- 1
+	{
+		//TODO: PERFORMANCE: make up some approach to "link" variables between different entities, so one changed and trigger changes in others
+		auto decoratorVisible = std::make_shared<ExpressionOperation>();
+		decoratorVisible->initializeOperation("1");
+		for (auto view : getViews()) {
+			auto decoratorVisibleAction = std::make_shared<AssignAction>();
+			decoratorVisibleAction->addArgument(parentEntity, "ObjectComponent", "visible");
+			decoratorVisibleAction->addArgument(getBack()->getEntity(), "ObjectComponent", "visible");
+			decoratorVisibleAction->addArgument(getLabel()->getEntity(), "ObjectComponent", "visible");
+			decoratorVisibleAction->initializeAction("${1} SET ${0} AND ${2} SET ${0}");
+			decoratorVisible->registerAction(decoratorVisibleAction);
+		}
+		parentEntity->createComponent<InteractionComponent>()->attachOperation(decoratorVisible, InteractionType::KEYBOARD_END);
+	}
+	return false;
+}
+
+bool CornerButtonDecorator::setText(std::string text) {
+	getLabel()->setText(text);
+	return false;
+}
+
+std::shared_ptr<Back> CornerButtonDecorator::getBack() {
+	for (auto view : _views) {
+		if (view->getName() == "Back")
+			return std::dynamic_pointer_cast<Back>(view);
+	}
+	return nullptr;
+}
+
+std::shared_ptr<Label> CornerButtonDecorator::getLabel() {
+	for (auto view : _views) {
+		if (view->getName() == "Label")
+			return std::dynamic_pointer_cast<Label>(view);
+	}
+	return nullptr;
+}
+
+CornerButtonDecoratorFactory::CornerButtonDecoratorFactory(std::shared_ptr<Scene> activeScene) {
+	_activeScene = activeScene;
+	_backFactory = std::make_shared<BackFactory>(activeScene);
+	_labelFactory = std::make_shared<LabelFactory>(activeScene);
+}
+
+
+std::shared_ptr<View> CornerButtonDecoratorFactory::createView(std::string name, std::shared_ptr<View> parent) {
+	std::shared_ptr<CornerButtonDecorator> cornerButtonDecorator = std::make_shared<CornerButtonDecorator>(name);
+	cornerButtonDecorator->setParent(parent);
+	cornerButtonDecorator->addView(_backFactory->createView("Back", cornerButtonDecorator));
+	cornerButtonDecorator->addView(_labelFactory->createView("Label", cornerButtonDecorator));
+
+	return cornerButtonDecorator;
 }

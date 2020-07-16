@@ -51,3 +51,22 @@ public:
 	std::shared_ptr<View> createView(std::string name = "HeaderDecorator", std::shared_ptr<View> parent = nullptr);
 	std::shared_ptr<View> createGrid(std::tuple<int, int> grid, std::string name = "HeaderDecorator", std::shared_ptr<View> parent = nullptr);
 };
+
+class CornerButtonDecorator : public View {
+public:
+	CornerButtonDecorator(std::string name = "CornerButtonDecorator");
+	bool initialize();
+	bool setText(std::string text);
+	std::shared_ptr<Back> getBack();
+	std::shared_ptr<Label> getLabel();
+};
+
+class CornerButtonDecoratorFactory : public ViewFactory {
+private:
+	std::shared_ptr<Scene> _activeScene;
+	std::shared_ptr<BackFactory> _backFactory;
+	std::shared_ptr<LabelFactory> _labelFactory;
+public:
+	CornerButtonDecoratorFactory(std::shared_ptr<Scene> activeScene);
+	std::shared_ptr<View> createView(std::string name = "CornerButtonDecorator", std::shared_ptr<View> parent = nullptr);
+};

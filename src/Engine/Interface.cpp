@@ -5,6 +5,7 @@
 bool ViewDecorators::initialize(std::shared_ptr<Scene> scene) {
 	_factories.push_back(std::make_shared<ScrollerVerticalDecoratorFactory>(scene));
 	_factories.push_back(std::make_shared<HeaderDecoratorFactory>(scene));
+	_factories.push_back(std::make_shared<CornerButtonDecoratorFactory>(scene));
 	_factories.push_back(std::make_shared<LabelFactory>(scene));
 	_factories.push_back(std::make_shared<BackFactory>(scene));
 	_factories.push_back(std::make_shared<ListFactory>(scene, getFactory<LabelFactory>()));
@@ -20,7 +21,7 @@ bool ComplexList::setName(std::string name) {
 	return false;
 }
 
-bool ComplexList::initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecorators> viewDecorators) {
+bool ComplexList::initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecorators> viewDecorators, int decoratorMask) {
 	_name = "Empty";
 
 	int listItems = 4;
@@ -42,16 +43,32 @@ bool ComplexList::initialize(std::tuple<int, int> dim, std::shared_ptr<ViewDecor
 		_list->addItem(text);
 	}
 
-	_verticalScrollerDecorator = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(
-		viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView(
-			"ScrollerVerticalDecorator", _list));
-	_verticalScrollerDecorator->initialize();
+	if (decoratorMask & VERTICAL) {
+		_verticalScrollerDecorator = std::dynamic_pointer_cast<ScrollerVerticalDecorator>(
+			viewDecorators->getFactory<ScrollerVerticalDecoratorFactory>()->createView(
+				"ScrollerVerticalDecorator", _list));
+		_verticalScrollerDecorator->initialize();
+	}
+	else
+		_verticalScrollerDecorator = nullptr;
 
-	_headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(
-		viewDecorators->getFactory<HeaderDecoratorFactory>()->createGrid(
-			dim, "HeaderDecorator", _list));
-	_headerDecorator->initialize();
-	_headerDecorator->setText({ "List" });
+	if (decoratorMask & HEADER) {
+		_headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(
+			viewDecorators->getFactory<HeaderDecoratorFactory>()->createGrid(
+				dim, "HeaderDecorator", _list));
+		_headerDecorator->initialize();
+		_headerDecorator->setText({ "List" });
+	}
+	else
+		_headerDecorator = nullptr;
+
+	if (decoratorMask & CORNER_BUTTON) {
+		_cornerButtonDecorator = std::dynamic_pointer_cast<CornerButtonDecorator>(
+			viewDecorators->getFactory<CornerButtonDecoratorFactory>()->createView(
+				"CornerButtonDecorator", _list));
+		_cornerButtonDecorator->initialize();
+		_cornerButtonDecorator->setText({ "+" });
+	}
 
 	return false;
 }
@@ -61,16 +78,20 @@ bool ComplexList::setPosition(std::tuple<float, float> position) {
 	for (int i = 0; i < _back.size(); i++) {
 		_back[i]->setPosition({ std::get<0>(_list->getPosition()), std::get<1>(_list->getPosition()) + i * std::get<1>(_back[i]->getSize()) });
 	}
-	_headerDecorator->getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getBack()->getSize()) });
-	_headerDecorator->getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getLabel()->getSize()) });
+	if (_headerDecorator) {
+		_headerDecorator->getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getBack()->getSize()) });
+		_headerDecorator->getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getLabel()->getSize()) });
+	}
 
-	auto backSize = std::get<0>(_back[0]->getSize());
-	float listSizeX = std::accumulate(backSize.begin(), backSize.end(), 0.0f);
-	_verticalScrollerDecorator->getScrollerUp()->setPosition({ std::get<0>(position) + listSizeX, std::get<1>(position) });
-	_verticalScrollerDecorator->getScrollerProgress()->setPosition({ std::get<0>(position) + listSizeX,
-																	 std::get<1>(_verticalScrollerDecorator->getScrollerUp()->getPosition()) + std::get<1>(_verticalScrollerDecorator->getScrollerUp()->getSize()) });
-	_verticalScrollerDecorator->getScrollerDown()->setPosition({ std::get<0>(position) + listSizeX, 
-																 std::get<1>(position) + std::get<1>(_back[0]->getSize()) * _back.size() - std::get<1>(_verticalScrollerDecorator->getScrollerDown()->getSize()) });
+	if (_verticalScrollerDecorator) {
+		auto backSize = std::get<0>(_back[0]->getSize());
+		float listSizeX = std::accumulate(backSize.begin(), backSize.end(), 0.0f);
+		_verticalScrollerDecorator->getScrollerUp()->setPosition({ std::get<0>(position) + listSizeX, std::get<1>(position) });
+		_verticalScrollerDecorator->getScrollerProgress()->setPosition({ std::get<0>(position) + listSizeX,
+																		 std::get<1>(_verticalScrollerDecorator->getScrollerUp()->getPosition()) + std::get<1>(_verticalScrollerDecorator->getScrollerUp()->getSize()) });
+		_verticalScrollerDecorator->getScrollerDown()->setPosition({ std::get<0>(position) + listSizeX,
+																	 std::get<1>(position) + std::get<1>(_back[0]->getSize()) * _back.size() - std::get<1>(_verticalScrollerDecorator->getScrollerDown()->getSize()) });
+	}
 	return false;
 }
 
@@ -79,10 +100,11 @@ bool ComplexList::setSize(std::tuple<std::vector<float>, float> size) {
 	for (int i = 0; i < _back.size(); i++)
 		_back[i]->setSize({ std::get<0>(size), std::get<1>(size) / _list->getViews().size() });
 
-	std::tuple<float, float> headerSize = { std::accumulate(std::get<0>(size).begin(), std::get<0>(size).end(), 0.0f), std::get<1>(size) / _list->getViews().size() };
-	_headerDecorator->getBack()->setSize(headerSize);
-	_headerDecorator->getLabel()->setSize(headerSize);
-
+	if (_headerDecorator) {
+		std::tuple<float, float> headerSize = { std::accumulate(std::get<0>(size).begin(), std::get<0>(size).end(), 0.0f), std::get<1>(size) / _list->getViews().size() };
+		_headerDecorator->getBack()->setSize(headerSize);
+		_headerDecorator->getLabel()->setSize(headerSize);
+	}
 	return false;
 }
 
@@ -106,18 +128,22 @@ bool ComplexList::setGroup(std::string name) {
 		}
 	}
 
-	for (auto &item : _verticalScrollerDecorator->getViews()) {
-		item->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
-	}
-	
-	for (auto &item : _headerDecorator->getViews()) {
-		if (std::dynamic_pointer_cast<Grid>(item)) {
-			for (auto &gridItem : item->getViews()) {
-				gridItem->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
-			}
-		}
-		else {
+	if (_verticalScrollerDecorator) {
+		for (auto &item : _verticalScrollerDecorator->getViews()) {
 			item->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
+		}
+	}
+
+	if (_headerDecorator) {
+		for (auto &item : _headerDecorator->getViews()) {
+			if (std::dynamic_pointer_cast<Grid>(item)) {
+				for (auto &gridItem : item->getViews()) {
+					gridItem->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
+				}
+			}
+			else {
+				item->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
+			}
 		}
 	}
 
@@ -125,7 +151,11 @@ bool ComplexList::setGroup(std::string name) {
 }
 
 bool ComplexList::setHeader(std::vector<std::string> text) {
-	_headerDecorator->setText(text);
+	if (_headerDecorator)
+		_headerDecorator->setText(text);
+	else
+		return true;
+
 	return false;
 }
 
@@ -137,10 +167,15 @@ std::tuple<std::vector<float>, float> ComplexList::getSize() {
 std::tuple<float, float> ComplexList::getComplexSize() {
 	auto size = _back[0]->getSize();
 	auto sumSize = std::accumulate(std::get<0>(size).begin(), std::get<0>(size).end(), 0.0f);
-
-	auto scrollerSize = _verticalScrollerDecorator->getScrollerUp()->getSize();
-	auto headerSize = _headerDecorator->getBack()->getSize();
 	
+	std::tuple<float, float> scrollerSize = { 0, 0 };
+	if (_verticalScrollerDecorator)
+		scrollerSize = _verticalScrollerDecorator->getScrollerUp()->getSize();
+
+	std::tuple<std::vector<float>, float> headerSize = { {0}, 0 };
+	if (_headerDecorator)
+		_headerDecorator->getBack()->getSize();
+
 	return { sumSize + std::get<0>(scrollerSize), (std::get<1>(size) * _back.size()) + std::get<1>(headerSize) };
 }
 
@@ -149,7 +184,13 @@ std::tuple<float, float> ComplexList::getPosition() {
 }
 
 std::tuple<float, float> ComplexList::getComplexPosition() {
-	return _headerDecorator->getBack()->getPosition();
+	std::tuple<float, float> position;
+	if (_headerDecorator)
+		position = _headerDecorator->getBack()->getPosition();
+	else
+		position = _back[0]->getPosition();
+
+	return position;
 }
 
 std::vector<std::shared_ptr<Grid> > ComplexList::getBack() {
@@ -168,7 +209,7 @@ std::shared_ptr<ScrollerVerticalDecorator> ComplexList::getVerticalScrollerDecor
 	return _verticalScrollerDecorator;
 }
 
-bool ComplexLabel::initialize(std::shared_ptr<ViewDecorators> viewDecorators) {
+bool ComplexLabel::initialize(std::shared_ptr<ViewDecorators> viewDecorators, int decoratorMask) {
 	_name = "Empty";
 
 	_back = std::dynamic_pointer_cast<Back>(viewDecorators->getFactory<BackFactory>()->createView());
@@ -181,12 +222,24 @@ bool ComplexLabel::initialize(std::shared_ptr<ViewDecorators> viewDecorators) {
 	_label->setText("Label");
 	_label->setEditable(true);
 
-	_headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(
-		viewDecorators->getFactory<HeaderDecoratorFactory>()->createView(
-			"HeaderDecorator", _label));
-	_headerDecorator->initialize();
-	_headerDecorator->setText({ "Header" });
+	if (decoratorMask & DecoratorMask::HEADER) {
+		_headerDecorator = std::dynamic_pointer_cast<HeaderDecorator>(
+			viewDecorators->getFactory<HeaderDecoratorFactory>()->createView(
+				"HeaderDecorator", _label));
+		_headerDecorator->initialize();
+		_headerDecorator->setText({ "Default" });
+	}
+	else {
+		_headerDecorator = nullptr;
+	}
 
+	if (decoratorMask & CORNER_BUTTON) {
+		_cornerButtonDecorator = std::dynamic_pointer_cast<CornerButtonDecorator>(
+			viewDecorators->getFactory<CornerButtonDecoratorFactory>()->createView(
+				"CornerButtonDecorator", _label));
+		_cornerButtonDecorator->initialize();
+		_cornerButtonDecorator->setText({ "+" });
+	}
 	return false;
 }
 
@@ -196,7 +249,9 @@ std::tuple<float, float> ComplexLabel::getSize() {
 
 std::tuple<float, float> ComplexLabel::getComplexSize() {
 	auto size = _back->getSize();
-	auto headerSize = _headerDecorator->getBack()->getSize();
+	std::tuple<float, float> headerSize = { 0, 0 };
+	if (_headerDecorator)
+		_headerDecorator->getBack()->getSize();
 
 	return { std::get<0>(size), std::get<1>(size) + std::get<1>(headerSize) };
 }
@@ -206,7 +261,13 @@ std::tuple<float, float> ComplexLabel::getPosition() {
 }
 
 std::tuple<float, float> ComplexLabel::getComplexPosition() {
-	return _headerDecorator->getBack()->getPosition();
+	std::tuple<float, float> position;
+	if (_headerDecorator)
+		position = _headerDecorator->getBack()->getPosition();
+	else
+		position = _back->getPosition();
+
+	return position;
 }
 
 std::shared_ptr<Back> ComplexLabel::getBack() {
@@ -225,8 +286,10 @@ bool ComplexLabel::setPosition(std::tuple<float, float> position) {
 	_label->setPosition(position);
 	_back->setPosition(position);
 
-	_headerDecorator->getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getBack()->getSize()) });
-	_headerDecorator->getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getLabel()->getSize()) });
+	if (_headerDecorator) {
+		_headerDecorator->getBack()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getBack()->getSize()) });
+		_headerDecorator->getLabel()->setPosition({ std::get<0>(position), std::get<1>(position) - std::get<1>(_headerDecorator->getLabel()->getSize()) });
+	}
 	return false;
 }
 
@@ -234,13 +297,19 @@ bool ComplexLabel::setSize(std::tuple<float, float> size) {
 	_label->setSize(size);
 	_back->setSize(size);
 
-	_headerDecorator->getBack()->setSize(std::tuple<float, float>(std::get<0>(size), std::get<1>(size)));
-	_headerDecorator->getLabel()->setSize(std::tuple<float, float>(std::get<0>(size), std::get<1>(size)));
+	if (_headerDecorator) {
+		_headerDecorator->getBack()->setSize(std::tuple<float, float>(std::get<0>(size), std::get<1>(size)));
+		_headerDecorator->getLabel()->setSize(std::tuple<float, float>(std::get<0>(size), std::get<1>(size)));
+	}
 	return false;
 }
 
 bool ComplexLabel::setHeader(std::vector<std::string> text) {
-	_headerDecorator->setText(text);
+	if (_headerDecorator)
+		_headerDecorator->setText(text);
+	else
+		return true;
+
 	return false;
 }
 
@@ -256,17 +325,18 @@ bool ComplexLabel::setName(std::string name) {
 bool ComplexLabel::setGroup(std::string name) {
 	getBack()->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
 	getLabel()->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
-	for (auto &item : _headerDecorator->getViews()) {
-		if (std::dynamic_pointer_cast<Grid>(item)) {
-			for (auto &gridItem : item->getViews()) {
-				gridItem->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
+	if (_headerDecorator) {
+		for (auto &item : _headerDecorator->getViews()) {
+			if (std::dynamic_pointer_cast<Grid>(item)) {
+				for (auto &gridItem : item->getViews()) {
+					gridItem->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
+				}
+			}
+			else {
+				item->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
 			}
 		}
-		else {
-			item->getEntity()->getComponent<GroupComponent>()->setMember("groupName", name);
-		}
 	}
-
 	return false;
 }
 
@@ -280,7 +350,7 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_viewDecorators->initialize(scene);
 	std::tuple<std::vector<float>, float> listSize = { {300}, 100 };
 	_componentsList = std::make_shared<ComplexList>();
-	_componentsList->initialize({ 1, 1 }, _viewDecorators);
+	_componentsList->initialize({ 1, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL);
 	_componentsList->setGroup("Engine");
 	_componentsList->setSize(listSize);
 	_componentsList->setPosition({ std::get<0>(currentResolution) - std::get<0>(listSize)[0] - std::get<0>(_componentsList->getVerticalScrollerDecorator()->getScrollerUp()->getSize()),
@@ -288,7 +358,7 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_componentsList->setHeader({ "Components list" });
 
 	_fieldsList = std::make_shared<ComplexList>();
-	_fieldsList->initialize({ 1, 1 }, _viewDecorators);
+	_fieldsList->initialize({ 1, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL);
 	_fieldsList->setGroup("Engine");
 	_fieldsList->setSize(listSize);
 	_fieldsList->setPosition({ std::get<0>(_componentsList->getPosition()),
@@ -296,7 +366,7 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_fieldsList->setHeader({ "Fields list" });
 
 	_operationsList = std::make_shared<ComplexList>();
-	_operationsList->initialize({ 1, 1 }, _viewDecorators);
+	_operationsList->initialize({ 1, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL);
 	_operationsList->setGroup("Engine");
 	_operationsList->setSize(listSize);
 	_operationsList->setPosition({ std::get<0>(_fieldsList->getPosition()),
@@ -304,7 +374,7 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_operationsList->setHeader({ "Operations list" });
 
 	_commandsList = std::make_shared<ComplexList>();
-	_commandsList->initialize({ 1, 1 }, _viewDecorators);
+	_commandsList->initialize({ 1, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL);
 	_commandsList->setGroup("Engine");
 	_commandsList->setSize(listSize);
 	_commandsList->setPosition({ std::get<0>(_operationsList->getPosition()),
@@ -312,7 +382,7 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_commandsList->setHeader({ "Commands list" });
 
 	_argumentsList = std::make_shared<ComplexList>();
-	_argumentsList->initialize({ 2, 1 }, _viewDecorators);
+	_argumentsList->initialize({ 2, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL);
 	_argumentsList->setGroup("Engine");
 	_argumentsList->setSize({ {30, 270}, std::get<1>(listSize) });
 	_argumentsList->setPosition({ std::get<0>(_commandsList->getPosition()),
@@ -320,7 +390,7 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_argumentsList->setHeader({ "#",  "Argument" });
 
 	_argumentTypeLabel = std::make_shared<ComplexLabel>();
-	_argumentTypeLabel->initialize(_viewDecorators);
+	_argumentTypeLabel->initialize(_viewDecorators, DecoratorMask::HEADER | DecoratorMask::CORNER_BUTTON);
 	_argumentTypeLabel->setGroup("Engine");
 	_argumentTypeLabel->setSize({ 300, std::get<1>(listSize) / 4 });
 	_argumentTypeLabel->setPosition({ std::get<0>(_argumentsList->getPosition()),
@@ -328,25 +398,26 @@ bool MainInterface::initialize(std::shared_ptr<Scene> scene) {
 	_argumentTypeLabel->setHeader({ "Argument type" });
 
 	_entitiesList = std::make_shared<ComplexList>();
-	_entitiesList->initialize({ 3, 1 }, _viewDecorators);
+	_entitiesList->initialize({ 3, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL);
 	_entitiesList->setGroup("Engine");
 	_entitiesList->setSize({ {30, 30, 240}, std::get<1>(listSize) });
 	_entitiesList->setPosition({ 0, std::get<1>(_entitiesList->getHeaderDecorator()->getBack()->getSize()) });
 	_entitiesList->setHeader({ "#", "ID", "Entity name" });
 
 	_resourcesList = std::make_shared<ComplexList>();
-	_resourcesList->initialize({ 3, 1 }, _viewDecorators);
+	_resourcesList->initialize({ 3, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL | DecoratorMask::CORNER_BUTTON);
 	_resourcesList->setGroup("Engine");
 	_resourcesList->setSize({ {30, 30, 240}, std::get<1>(listSize) });
 	_resourcesList->setPosition({ 0, std::get<1>(_entitiesList->getPosition()) + std::get<1>(_entitiesList->getSize()) + std::get<1>(_entitiesList->getHeaderDecorator()->getBack()->getSize()) });
 	_resourcesList->setHeader({ "#", "ID", "Texture path" });
 
 	_scenesList = std::make_shared<ComplexList>();
-	_scenesList->initialize({ 2, 1 }, _viewDecorators);
+	_scenesList->initialize({ 2, 1 }, _viewDecorators, DecoratorMask::HEADER | DecoratorMask::VERTICAL);
 	_scenesList->setGroup("Engine");
 	_scenesList->setSize({ { 30, 270 }, std::get<1>(listSize) });
 	_scenesList->setPosition({ 0, std::get<1>(_argumentTypeLabel->getComplexPosition()) });// + (std::get<1>(_argumentTypeLabel->getComplexSize()) - std::get<1>(_scenesList->getComplexSize())) / 2});
 	_scenesList->setHeader({ "#", "Scene name" });
+
 	return false;
 }
 
