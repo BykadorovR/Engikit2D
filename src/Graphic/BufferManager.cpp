@@ -1,6 +1,11 @@
 #include "BufferManager.h"
 
 BufferManager::BufferManager() {
+	//VAO stores:
+	//Calls to glEnableVertexAttribArray or glDisableVertexAttribArray.
+	//Vertex attribute configurations via glVertexAttribPointer.
+	//VBO associated with vertex attributes by calls to glVertexAttribPointer.
+	//EBO 
 	glGenVertexArrays(/*number of buffers to generate*/1, &_vao);
 }
 

@@ -22,7 +22,7 @@ void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) 
 	if (textureObject->hasBindedTexture())
 		glBindTexture(GL_TEXTURE_2D, TextureManager::instance()->getTextureAtlas(textureObject->getTextureID())->getTextureObject());
 	textureObject->getBufferManager()->activateBuffer();
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	textureObject->getBufferManager()->deactivateBuffer();
 }
 

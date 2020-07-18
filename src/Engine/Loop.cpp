@@ -38,15 +38,90 @@ std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
 std::shared_ptr<KeyboardSystem> keyboardSystem;
 
+void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
+	auto printOperation = std::make_shared<ExpressionOperation>();
+	printOperation->addArgument(entity, "", "");
+	printOperation->initializeOperation("CLICK ${0}");
+	auto printAction = std::make_shared<PrintOperationsAction>();
+	printAction->setList(list);
+	printAction->setEntity(entity);
+	printOperation->registerAction(printAction);
+	entity->createComponent<InteractionComponent>()->attachOperation(printOperation, InteractionType::MOUSE_START);
+}
+
+void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
+	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("currentEntity", -1);
+	list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->initializeEmpty("registeredEntities");
+
+	auto printComponentsOperation = std::make_shared<ExpressionOperation>();
+	printComponentsOperation->addArgument(entity, "", "");
+	printComponentsOperation->initializeOperation("CLICK ${0}");
+	auto printComponentsAction = std::make_shared<PrintComponentsAction>();
+	printComponentsAction->setList(list);
+	printComponentsAction->setEntity(entity);
+	printComponentsOperation->registerAction(printComponentsAction);
+	entity->createComponent<InteractionComponent>()->attachOperation(printComponentsOperation, InteractionType::MOUSE_START);
+
+	auto clearComponentsOperation = std::make_shared<ExpressionOperation>();
+	clearComponentsOperation->addArgument(entity, "", "");
+	std::string listIndexes = clearComponentsOperation->addArgument(list->getEntities());
+	std::string decoratorIndexes = clearComponentsOperation->addArgument(decorator->getEntities());
+	clearComponentsOperation->initializeOperation("! ( DOUBLE_CLICK ${0} ) AND ! ( CLICK ${" + listIndexes + "} ) AND ! ( CLICK ${" + decoratorIndexes + "} )");
+	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
+	clearComponentsAction->setList(list);
+	clearComponentsAction->setEntity(entity);
+	clearComponentsOperation->registerAction(clearComponentsAction);
+	entity->createComponent<InteractionComponent>()->attachOperation(clearComponentsOperation, InteractionType::MOUSE_START);
+}
+
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
+	activeScene = sceneManager->createScene("basic");
 
+	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas(GL_RGBA, { 4096, 4096 });
+	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
+	atlas->initialize();
+
+	//1040 - 1103 for cyrillic: static_cast<int>(*(L"")))	
+	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf", { 1040, 1103 });
+	GlyphsLoader::instance().bufferSymbols(15, 15);
+
+	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
+	ShaderStore::instance()->addShader("texture", shader);
+	std::shared_ptr<MainInterface> mainInterface = std::make_shared<MainInterface>();
+	mainInterface->initialize(activeScene);
+	mainInterface->fillEntitiesList(activeScene);
+
+	stateSystem = std::make_shared<StateSystem>();
+	stateSystem->setEntityManager(activeScene->getEntityManager());
+	interactionSystem = std::make_shared<InteractionSystem>();
+	interactionSystem->setEntityManager(activeScene->getEntityManager());
+	mouseSystem = std::make_shared<MouseSystem>();
+	mouseSystem->setEntityManager(activeScene->getEntityManager());
+	keyboardSystem = std::make_shared<KeyboardSystem>();
+	keyboardSystem->setEntityManager(activeScene->getEntityManager());
+	drawSystem = std::make_shared<DrawSystem>();
+	drawSystem->setEntityManager(activeScene->getEntityManager());
 }
 
 
 void drawFrame() {
 	//clear specified buffer's fields from previous draw
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Interaction should be called before graphic so we avoid use cases when sprite rendered in some coord but should be moved out due to some trigger	
+	//so we observe "false" moves to coord under triger and instant move out	
+	interactionSystem->update(InteractionType::COMMON_START);
+	stateSystem->update(InteractionType::COMMON_START);
+	mouseSystem->update(InteractionType::MOUSE_START);
+	keyboardSystem->update(InteractionType::KEYBOARD_START);
+
+	drawSystem->update();
+
+	keyboardSystem->update(InteractionType::KEYBOARD_END);
+	mouseSystem->update(InteractionType::MOUSE_END);
+	stateSystem->update(InteractionType::COMMON_END);
+	interactionSystem->update(InteractionType::COMMON_END);
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
@@ -81,14 +156,15 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 	//disable VSync
-	glfwSwapInterval(0);
+	//glfwSwapInterval(0);
+	//wireframe mode
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glfwSetMouseButtonCallback(mainWindow, mousePressed);
 	glfwSetKeyCallback(mainWindow, keyboardPress);
 	glfwSetCharCallback(mainWindow, textInput);
 	//if size of window has changed we need to notify OpenGL that "working" area changed via glViewport
 	glfwSetFramebufferSizeCallback(mainWindow, [](GLFWwindow* window, int width, int height){ glViewport(0, 0, width, height); });
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	surfaceCreated();

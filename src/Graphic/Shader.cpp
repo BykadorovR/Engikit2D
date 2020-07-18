@@ -41,17 +41,21 @@ GLuint Shader::compileShader(std::string source, GLenum type) {
 
 GLuint Shader::linkProgram(const GLuint vertex_shader, const GLuint fragment_shader) {
 	GLuint program_object_id = glCreateProgram();
-	GLint link_status;
-
 	assert(program_object_id != 0);
 
 	glAttachShader(program_object_id, vertex_shader);
 	glAttachShader(program_object_id, fragment_shader);
 	glLinkProgram(program_object_id);
+	int  success;
+	char infoLog[512];
+	glGetProgramiv(program_object_id, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(program_object_id, 512, NULL, infoLog);
+		OUT_STREAM("ERROR: Linking failed\n" + std::string(infoLog));
+	}
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
-	glGetProgramiv(program_object_id, GL_LINK_STATUS, &link_status);
-	assert(link_status != 0);
 	return program_object_id;
 }
 
@@ -60,8 +64,24 @@ GLuint Shader::buildProgram(
 	std::string fragment_shader_source) {
 	GLuint vertex_shader = compileShader(
 		vertex_shader_source, GL_VERTEX_SHADER);
+
+	int  success;
+	char infoLog[512];
+	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertex_shader, 512, NULL, infoLog);
+		OUT_STREAM("ERROR: Vertex shader compilation failed\n" + std::string(infoLog));
+	}
+
 	GLuint fragment_shader = compileShader(
 		fragment_shader_source, GL_FRAGMENT_SHADER);
+	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragment_shader, 512, NULL, infoLog);
+		OUT_STREAM("ERROR: Fragment shader compilation failed\n" + std::string(infoLog));
+	}
 	return linkProgram(vertex_shader, fragment_shader);
 }
 

@@ -16,7 +16,9 @@ enum BufferType {
 class Buffer {
 private:
 	std::vector<float> _data;
+	std::vector<int> _indexes;
 	GLuint _vbo;
+	GLuint _ebo;
 	BufferType _type;
 	std::ofstream myfile;
 public:
@@ -24,5 +26,6 @@ public:
 	bool create(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
 	bool change(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
 	GLuint getVBO();
+	GLuint getEBO();
 	BufferType getType();
 };

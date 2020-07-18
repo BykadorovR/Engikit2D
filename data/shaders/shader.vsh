@@ -9,4 +9,5 @@ void main()
 	gl_Position = a_Position;
 	gl_Position.x = gl_Position.x * 2 - 1;
 	gl_Position.y = gl_Position.y * 2 - 1;
+    gl_Position.z = gl_Position.z * 2 - 1;
 }
