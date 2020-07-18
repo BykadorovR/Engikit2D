@@ -76,51 +76,14 @@ void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> 
 
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
-	activeScene = sceneManager->createScene("basic");
-
-	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas(GL_RGBA, { 4096, 4096 });
-	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
-	atlas->initialize();
-
-	//1040 - 1103 for cyrillic: static_cast<int>(*(L"")))
-	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf", { 1040, 1103 });
-	GlyphsLoader::instance().bufferSymbols(15, 15);
-
-	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-	ShaderStore::instance()->addShader("texture", shader);
-	std::shared_ptr<MainInterface> mainInterface = std::make_shared<MainInterface>();
-	mainInterface->initialize(activeScene);
-	mainInterface->fillEntitiesList(activeScene);
-	stateSystem = std::make_shared<StateSystem>();
-	stateSystem->setEntityManager(activeScene->getEntityManager());
-	interactionSystem = std::make_shared<InteractionSystem>();
-	interactionSystem->setEntityManager(activeScene->getEntityManager());
-	mouseSystem = std::make_shared<MouseSystem>();
-	mouseSystem->setEntityManager(activeScene->getEntityManager());
-	keyboardSystem = std::make_shared<KeyboardSystem>();
-	keyboardSystem->setEntityManager(activeScene->getEntityManager());
-	drawSystem = std::make_shared<DrawSystem>();
-	drawSystem->setEntityManager(activeScene->getEntityManager());
 
 }
 
 
 void drawFrame() {
+	//clear specified buffer's fields from previous draw
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//Interaction should be called before graphic so we avoid use cases when sprite rendered in some coord but should be moved out due to some trigger
-	//so we observe "false" moves to coord under triger and instant move out
-	interactionSystem->update(InteractionType::COMMON_START);
-	stateSystem->update(InteractionType::COMMON_START);
-	mouseSystem->update(InteractionType::MOUSE_START);
-	keyboardSystem->update(InteractionType::KEYBOARD_START);
 
-	drawSystem->update();
-
-	keyboardSystem->update(InteractionType::KEYBOARD_END);
-	mouseSystem->update(InteractionType::MOUSE_END);
-	stateSystem->update(InteractionType::COMMON_END);
-	interactionSystem->update(InteractionType::COMMON_END);
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
@@ -160,16 +123,20 @@ int main(int argc, char **argv) {
 	glfwSetMouseButtonCallback(mainWindow, mousePressed);
 	glfwSetKeyCallback(mainWindow, keyboardPress);
 	glfwSetCharCallback(mainWindow, textInput);
+	//if size of window has changed we need to notify OpenGL that "working" area changed via glViewport
+	glfwSetFramebufferSizeCallback(mainWindow, [](GLFWwindow* window, int width, int height){ glViewport(0, 0, width, height); });
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	surfaceCreated();
 	while (!glfwWindowShouldClose(mainWindow)) {
 		std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-		// OpenGL API calls go here...
 		//TODO: separate display and bussness logic (display will be at 60 FPS, but business w/o restriction)
+		//create buffer for rendering
 		drawFrame();
+		//double buffer - one for displaying, one for current render, once filled it's displayed. Needed to avoid flickering due to writing to displayed buffer
 		glfwSwapBuffers(mainWindow);
+		//checks if any events are triggered (like keyboard input or mouse movement events), updates the window state, and calls the corresponding functions
 		glfwPollEvents();
 		auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
 			std::chrono::high_resolution_clock::now() - startTime).count();
