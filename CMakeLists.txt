@@ -125,6 +125,7 @@ target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libpng)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/zlib)
+target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glm)
 
 target_link_libraries(game opengl32.lib)
 
