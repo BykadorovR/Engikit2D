@@ -3,6 +3,9 @@
 #include <sstream>
 #include <chrono>
 #include <thread>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 #include "Interface.h"
 #include "Grid.h"

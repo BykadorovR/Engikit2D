@@ -115,7 +115,7 @@ add_executable(game ${app_header_ecs} ${app_source_ecs}
 					${app_header_utility} ${app_source_utility}
 					${app_header_engine} ${app_source_engine})
 
-add_dependencies(game glew glfw libpng freetype )
+add_dependencies(game glew glfw libpng freetype)
 
 #add folders with gmock headers to "include" section in VS test project
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)

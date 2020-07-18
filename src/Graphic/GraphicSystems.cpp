@@ -1,3 +1,6 @@
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 #include "Common.h"
 #include "GraphicSystems.h"
 #include "TextureManager.h"
@@ -12,6 +15,7 @@ DrawSystem::DrawSystem() {
 
 void DrawSystem::vertexUpdate(std::shared_ptr<ObjectComponent> vertexObject) {
 	glUseProgram(vertexObject->getShader()->getProgram());
+	glUniformMatrix4fv(glGetUniformLocation(vertexObject->getShader()->getProgram(), "u_Transform"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 }
 
 void DrawSystem::textureUpdate(std::shared_ptr<TextureComponent> textureObject) {
