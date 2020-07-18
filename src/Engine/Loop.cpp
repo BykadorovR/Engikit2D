@@ -38,42 +38,6 @@ std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
 std::shared_ptr<KeyboardSystem> keyboardSystem;
 
-void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
-	auto printOperation = std::make_shared<ExpressionOperation>();
-	printOperation->addArgument(entity, "", "");
-	printOperation->initializeOperation("CLICK ${0}");
-	auto printAction = std::make_shared<PrintOperationsAction>();
-	printAction->setList(list);
-	printAction->setEntity(entity);
-	printOperation->registerAction(printAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(printOperation, InteractionType::MOUSE_START);
-}
-
-void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
-	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("currentEntity", -1);
-	list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->initializeEmpty("registeredEntities");
-
-	auto printComponentsOperation = std::make_shared<ExpressionOperation>();
-	printComponentsOperation->addArgument(entity, "", "");
-	printComponentsOperation->initializeOperation("CLICK ${0}");
-	auto printComponentsAction = std::make_shared<PrintComponentsAction>();
-	printComponentsAction->setList(list);
-	printComponentsAction->setEntity(entity);
-	printComponentsOperation->registerAction(printComponentsAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(printComponentsOperation, InteractionType::MOUSE_START);
-
-	auto clearComponentsOperation = std::make_shared<ExpressionOperation>();
-	clearComponentsOperation->addArgument(entity, "", "");
-	std::string listIndexes = clearComponentsOperation->addArgument(list->getEntities());
-	std::string decoratorIndexes = clearComponentsOperation->addArgument(decorator->getEntities());
-	clearComponentsOperation->initializeOperation("! ( DOUBLE_CLICK ${0} ) AND ! ( CLICK ${"+listIndexes+"} ) AND ! ( CLICK ${"+decoratorIndexes+"} )");
-	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
-	clearComponentsAction->setList(list);
-	clearComponentsAction->setEntity(entity);
-	clearComponentsOperation->registerAction(clearComponentsAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(clearComponentsOperation, InteractionType::MOUSE_START);
-}
-
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -83,7 +47,6 @@ void surfaceCreated() {
 void drawFrame() {
 	//clear specified buffer's fields from previous draw
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
