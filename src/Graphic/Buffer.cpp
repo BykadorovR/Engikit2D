@@ -14,33 +14,44 @@ Buffer::Buffer(BufferType type) {
 Let's assume for now that 1 object = 1 buffer, so no impl for N objects = 1 buffer;
 */
 bool Buffer::create(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
-	//using int because coords and size should be in "pixels" which are int
-	//if use float, some visual glitches can appear
 	int width = std::get<0>(sizeTarget),
 		height = std::get<1>(sizeTarget);
 	int x = std::get<0>(position),
 		y = std::get<1>(position);
-	float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
-	float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
-	float startX = (float)x / (float)std::get<0>(sizeOverall);
-	//by default for BufferType::Position
-	float startY = (float)(std::get<1>(sizeOverall) - y) / (float)std::get<1>(sizeOverall);
-	if (_type == BufferType::Texture) {
-		startY = (float)y / (float)std::get<1>(sizeOverall);
-		objectHeightN *= -1; //so in data[] we will have only "+" sign everywhere
-	}
-	// Order of coordinates: X, Y
-	// 0   2
-	// | / |
-	// 1   3
-	_data = { startX,                startY,
-			  startX,                startY - objectHeightN,
-			  startX + objectWidthN, startY,
-			  startX + objectWidthN, startY - objectHeightN };
 
 	_indexes = { 0, 1, 2,
-				 1, 2, 3 };
-
+			     1, 2, 3 };
+	if (_type == BufferType::Position) {
+		//using int because coords and size should be in "pixels" which are int
+		//if use float, some visual glitches can appear
+		float startX = (float)x;
+		//by default for BufferType::Position
+		float startY = (float)(std::get<1>(sizeOverall) - y);
+		// Order of coordinates: X, Y
+		// 0   2
+		// | / |
+		// 1   3
+		_data = { startX,                startY,
+				  startX,                startY - height,
+				  startX + width, startY,
+				  startX + width, startY - height };
+	}
+	else {
+		float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
+		float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
+		float startX = (float)x / (float)std::get<0>(sizeOverall);
+		//by default for BufferType::Position
+		float startY = (float)y / (float)std::get<1>(sizeOverall);
+		objectHeightN *= -1; //so in data[] we will have only "+" sign everywhere
+		// Order of coordinates: X, Y
+		// 0   2
+		// | / |
+		// 1   3
+		_data = { startX,                startY,
+				  startX,                startY - objectHeightN,
+				  startX + objectWidthN, startY,
+				  startX + objectWidthN, startY - objectHeightN };
+	}
 	//bind our buffer to OpenGL buffer from OpenGL internal state (so like assign pointer to our buffer to OpenGL buffer in internal state), we can work only with binded buffers
 	//From that point on any buffer calls we make (on the GL_ARRAY_BUFFER target) will be used to configure the currently bounded buffer, which is _vbo
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
@@ -69,29 +80,44 @@ BufferType Buffer::getType() {
 }
 
 bool Buffer::change(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall) {
-	//using int because coords and size should be in "pixels" which are int
-	//if use float, some visual glitches can appear
 	int width = std::get<0>(sizeTarget),
 		height = std::get<1>(sizeTarget);
 	int x = std::get<0>(position),
 		y = std::get<1>(position);
-	float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
-	float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
-	float startX = (float)x / (float)std::get<0>(sizeOverall);
-	//by default for BufferType::Position
-	float startY = (float)(std::get<1>(sizeOverall) - y) / (float)std::get<1>(sizeOverall);
-	if (_type == BufferType::Texture) {
-		startY = (float)y / (float)std::get<1>(sizeOverall);
-		objectHeightN *= -1; //so in data[] we will have only "+" sign everywhere
+
+	_indexes = { 0, 1, 2,
+				 1, 2, 3 };
+	if (_type == BufferType::Position) {
+		//using int because coords and size should be in "pixels" which are int
+		//if use float, some visual glitches can appear
+		float startX = (float)x;
+		//by default for BufferType::Position
+		float startY = (float)(std::get<1>(sizeOverall) - y);
+		// Order of coordinates: X, Y
+		// 0   2
+		// | / |
+		// 1   3
+		_data = { startX,                startY,
+				  startX,                startY - height,
+				  startX + width, startY,
+				  startX + width, startY - height };
 	}
-	// Order of coordinates: X, Y
-	// 0   2
-	// | / |
-	// 1   3
-	_data = { startX,                startY,
-			  startX,                startY - objectHeightN,
-			  startX + objectWidthN, startY,
-			  startX + objectWidthN, startY - objectHeightN };
+	else {
+		float objectWidthN = (float)width / (float)std::get<0>(sizeOverall);
+		float objectHeightN = (float)height / (float)std::get<1>(sizeOverall);
+		float startX = (float)x / (float)std::get<0>(sizeOverall);
+		//by default for BufferType::Position
+		float startY = (float)y / (float)std::get<1>(sizeOverall);
+		objectHeightN *= -1; //so in data[] we will have only "+" sign everywhere
+		// Order of coordinates: X, Y
+		// 0   2
+		// | / |
+		// 1   3
+		_data = { startX,                startY,
+				  startX,                startY - objectHeightN,
+				  startX + objectWidthN, startY,
+				  startX + objectWidthN, startY - objectHeightN };
+	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, _data.size() * sizeof(float), &_data[0]);
