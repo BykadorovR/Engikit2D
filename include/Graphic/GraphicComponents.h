@@ -7,6 +7,19 @@
 #include "GlyphsLoader.h"
 #include "TextureAtlas.h"
 
+class VolumeComponent : public OperationComponent {
+private:
+	GLuint _vao;
+	GLuint _vbo;
+	GLuint _ebo;
+	std::vector<float> _data;
+	std::vector<int> _indexes;
+public:
+	VolumeComponent();
+	bool initialize();
+};
+
+//TODO: position and size shouldn't be part of object, it should be part of model matrix
 class ObjectComponent : public OperationComponent {
 private:
 	std::tuple<float, float> _position;

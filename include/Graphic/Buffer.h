@@ -20,7 +20,6 @@ private:
 	GLuint _vbo;
 	GLuint _ebo;
 	BufferType _type;
-	std::ofstream myfile;
 public:
 	Buffer(BufferType type);
 	bool create(std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
