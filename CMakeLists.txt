@@ -15,13 +15,20 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT g
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
 ExternalProject_Add(
+  assimp
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/assimp
+  DOWNLOAD_COMMAND "" # Disable download step
+  CONFIGURE_COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/assimp -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG} -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
+  INSTALL_COMMAND ""
+  )
+
+ExternalProject_Add(
   glew
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew
   DOWNLOAD_COMMAND "" # Disable download step
   CONFIGURE_COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/build/cmake -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG} -DCMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE=${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}
   INSTALL_COMMAND ""
   )
-
 
 ExternalProject_Add(
   glfw
@@ -115,7 +122,7 @@ add_executable(game ${app_header_ecs} ${app_source_ecs}
 					${app_header_utility} ${app_source_utility}
 					${app_header_engine} ${app_source_engine})
 
-add_dependencies(game glew glfw libpng freetype)
+add_dependencies(game glew glfw libpng freetype assimp)
 
 #add folders with gmock headers to "include" section in VS test project
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)
@@ -126,6 +133,8 @@ target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/zlib)
 target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glm)
+target_include_directories(game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/assimp/include)
+target_include_directories(game PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/assimp-prefix/src/assimp-build/include)
 
 target_link_libraries(game opengl32.lib)
 
@@ -144,6 +153,10 @@ target_link_libraries(game optimized ${CMAKE_CURRENT_BINARY_DIR}/glew-prefix/src
 #link libpng libraries
 target_link_libraries(game debug ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/Debug/libpng16d.lib)
 target_link_libraries(game optimized ${CMAKE_CURRENT_BINARY_DIR}/libpng-prefix/src/libpng-build/Release/libpng16.lib)
+
+#link libpng libraries
+target_link_libraries(game debug ${CMAKE_CURRENT_BINARY_DIR}/assimp-prefix/src/assimp-build/code/Debug/assimp-vc141-mtd.lib)
+target_link_libraries(game optimized ${CMAKE_CURRENT_BINARY_DIR}/assimp-prefix/src/assimp-build/code/Release/assimp-vc141-mt.lib)
 
 enable_testing()
 

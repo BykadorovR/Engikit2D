@@ -21,7 +21,7 @@
 #include "GlyphsLoader.h"
 #include "Common.h"
 #include "UIActions.h"
-
+#include "Texture.h"
 #include "Back.h"
 #include "Label.h"
 #include "InteractionOperations.h"
@@ -33,98 +33,221 @@
 #include "Decorator.h"
 #include "List.h"
 #include "CustomComponents.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
-std::shared_ptr<Scene> activeScene;
-std::shared_ptr<StateSystem> stateSystem;
-std::shared_ptr<DrawSystem> drawSystem;
-std::shared_ptr<InteractionSystem> interactionSystem;
-std::shared_ptr<MouseSystem> mouseSystem;
-std::shared_ptr<KeyboardSystem> keyboardSystem;
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
-	auto printOperation = std::make_shared<ExpressionOperation>();
-	printOperation->addArgument(entity, "", "");
-	printOperation->initializeOperation("CLICK ${0}");
-	auto printAction = std::make_shared<PrintOperationsAction>();
-	printAction->setList(list);
-	printAction->setEntity(entity);
-	printOperation->registerAction(printAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(printOperation, InteractionType::MOUSE_START);
+bool firstMouse = true;
+float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch = 0.0f;
+float lastX = 800.0f / 2.0;
+float lastY = 600.0 / 2.0;
+float fov = 45.0f;
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+float Zoom = 0;
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	fov -= (float)yoffset;
+	if (fov < 1.0f)
+		fov = 1.0f;
+	if (fov > 45.0f)
+		fov = 45.0f;
 }
 
-void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
-	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("currentEntity", -1);
-	list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->initializeEmpty("registeredEntities");
+void processInput(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 
-	auto printComponentsOperation = std::make_shared<ExpressionOperation>();
-	printComponentsOperation->addArgument(entity, "", "");
-	printComponentsOperation->initializeOperation("CLICK ${0}");
-	auto printComponentsAction = std::make_shared<PrintComponentsAction>();
-	printComponentsAction->setList(list);
-	printComponentsAction->setEntity(entity);
-	printComponentsOperation->registerAction(printComponentsAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(printComponentsOperation, InteractionType::MOUSE_START);
-
-	auto clearComponentsOperation = std::make_shared<ExpressionOperation>();
-	clearComponentsOperation->addArgument(entity, "", "");
-	std::string listIndexes = clearComponentsOperation->addArgument(list->getEntities());
-	std::string decoratorIndexes = clearComponentsOperation->addArgument(decorator->getEntities());
-	clearComponentsOperation->initializeOperation("! ( DOUBLE_CLICK ${0} ) AND ! ( CLICK ${" + listIndexes + "} ) AND ! ( CLICK ${" + decoratorIndexes + "} )");
-	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
-	clearComponentsAction->setList(list);
-	clearComponentsAction->setEntity(entity);
-	clearComponentsOperation->registerAction(clearComponentsAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(clearComponentsOperation, InteractionType::MOUSE_START);
+	float cameraSpeed = 2.5 * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 direction;
+	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction.y = sin(glm::radians(pitch));
+	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(direction);
+}
+
+GLuint vbo, vao, texture;
+GLuint lightVAO;
+std::shared_ptr<Shader> shader, lightShader;
 void surfaceCreated() {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	std::shared_ptr<SceneManager> sceneManager = std::make_shared<SceneManager>();
-	activeScene = sceneManager->createScene("basic");
+	Assimp::Importer importer;
 
-	std::shared_ptr<TextureAtlas> atlas = TextureManager::instance()->createAtlas(GL_RGBA, { 4096, 4096 });
-	std::shared_ptr<TextureRaw> textureRaw = TextureManager::instance()->createTexture("../data/textures/air_hockey_surface.png", atlas->getAtlasID(), { 0, 0 }, { 1, 1 });
-	atlas->initialize();
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+	// Order of coordinates: X, Y
+	// 3      2
+	// |   \  |
+	// 0,4    1
+	//draw every object in the center and after transform it with model transforms + draw result
+	std::vector<float> data = {
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, -1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, -1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
 
-	//1040 - 1103 for cyrillic: static_cast<int>(*(L"")))	
-	GlyphsLoader::instance().initialize("../data/fonts/arial.ttf", { 1040, 1103 });
-	GlyphsLoader::instance().bufferSymbols(15, 15);
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
 
-	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
-	ShaderStore::instance()->addShader("texture", shader);
-	std::shared_ptr<MainInterface> mainInterface = std::make_shared<MainInterface>();
-	mainInterface->initialize(activeScene);
-	mainInterface->fillEntitiesList(activeScene);
+			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
 
-	stateSystem = std::make_shared<StateSystem>();
-	stateSystem->setEntityManager(activeScene->getEntityManager());
-	interactionSystem = std::make_shared<InteractionSystem>();
-	interactionSystem->setEntityManager(activeScene->getEntityManager());
-	mouseSystem = std::make_shared<MouseSystem>();
-	mouseSystem->setEntityManager(activeScene->getEntityManager());
-	keyboardSystem = std::make_shared<KeyboardSystem>();
-	keyboardSystem->setEntityManager(activeScene->getEntityManager());
-	drawSystem = std::make_shared<DrawSystem>();
-	drawSystem->setEntityManager(activeScene->getEntityManager());
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
+
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
+
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f
+	};
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), &data[0], GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(/*location = 0*/0);
+	glVertexAttribPointer(/*location = 0*/0, /*position count*/3, GL_FLOAT, GL_FALSE, /*stride*/ 8 * sizeof(float), /*start*/ 0);
+
+	glEnableVertexAttribArray(/*location = 1*/1);
+	glVertexAttribPointer(/*location = 1*/1, /*position count*/2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	glEnableVertexAttribArray(/*location = 2*/2);
+	glVertexAttribPointer(/*location = 2*/2, /*position count*/3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+
+	shader = std::make_shared<Shader>("../data/shaders/shader.vert", "../data/shaders/shader.frag");
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	auto imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
+	imageLoader->loadPNG("../data/textures/air_hockey_surface.png");
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, std::get<0>(imageLoader->getSize()), std::get<1>(imageLoader->getSize()), 0, GL_RGBA, GL_UNSIGNED_BYTE, imageLoader->getData().data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	lightShader = std::make_shared<Shader>("../data/shaders/light.vert", "../data/shaders/light.frag");
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+	// we only need to bind to the VBO, the container's VBO's data already contains the data.
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	// set the vertex attribute 
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
 }
 
 
+std::vector<float> colorMask = { 0.0f, 0.0f, 0.0f };
+std::vector<float> colorAdd = { 1.0f, 0.0f, 0.5f };
+std::vector<float> lightColor = { 1.0f, 1.0f, 1.0f };
+glm::vec3 lightPos(1.2f, 0.0f, 2.0f);
 void drawFrame() {
-	//clear specified buffer's fields from previous draw
+	float currentFrame = glfwGetTime();
+	deltaTime = currentFrame - lastFrame;
+	lastFrame = currentFrame;
+
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//Interaction should be called before graphic so we avoid use cases when sprite rendered in some coord but should be moved out due to some trigger	
-	//so we observe "false" moves to coord under triger and instant move out	
-	interactionSystem->update(InteractionType::COMMON_START);
-	stateSystem->update(InteractionType::COMMON_START);
-	mouseSystem->update(InteractionType::MOUSE_START);
-	keyboardSystem->update(InteractionType::KEYBOARD_START);
-
-	drawSystem->update();
-
-	keyboardSystem->update(InteractionType::KEYBOARD_END);
-	mouseSystem->update(InteractionType::MOUSE_END);
-	stateSystem->update(InteractionType::COMMON_END);
-	interactionSystem->update(InteractionType::COMMON_END);
+	// change the light's position values over time (can be done anywhere in the render loop actually, but try to do it at least before using the light source positions)
+	//lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+	//lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
+	//Object
+	glUseProgram(shader->getProgram());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "color_mask"), 1, colorMask.data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "color_addition"), 1, colorAdd.data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light_color"), 1, lightColor.data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "lightPos"), 1, glm::value_ptr(lightPos));
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "viewPos"), 1, glm::value_ptr(cameraPos));
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "u_View"), 1, GL_FALSE, glm::value_ptr(view));
+	glm::mat4 proj = glm::mat4(1.0f);
+	//if FOV increases, more objects in such frustum can be maped to near -> screen, so it's like unzoom world
+	proj = glm::perspective(glm::radians(fov), (float)std::get<0>(currentResolution) / (float)std::get<1>(currentResolution), 0.1f, 100.0f);
+	glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "u_Projection"), 1, GL_FALSE, glm::value_ptr(proj));
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(model));
+	glBindVertexArray(vao);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	//Light
+	glUseProgram(lightShader->getProgram());
+	glUniformMatrix4fv(glGetUniformLocation(lightShader->getProgram(), "u_View"), 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(glGetUniformLocation(lightShader->getProgram(), "u_Projection"), 1, GL_FALSE, glm::value_ptr(proj));
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, lightPos);
+	model = glm::scale(model, glm::vec3(0.2f));
+	glUniformMatrix4fv(glGetUniformLocation(lightShader->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(model));
+	glBindVertexArray(lightVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
 //need to separate to cpp and h due to a lot of dependencies between classes
@@ -162,14 +285,18 @@ int main(int argc, char **argv) {
 	//glfwSwapInterval(0);
 	//wireframe mode
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(mainWindow, mouse_callback);
+	glfwSetScrollCallback(mainWindow, scroll_callback);
 
 	glfwSetMouseButtonCallback(mainWindow, mousePressed);
-	glfwSetKeyCallback(mainWindow, keyboardPress);
+	glfwSetKeyCallback(mainWindow, processInput);
 	glfwSetCharCallback(mainWindow, textInput);
 	//if size of window has changed we need to notify OpenGL that "working" area changed via glViewport
 	glfwSetFramebufferSizeCallback(mainWindow, [](GLFWwindow* window, int width, int height){ glViewport(0, 0, width, height); });
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_DEPTH_TEST);
 	surfaceCreated();
 	while (!glfwWindowShouldClose(mainWindow)) {
 		std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
