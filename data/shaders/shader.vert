@@ -16,7 +16,7 @@ uniform vec3 lightPos;
 void main()
 {
     v_TextureCoordinates = a_TextureCoordinates;
-	v_Normal = a_Normal;
+	v_Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
 	FragPos = vec3(u_Model * a_Position);
     gl_Position = u_Projection * u_View * u_Model * a_Position;
 }
