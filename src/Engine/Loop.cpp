@@ -221,8 +221,16 @@ void drawFrame() {
 	glUseProgram(shader->getProgram());
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "color_mask"), 1, colorMask.data());
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "color_addition"), 1, colorAdd.data());
-	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light_color"), 1, lightColor.data());
-	glUniform3fv(glGetUniformLocation(shader->getProgram(), "lightPos"), 1, glm::value_ptr(lightPos));
+
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "material.ambient"), 1, colorAdd.data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "material.diffuse"), 1, colorAdd.data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "material.specular"), 1, std::vector<float>({0.5f, 0.5f, 0.5f}).data());
+	glUniform1f(glGetUniformLocation(shader->getProgram(), "material.shininess"), 32.0f);
+
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.ambient"), 1, std::vector<float>({ 0.2f, 0.2f, 0.2f }).data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.diffuse"), 1, std::vector<float>({ 0.5f, 0.5f, 0.5f }).data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.specular"), 1, std::vector<float>({ 1.0f, 1.0f, 1.0f }).data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.position"), 1, glm::value_ptr(lightPos));
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "viewPos"), 1, glm::value_ptr(cameraPos));
 	glm::mat4 view = glm::mat4(1.0f);
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
