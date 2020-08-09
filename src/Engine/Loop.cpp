@@ -111,7 +111,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	cameraFront = glm::normalize(direction);
 }
 
-GLuint vbo, vao, texture;
+GLuint vbo, vao, texture, textureSpecular;
 GLuint lightVAO;
 std::shared_ptr<Shader> shader, lightShader;
 void surfaceCreated() {
@@ -182,16 +182,28 @@ void surfaceCreated() {
 	glVertexAttribPointer(/*location = 2*/2, /*position count*/3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 
 	shader = std::make_shared<Shader>("../data/shaders/shader.vert", "../data/shaders/shader.frag");
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	auto imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
-	imageLoader->loadPNG("../data/textures/air_hockey_surface.png");
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, std::get<0>(imageLoader->getSize()), std::get<1>(imageLoader->getSize()), 0, GL_RGBA, GL_UNSIGNED_BYTE, imageLoader->getData().data());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	
+	{
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		auto imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
+		imageLoader->loadPNG("../data/textures/container2.png");
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, std::get<0>(imageLoader->getSize()), std::get<1>(imageLoader->getSize()), 0, GL_RGBA, GL_UNSIGNED_BYTE, imageLoader->getData().data());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	{
+		glGenTextures(1, &textureSpecular);
+		glBindTexture(GL_TEXTURE_2D, textureSpecular);
+		auto imageLoader = std::shared_ptr<ImageLoader>(new ImageLoader);
+		imageLoader->loadPNG("../data/textures/container2_specular.png");
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, std::get<0>(imageLoader->getSize()), std::get<1>(imageLoader->getSize()), 0, GL_RGBA, GL_UNSIGNED_BYTE, imageLoader->getData().data());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 	lightShader = std::make_shared<Shader>("../data/shaders/light.vert", "../data/shaders/light.frag");
 	glGenVertexArrays(1, &lightVAO);
 	glBindVertexArray(lightVAO);
@@ -203,8 +215,6 @@ void surfaceCreated() {
 }
 
 
-std::vector<float> colorMask = { 0.0f, 0.0f, 0.0f };
-std::vector<float> colorAdd = { 1.0f, 0.0f, 0.5f };
 std::vector<float> lightColor = { 1.0f, 1.0f, 1.0f };
 glm::vec3 lightPos(1.2f, 0.0f, 2.0f);
 void drawFrame() {
@@ -219,16 +229,14 @@ void drawFrame() {
 	//lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
 	//Object
 	glUseProgram(shader->getProgram());
-	glUniform3fv(glGetUniformLocation(shader->getProgram(), "color_mask"), 1, colorMask.data());
-	glUniform3fv(glGetUniformLocation(shader->getProgram(), "color_addition"), 1, colorAdd.data());
+	glUniform1i(glGetUniformLocation(shader->getProgram(), "material.diffuse"), 0);
+	glUniform1i(glGetUniformLocation(shader->getProgram(), "material.specular"), 1);
 
-	glUniform3fv(glGetUniformLocation(shader->getProgram(), "material.ambient"), 1, colorAdd.data());
-	glUniform3fv(glGetUniformLocation(shader->getProgram(), "material.diffuse"), 1, colorAdd.data());
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "material.specular"), 1, std::vector<float>({0.5f, 0.5f, 0.5f}).data());
 	glUniform1f(glGetUniformLocation(shader->getProgram(), "material.shininess"), 32.0f);
 
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.ambient"), 1, std::vector<float>({ 0.2f, 0.2f, 0.2f }).data());
-	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.diffuse"), 1, std::vector<float>({ 0.5f, 0.5f, 0.5f }).data());
+	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.diffuse"), 1, std::vector<float>({ 0.8f, 0.8f, 0.8f }).data());
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.specular"), 1, std::vector<float>({ 1.0f, 1.0f, 1.0f }).data());
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.position"), 1, glm::value_ptr(lightPos));
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "viewPos"), 1, glm::value_ptr(cameraPos));
@@ -243,7 +251,11 @@ void drawFrame() {
 	model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(model));
 	glBindVertexArray(vao);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, textureSpecular);
+
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//Light
