@@ -239,6 +239,10 @@ void drawFrame() {
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.diffuse"), 1, std::vector<float>({ 0.8f, 0.8f, 0.8f }).data());
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.specular"), 1, std::vector<float>({ 1.0f, 1.0f, 1.0f }).data());
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "light.position"), 1, glm::value_ptr(lightPos));
+	glUniform1f(glGetUniformLocation(shader->getProgram(), "light.constant"), 1.0f);
+	glUniform1f(glGetUniformLocation(shader->getProgram(), "light.linear"), 0.09f);
+	glUniform1f(glGetUniformLocation(shader->getProgram(), "light.quadratic"), 0.032f);
+
 	glUniform3fv(glGetUniformLocation(shader->getProgram(), "viewPos"), 1, glm::value_ptr(cameraPos));
 	glm::mat4 view = glm::mat4(1.0f);
 	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
@@ -248,16 +252,31 @@ void drawFrame() {
 	proj = glm::perspective(glm::radians(fov), (float)std::get<0>(currentResolution) / (float)std::get<1>(currentResolution), 0.1f, 100.0f);
 	glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "u_Projection"), 1, GL_FALSE, glm::value_ptr(proj));
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(model));
-	glBindVertexArray(vao);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textureSpecular);
 
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(0.0f,  0.0f,  -1.0f),
+		glm::vec3(0.0f,  0.0f,  -3.0f),
+		glm::vec3(0.0f,  0.0f,  -5.0f),
+	};
+	for (unsigned int i = 0; i < 4; i++)
+	{
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, cubePositions[i]);
+		float angle = 20.0f * i;
+		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+		glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(model));
+		glBindVertexArray(vao);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureSpecular);
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
 	//Light
 	glUseProgram(lightShader->getProgram());
 	glUniformMatrix4fv(glGetUniformLocation(lightShader->getProgram(), "u_View"), 1, GL_FALSE, glm::value_ptr(view));
