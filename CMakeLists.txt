@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.7)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-if(MSVC)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-	set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-endif()
+#disable console
+#if(MSVC)
+	#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+	#set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+#endif()
 #need for mismatch resolving
 string(REPLACE "/MDd" "/MTd" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
 string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
@@ -127,9 +128,16 @@ enable_testing()
 
 #source files
 file(GLOB_RECURSE TEST_SOURCE "test/*.c*")
-source_group("test" FILES ${TEST_SOURCE})
+source_group("Test" FILES ${TEST_SOURCE})
 
-add_executable(tests ${TEST_SOURCE})
+add_executable(tests ${app_header_ecs} ${app_source_ecs}
+          ${app_header_graphic} ${app_source_graphic}
+          ${app_header_interaction} ${app_source_interaction}
+          ${app_header_network} ${app_source_network}
+          ${app_header_sound} ${app_source_sound}
+          ${app_header_user} ${app_source_user}
+          ${app_header_utility} ${app_source_utility}
+          ${TEST_SOURCE})
 
 add_dependencies(tests googletest glew glfw freetype)
 
@@ -139,12 +147,13 @@ target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencie
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glew/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/include)
 target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/freetype/include)
+target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glm)
 
-target_link_libraries(game opengl32.lib)
+target_link_libraries(tests opengl32.lib)
 
 #link freetype libraries
-target_link_libraries(tests debug ${CMAKE_CURRENT_BINARY_DIR}/freetype-prefix/src/freetype-build/src/Debug/freetyped.lib)
-target_link_libraries(tests optimized ${CMAKE_CURRENT_BINARY_DIR}/freetype-prefix/src/freetype-build/src/Release/freetype.lib)
+target_link_libraries(tests debug ${CMAKE_CURRENT_BINARY_DIR}/freetype-prefix/src/freetype-build/Debug/freetyped.lib)
+target_link_libraries(tests optimized ${CMAKE_CURRENT_BINARY_DIR}/freetype-prefix/src/freetype-build/Release/freetype.lib)
 
 #link glfw libraries
 target_link_libraries(tests debug ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw-build/src/Debug/glfw3dll.lib)

@@ -7,7 +7,6 @@ class Scene {
 private:
 	std::shared_ptr<EntityManager> _entityManager; //Reference to entityManager (to be able delete entity ID)
 	std::shared_ptr<SystemManager> _systemManager;
-	std::shared_ptr<BufferManager> _bufferManager;
 	std::string _name;
 public:
 	Scene(std::string name);

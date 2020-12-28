@@ -3,7 +3,6 @@
 Scene::Scene(std::string name) {
 	_entityManager = std::make_shared<EntityManager>();
 	_systemManager = std::make_shared<SystemManager>();
-	_bufferManager = std::make_shared<BufferManager>();
 	_name = name;
 }
 
