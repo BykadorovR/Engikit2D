@@ -3,7 +3,6 @@
 #include "Operation.h"
 #include <algorithm>
 #include "Entity.h"
-#include "View.h"
 
 //TODO: merge common part with arguments with action
 class ExpressionOperation : public Operation {

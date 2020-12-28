@@ -7,8 +7,6 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
-#include "Interface.h"
-#include "Grid.h"
 #include "State.h"
 #include "UserInputEvents.h"
 #include "TextureAtlas.h"
@@ -20,18 +18,13 @@
 #include "TextureManager.h"
 #include "GlyphsLoader.h"
 #include "Common.h"
-#include "UIActions.h"
 
-#include "Back.h"
-#include "Label.h"
 #include "InteractionOperations.h"
 #include "UserInputComponents.h"
 #include "InteractionComponents.h"
 #include "InteractionSystems.h"
 #include "InteractionActions.h"
 #include "UserInputSystems.h"
-#include "Decorator.h"
-#include "List.h"
 #include "CustomComponents.h"
 
 std::shared_ptr<Scene> activeScene;
@@ -40,42 +33,6 @@ std::shared_ptr<DrawSystem> drawSystem;
 std::shared_ptr<InteractionSystem> interactionSystem;
 std::shared_ptr<MouseSystem> mouseSystem;
 std::shared_ptr<KeyboardSystem> keyboardSystem;
-
-void attachShowOperations(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
-	auto printOperation = std::make_shared<ExpressionOperation>();
-	printOperation->addArgument(entity, "", "");
-	printOperation->initializeOperation("CLICK ${0}");
-	auto printAction = std::make_shared<PrintOperationsAction>();
-	printAction->setList(list);
-	printAction->setEntity(entity);
-	printOperation->registerAction(printAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(printOperation, InteractionType::MOUSE_START);
-}
-
-void attachShowComponents(std::shared_ptr<Entity> entity, std::shared_ptr<List> list, std::shared_ptr<ScrollerVerticalDecorator> decorator) {
-	list->getViews()[0]->getEntity()->createComponent<CustomFloatComponent>()->addCustomValue("currentEntity", -1);
-	list->getViews()[0]->getEntity()->createComponent<CustomFloatArrayComponent>()->initializeEmpty("registeredEntities");
-
-	auto printComponentsOperation = std::make_shared<ExpressionOperation>();
-	printComponentsOperation->addArgument(entity, "", "");
-	printComponentsOperation->initializeOperation("CLICK ${0}");
-	auto printComponentsAction = std::make_shared<PrintComponentsAction>();
-	printComponentsAction->setList(list);
-	printComponentsAction->setEntity(entity);
-	printComponentsOperation->registerAction(printComponentsAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(printComponentsOperation, InteractionType::MOUSE_START);
-
-	auto clearComponentsOperation = std::make_shared<ExpressionOperation>();
-	clearComponentsOperation->addArgument(entity, "", "");
-	std::string listIndexes = clearComponentsOperation->addArgument(list->getEntities());
-	std::string decoratorIndexes = clearComponentsOperation->addArgument(decorator->getEntities());
-	clearComponentsOperation->initializeOperation("! ( DOUBLE_CLICK ${0} ) AND ! ( CLICK ${" + listIndexes + "} ) AND ! ( CLICK ${" + decoratorIndexes + "} )");
-	auto clearComponentsAction = std::make_shared<ClearComponentsAction>();
-	clearComponentsAction->setList(list);
-	clearComponentsAction->setEntity(entity);
-	clearComponentsOperation->registerAction(clearComponentsAction);
-	entity->createComponent<InteractionComponent>()->attachOperation(clearComponentsOperation, InteractionType::MOUSE_START);
-}
 
 void surfaceCreated() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -92,9 +49,34 @@ void surfaceCreated() {
 
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>("../data/shaders/shader.vsh", "../data/shaders/shader.fsh");
 	ShaderStore::instance()->addShader("texture", shader);
-	std::shared_ptr<MainInterface> mainInterface = std::make_shared<MainInterface>();
-	mainInterface->initialize(activeScene);
-	mainInterface->fillEntitiesList(activeScene);
+	{
+		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
+		auto entity = activeScene->createEntity("Back");
+		auto objectComponent = entity->createComponent<ObjectComponent>();
+		objectComponent->initialize({ 300, 300 }, { 100, 100 }, bufferManager, ShaderStore::instance()->getShader("texture"));
+		auto textureComponent = entity->createComponent<TextureComponent>();
+		textureComponent->initialize(bufferManager);
+		textureComponent->setTexture(textureRaw->getTextureID());
+		auto mouseComponent = entity->createComponent<MouseComponent>();
+		mouseComponent->initialize();
+		auto clickInsideOp = std::make_shared<ExpressionOperation>();
+		clickInsideOp->addArgument(entity, "", "");
+		clickInsideOp->initializeOperation("CLICK ${0}");
+		auto moveAct = std::make_shared<AssignAction>();
+		moveAct->addArgument(entity, "ObjectComponent", "positionX");
+		moveAct->initializeAction("${0} SET ${0} + 10");
+		clickInsideOp->registerAction(moveAct);
+		entity->createComponent<InteractionComponent>()->attachOperation(clickInsideOp, InteractionType::MOUSE_START);
+	}
+	{
+		std::shared_ptr<BufferManager> bufferManager = std::make_shared<BufferManager>();
+		auto entity = activeScene->createEntity("Text");
+		auto objectComponent = entity->createComponent<ObjectComponent>();
+		objectComponent->initialize({ 300, 300 }, { 100, 100 }, bufferManager, ShaderStore::instance()->getShader("texture"));
+		auto textComponent = entity->createComponent<TextComponent>();
+		textComponent->initialize(bufferManager);
+		textComponent->setText("Hello");
+	}
 
 	stateSystem = std::make_shared<StateSystem>();
 	stateSystem->setEntityManager(activeScene->getEntityManager());
