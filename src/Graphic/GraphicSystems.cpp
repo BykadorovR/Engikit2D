@@ -15,12 +15,16 @@ DrawSystem::DrawSystem() {
 
 void DrawSystem::vertexUpdate(std::shared_ptr<ObjectComponent> vertexObject) {
 	glUseProgram(vertexObject->getShader()->getProgram());
-	glUniformMatrix4fv(glGetUniformLocation(vertexObject->getShader()->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0, 0, 1));
+	glUniformMatrix4fv(glGetUniformLocation(vertexObject->getShader()->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(model));
+	//glUniformMatrix4fv(glGetUniformLocation(vertexObject->getShader()->getProgram(), "u_Model"), 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 	glm::mat4 view = glm::mat4(1.0f);
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -1.0f));
+	//view = glm::rotate(view, glm::radians(30.0f), glm::vec3(0, 1, 1));
 	glUniformMatrix4fv(glGetUniformLocation(vertexObject->getShader()->getProgram(), "u_View"), 1, GL_FALSE, glm::value_ptr(view));
-	auto ortoProjection = glm::ortho(0.0f, (float) std::get<0>(currentResolution), 0.0f, (float) std::get<1>(currentResolution), 1.0f, 100.0f);
-	ortoProjection = glm::frustum(0.0f, (float)std::get<0>(currentResolution), 0.0f, (float)std::get<1>(currentResolution), 1.0f, 100.0f);
+	//auto ortoProjection = glm::ortho(0.0f, (float) std::get<0>(currentResolution), 0.0f, (float) std::get<1>(currentResolution), 1.0f, 100.0f);
+	auto ortoProjection = glm::frustum(0.0f, (float)std::get<0>(currentResolution), 0.0f, (float)std::get<1>(currentResolution), 1.0f, 100.0f);
 	glUniformMatrix4fv(glGetUniformLocation(vertexObject->getShader()->getProgram(), "u_Projection"), 1, GL_FALSE, glm::value_ptr(ortoProjection));
 }
 

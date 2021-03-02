@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <string>
 #include <map>
+#include <memory>
 
 class Shader {
 public:

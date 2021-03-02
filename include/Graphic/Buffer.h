@@ -7,7 +7,7 @@
 #include <string>
 #include <array>
 
-enum BufferType {
+enum class BufferType {
 	Position = 0,
 	Texture = 1
 };

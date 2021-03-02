@@ -13,7 +13,7 @@ public:
 	BufferManager();
 	std::shared_ptr<Buffer> addBuffer(BufferType type, std::tuple<float, float> position, std::tuple<float, float> size, std::tuple<float, float> sizeOverall);
 	bool changeBuffer(BufferType type, std::tuple<float, float> position, std::tuple<float, float> sizeTarget, std::tuple<float, float> sizeOverall);
-	std::shared_ptr<Buffer> BufferManager::getBuffer(BufferType type);
+	std::shared_ptr<Buffer> getBuffer(BufferType type);
 	bool activateBuffer();
 	bool deactivateBuffer();
 };
